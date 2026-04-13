@@ -165,6 +165,7 @@ async def change_artefact_status(
     new_status: str,
     actor_user_id: str,
     event_type: str = "artefact.status_changed",
+    reason: str | None = None,
 ) -> Artefact:
     await ensure_project_writable(session, artefact.project_id)
     if artefact.status == "obsolete" and new_status != "obsolete":
@@ -179,7 +180,7 @@ async def change_artefact_status(
         project_id=artefact.project_id,
         actor_user_id=actor_user_id,
         affected_artefact_ids=[artefact.artefact_id],
-        payload={"status": new_status},
+        payload={"status": new_status, "reason": reason} if reason else {"status": new_status},
     )
     return artefact
 

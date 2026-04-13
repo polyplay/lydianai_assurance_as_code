@@ -4,12 +4,12 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 
 from aac_backend.api.router import api_router
-from aac_backend.services.schema_version_service import assert_database_schema_current
+from aac_backend.services.startup_service import initialize_application_state
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    await assert_database_schema_current()
+    await initialize_application_state()
     yield
 
 

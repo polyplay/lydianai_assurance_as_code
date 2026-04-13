@@ -12,7 +12,12 @@ from aac_backend.database import get_session
 from aac_backend.models.artefacts import Artefact, ArtefactRevision
 from aac_backend.repositories.domain import ArtefactRepository
 from aac_backend.schemas.common import ApiEnvelope
-from aac_backend.schemas.domain import ArtefactCreate, ArtefactRead, ArtefactUpdate
+from aac_backend.schemas.domain import (
+    ArtefactCreate,
+    ArtefactRead,
+    ArtefactStatusTransition,
+    ArtefactUpdate,
+)
 from aac_backend.services.artefact_service import (
     change_artefact_status,
     create_artefact,
@@ -136,12 +141,18 @@ async def release_artefact(
 async def status_transition(
     project_id: str,
     artefact_id: str,
-    payload: dict,
+    payload: ArtefactStatusTransition,
     current: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await _change_status_or_409(session, artefact, payload["status"], current.user.user_id)
+    artefact = await _change_status_or_409(
+        session,
+        artefact,
+        payload.status,
+        current.user.user_id,
+        reason=payload.reason,
+    )
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
 
@@ -287,6 +298,7 @@ async def _change_status_or_409(
     artefact: Artefact,
     new_status: str,
     actor_user_id: str,
+    reason: str | None = None,
 ) -> Artefact:
     try:
         return await change_artefact_status(
@@ -294,6 +306,7 @@ async def _change_status_or_409(
             artefact,
             new_status=new_status,
             actor_user_id=actor_user_id,
+            reason=reason,
         )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc

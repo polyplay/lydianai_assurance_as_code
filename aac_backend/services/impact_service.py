@@ -1,4 +1,4 @@
-from collections import deque
+from collections import defaultdict, deque
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -20,6 +20,7 @@ BACKWARD_PROPAGATION = {
 }
 NON_PROPAGATING = {"references", "interacts_via", "guarantees", "mitigates", "traces_to"}
 MAX_PROPAGATION_DEPTH = 10
+PropagationIndexes = tuple[dict[str, list[tuple[str, str]]], dict[str, list[tuple[str, str]]]]
 
 
 async def analyze_impact(
@@ -192,6 +193,7 @@ async def _traverse_dependents(
     project_id: str,
     trigger_artefact_id: str,
 ) -> list[dict]:
+    indexes = await _load_propagation_indexes(session, project_id)
     visited = {trigger_artefact_id}
     queue = deque([(trigger_artefact_id, [trigger_artefact_id], 0)])
     affected: list[dict] = []
@@ -199,7 +201,7 @@ async def _traverse_dependents(
         current_id, path, depth = queue.popleft()
         if depth >= MAX_PROPAGATION_DEPTH:
             continue
-        for dependent_id, relationship_type in await _dependent_edges(session, project_id, current_id):
+        for dependent_id, relationship_type in _dependent_edges(indexes, current_id):
             if dependent_id in visited:
                 continue
             visited.add(dependent_id)
@@ -215,31 +217,36 @@ async def _traverse_dependents(
     return affected
 
 
-async def _dependent_edges(
+async def _load_propagation_indexes(
     session: AsyncSession,
     project_id: str,
-    artefact_id: str,
-) -> list[tuple[str, str]]:
-    edges: list[tuple[str, str]] = []
-    forward = await session.scalars(
+) -> PropagationIndexes:
+    forward_index: defaultdict[str, list[tuple[str, str]]] = defaultdict(list)
+    backward_index: defaultdict[str, list[tuple[str, str]]] = defaultdict(list)
+    relationships = await session.scalars(
         select(Relationship).where(
             Relationship.project_id == project_id,
-            Relationship.source_artefact_id == artefact_id,
-            Relationship.relationship_type.in_(FORWARD_PROPAGATION),
             Relationship.deleted_at.is_(None),
         )
     )
-    edges.extend((rel.target_artefact_id, rel.relationship_type) for rel in forward)
-    backward = await session.scalars(
-        select(Relationship).where(
-            Relationship.project_id == project_id,
-            Relationship.target_artefact_id == artefact_id,
-            Relationship.relationship_type.in_(BACKWARD_PROPAGATION),
-            Relationship.deleted_at.is_(None),
-        )
-    )
-    edges.extend((rel.source_artefact_id, rel.relationship_type) for rel in backward)
-    return edges
+    for relationship in relationships:
+        if relationship.relationship_type in FORWARD_PROPAGATION:
+            forward_index[relationship.source_artefact_id].append(
+                (relationship.target_artefact_id, relationship.relationship_type)
+            )
+        if relationship.relationship_type in BACKWARD_PROPAGATION:
+            backward_index[relationship.target_artefact_id].append(
+                (relationship.source_artefact_id, relationship.relationship_type)
+            )
+    return dict(forward_index), dict(backward_index)
+
+
+def _dependent_edges(indexes: PropagationIndexes, artefact_id: str) -> list[tuple[str, str]]:
+    forward_index, backward_index = indexes
+    return [
+        *forward_index.get(artefact_id, []),
+        *backward_index.get(artefact_id, []),
+    ]
 
 
 async def _informational_relationships(

@@ -1,8 +1,10 @@
 from datetime import UTC, datetime
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from aac_backend.database import AsyncSessionLocal
 from aac_backend.models.artefacts import Artefact, Relationship
 from aac_backend.models.baselines import (
     Baseline,
@@ -11,6 +13,7 @@ from aac_backend.models.baselines import (
     ReleaseGateResult,
 )
 from aac_backend.models.jobs import Job, ProjectUpdateLock
+from aac_backend.models.projects import ProjectConfiguration
 from aac_backend.models.validation import ValidationIssue
 from aac_backend.rules.catalog import RULE_CATALOG
 from aac_backend.schemas.domain import BaselineCreate
@@ -142,12 +145,16 @@ async def create_baseline(
             actor_user_id=actor_user_id,
             payload=baseline.summary_json,
         )
+    except SQLAlchemyError:
+        await session.rollback()
+        await _release_project_update_lock_in_new_session(project_id)
+        raise
+    except Exception:
+        await _release_project_update_lock(session, project_id)
+        raise
+    else:
+        await _release_project_update_lock(session, project_id)
         return baseline
-    finally:
-        lock = await session.get(ProjectUpdateLock, project_id)
-        if lock:
-            await session.delete(lock)
-            await session.flush()
 
 
 async def run_release_gate(
@@ -207,6 +214,9 @@ async def run_release_gate(
         for suspect in open_suspects
     ]
     passed = passed and not suspect_blocks
+    validation_policy = await _validation_policy_for_project(session, project_id)
+    evaluated_rules_count = _rule_count_for_mode("release_gate", validation_policy)
+    blocking_rule_count = len({issue["rule_id"] for issue in blocking})
     result = ReleaseGateResult(
         project_id=project_id,
         baseline_id=baseline.baseline_id,
@@ -216,11 +226,8 @@ async def run_release_gate(
         result="pass" if passed else "fail",
         started_at=datetime.now(UTC),
         completed_at=datetime.now(UTC),
-        evaluated_rules_count=_rule_count_for_mode("release_gate"),
-        passed_rules_count=max(
-            _rule_count_for_mode("release_gate") - len({issue["rule_id"] for issue in blocking}),
-            0,
-        ),
+        evaluated_rules_count=evaluated_rules_count,
+        passed_rules_count=max(evaluated_rules_count - blocking_rule_count, 0),
         blocking_issues_json=blocking,
         open_suspect_states_json=suspect_blocks,
     )
@@ -255,8 +262,39 @@ def _issue_applies_to_baseline(issue: ValidationIssue, baseline_artefact_ids: se
     return not affected or bool(affected & baseline_artefact_ids)
 
 
-def _rule_count_for_mode(mode: str) -> int:
-    return sum(1 for rule in RULE_CATALOG.values() if mode in rule.execution_modes)
+async def _release_project_update_lock(session: AsyncSession, project_id: str) -> None:
+    lock = await session.get(ProjectUpdateLock, project_id)
+    if lock:
+        await session.delete(lock)
+        await session.flush()
+
+
+async def _release_project_update_lock_in_new_session(project_id: str) -> None:
+    async with AsyncSessionLocal() as cleanup_session:
+        lock = await cleanup_session.get(ProjectUpdateLock, project_id)
+        if lock:
+            await cleanup_session.delete(lock)
+            await cleanup_session.commit()
+
+
+async def _validation_policy_for_project(session: AsyncSession, project_id: str) -> dict:
+    config = await session.scalar(
+        select(ProjectConfiguration).where(ProjectConfiguration.project_id == project_id)
+    )
+    return config.validation_policy_json if config else {}
+
+
+def _rule_count_for_mode(mode: str, validation_policy: dict | None = None) -> int:
+    return sum(
+        1
+        for rule_id, rule in RULE_CATALOG.items()
+        if mode in rule.execution_modes and not _rule_disabled(rule_id, validation_policy)
+    )
+
+
+def _rule_disabled(rule_id: str, validation_policy: dict | None) -> bool:
+    rule_cfg = ((validation_policy or {}).get("rules") or {}).get(rule_id, {})
+    return rule_cfg.get("enabled") is False or rule_cfg.get("severity") == "disabled"
 
 
 async def approve_baseline(

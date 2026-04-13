@@ -54,6 +54,11 @@ class ArtefactUpdate(BaseModel):
     change_reason: str = "api update"
 
 
+class ArtefactStatusTransition(BaseModel):
+    status: ArtefactStatus
+    reason: str | None = None
+
+
 class ArtefactRead(OrmModel):
     artefact_id: str
     project_id: str

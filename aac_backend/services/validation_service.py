@@ -100,7 +100,6 @@ async def run_validation(
     actor_user_id: str,
     scope: dict | None = None,
 ) -> ValidationRun:
-    await seed_rule_catalog(session)
     await session.execute(
         update(ValidationIssue)
         .where(ValidationIssue.project_id == project_id, ValidationIssue.status == "open")
