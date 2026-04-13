@@ -7,8 +7,14 @@ from aac_backend.models.artefacts import Artefact
 from aac_backend.models.imports import ImportRun, ImportRunItem
 from aac_backend.repositories.domain import ArtefactRepository
 from aac_backend.schemas.domain import ArtefactCreate, ArtefactSource, ArtefactUpdate, ImportStart
-from aac_backend.services.artefact_service import create_artefact, fingerprint, update_artefact
+from aac_backend.services.artefact_service import (
+    create_artefact,
+    fingerprint,
+    obsolete_artefact,
+    update_artefact,
+)
 from aac_backend.services.event_service import record_event
+from aac_backend.services.validation_service import run_validation
 
 
 TYPE_FIELD = "type"
@@ -35,7 +41,9 @@ async def import_sphinx_needs(
     await session.flush()
 
     repo = ArtefactRepository(session)
-    created = changed = unchanged = waiting = errors = 0
+    created = changed = unchanged = waiting = errors = deleted = type_mismatches = conflicts = 0
+    seen_source_keys: set[tuple[str, str]] = set()
+    imported_documents: set[str] = set()
 
     for raw_need in data.sphinx_needs:
         try:
@@ -43,6 +51,7 @@ async def import_sphinx_needs(
             artefact_type = str(raw_need.get(TYPE_FIELD) or raw_need.get("artefact_type"))
             source_document = str(raw_need.get("source_document") or raw_need.get("docname") or "")
             payload = dict(raw_need.get("payload") or raw_need)
+            base_revision_id = raw_need.get("_aac_base_revision_id") or payload.get("_aac_base_revision_id")
             title = str(raw_need.get("title") or source_object_id)
             description = str(raw_need.get("description") or raw_need.get("content") or "")
         except Exception as exc:
@@ -50,6 +59,8 @@ async def import_sphinx_needs(
             import_run.diagnostics_json.append({"level": "error", "message": str(exc), "raw": raw_need})
             continue
 
+        seen_source_keys.add((source_document, source_object_id))
+        imported_documents.add(source_document)
         existing = await repo.by_source_identity(project_id, source_document, source_object_id)
         proposed_fingerprint = fingerprint(payload)
         if existing is None:
@@ -83,6 +94,65 @@ async def import_sphinx_needs(
                     payload,
                 )
             )
+            continue
+
+        if existing.artefact_type != artefact_type:
+            type_mismatches += 1
+            item = _item(
+                import_run,
+                source_object_id,
+                source_document,
+                artefact_type,
+                "type_mismatch",
+                existing.artefact_id,
+                proposed_fingerprint,
+                payload,
+            )
+            item.previous_fingerprint = existing.current_fingerprint
+            item.current_revision_id = existing.current_revision_id
+            item.decision_status = "rejected"
+            session.add(item)
+            import_run.diagnostics_json.append(
+                {
+                    "level": "error",
+                    "classification": "type_mismatch",
+                    "source_object_id": source_object_id,
+                    "source_document": source_document,
+                    "stored_type": existing.artefact_type,
+                    "imported_type": artefact_type,
+                }
+            )
+            continue
+
+        if base_revision_id and existing.current_revision_id != base_revision_id:
+            conflicts += 1
+            item = _item(
+                import_run,
+                source_object_id,
+                source_document,
+                artefact_type,
+                "conflict",
+                existing.artefact_id,
+                proposed_fingerprint,
+                payload,
+            )
+            item.previous_fingerprint = existing.current_fingerprint
+            item.current_revision_id = existing.current_revision_id
+            item.decision_status = "pending" if import_run.version_update_mode == "ask_user" else "rejected"
+            session.add(item)
+            import_run.diagnostics_json.append(
+                {
+                    "level": "warning",
+                    "classification": "conflict",
+                    "source_object_id": source_object_id,
+                    "source_document": source_document,
+                    "base_revision_id": base_revision_id,
+                    "current_revision_id": existing.current_revision_id,
+                }
+            )
+            if item.decision_status == "pending":
+                waiting += 1
+                import_run.state = "waiting_for_user"
             continue
 
         if existing.current_fingerprint == proposed_fingerprint:
@@ -129,9 +199,41 @@ async def import_sphinx_needs(
             waiting += 1
         session.add(item)
 
+    if imported_documents:
+        existing_sphinx_artefacts = list(
+            await session.scalars(
+                select(Artefact).where(
+                    Artefact.project_id == project_id,
+                    Artefact.source_kind == "sphinx",
+                    Artefact.source_document.in_(imported_documents),
+                    Artefact.deleted_at.is_(None),
+                )
+            )
+        )
+        for artefact in existing_sphinx_artefacts:
+            key = (artefact.source_document, artefact.source_object_id)
+            if key in seen_source_keys:
+                continue
+            await obsolete_artefact(session, artefact, actor_user_id)
+            deleted += 1
+            item = _item(
+                import_run,
+                artefact.source_object_id,
+                artefact.source_document,
+                artefact.artefact_type,
+                "deleted",
+                artefact.artefact_id,
+                artefact.current_fingerprint or "",
+                artefact.payload_json,
+            )
+            item.current_revision_id = artefact.current_revision_id
+            item.previous_fingerprint = artefact.current_fingerprint
+            item.decision_status = "automatic"
+            session.add(item)
+
     if waiting:
         final_state = "waiting_for_user"
-    elif errors:
+    elif errors or type_mismatches or conflicts:
         final_state = "completed_with_errors"
     else:
         final_state = "completed"
@@ -143,7 +245,18 @@ async def import_sphinx_needs(
         "unchanged": unchanged,
         "waiting_for_user": waiting,
         "errors": errors,
+        "deleted": deleted,
+        "type_mismatches": type_mismatches,
+        "conflicts": conflicts,
     }
+    if final_state.startswith("completed"):
+        validation_run = await run_validation(
+            session,
+            project_id,
+            actor_user_id,
+            scope={"type": "project", "trigger": "sphinx_import", "import_run_id": import_run.import_run_id},
+        )
+        import_run.summary_json["validation_run_id"] = validation_run.validation_run_id
     await record_event(
         session,
         event_type="import.completed" if final_state.startswith("completed") else "import.waiting_for_user",

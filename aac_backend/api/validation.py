@@ -34,8 +34,12 @@ async def validation_run(
         job_type="validation_run",
         submitted_by=current.user.user_id,
         operation=operation,
+        arq_job_name="validation_job",
+        arq_args=(project_id, current.user.user_id),
     )
     await session.commit()
+    if run is None:
+        return ApiEnvelope(status="accepted", data={"job": job_data(job)})
     return ApiEnvelope(
         status="accepted",
         data={"job": job_data(job), "validation_run_id": run.validation_run_id, "summary": run.summary_json},

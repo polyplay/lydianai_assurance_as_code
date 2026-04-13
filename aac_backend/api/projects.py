@@ -12,10 +12,16 @@ from aac_backend.api.dependencies import (
 )
 from aac_backend.database import get_session
 from aac_backend.models.access import ProjectMembership, Role, User
-from aac_backend.models.projects import Project, ProjectConfiguration, TailoringDecision
+from aac_backend.models.projects import AssuranceProfile, Project, ProjectConfiguration, TailoringDecision
+from aac_backend.models.standards import ArtefactStandardMapping, StandardsReference
 from aac_backend.schemas.common import ApiEnvelope
 from aac_backend.schemas.domain import ProjectCreate, ProjectRead
 from aac_backend.services.project_service import archive_project, create_project
+from aac_backend.services.profile_service import (
+    clone_profile_payload,
+    evaluate_profile_applicability,
+    seed_default_profiles,
+)
 
 router = APIRouter(tags=["projects"])
 
@@ -52,6 +58,24 @@ async def get_project(
     project = await session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    return ApiEnvelope(data=ProjectRead.model_validate(project))
+
+
+@router.put("/projects/{project_id}", response_model=ApiEnvelope)
+async def update_project(
+    project_id: str,
+    payload: dict,
+    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    project = await session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    project.name = payload.get("name", project.name)
+    project.description = payload.get("description", project.description)
+    project.active_profile_id = payload.get("active_profile_id", project.active_profile_id)
+    project.status = payload.get("status", project.status)
+    await session.commit()
     return ApiEnvelope(data=ProjectRead.model_validate(project))
 
 
@@ -203,6 +227,197 @@ async def update_config(
     return ApiEnvelope(data=_config_data(config))
 
 
+@router.get("/projects/{project_id}/profiles", response_model=ApiEnvelope)
+async def list_profiles(
+    project_id: str,
+    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    await seed_default_profiles(session)
+    profiles = list(
+        await session.scalars(
+            select(AssuranceProfile).where(
+                (AssuranceProfile.project_id.is_(None)) | (AssuranceProfile.project_id == project_id),
+                AssuranceProfile.status == "active",
+            )
+        )
+    )
+    await session.commit()
+    return ApiEnvelope(data=[_profile_data(profile) for profile in profiles])
+
+
+@router.post("/projects/{project_id}/profiles", response_model=ApiEnvelope)
+async def create_profile(
+    project_id: str,
+    payload: dict,
+    _: CurrentUser = Depends(project_role_dependency("admin")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    source_profile_id = payload.get("inherits_from_profile_id") or payload.get("inherits_from")
+    source_payload = {}
+    if source_profile_id:
+        source = await session.get(AssuranceProfile, source_profile_id)
+        if not source:
+            raise HTTPException(status_code=404, detail="Source profile not found")
+        source_payload = source.profile_payload_json
+    profile = AssuranceProfile(
+        project_id=project_id,
+        name=payload["name"],
+        classification=payload.get("classification", "ASIL_D"),
+        inherits_from_profile_id=source_profile_id,
+        profile_payload_json=clone_profile_payload(source_payload, payload.get("profile_payload", {})),
+        status="active",
+    )
+    session.add(profile)
+    await session.commit()
+    return ApiEnvelope(data=_profile_data(profile))
+
+
+@router.get("/projects/{project_id}/profiles/{profile_id}", response_model=ApiEnvelope)
+async def get_profile(
+    project_id: str,
+    profile_id: str,
+    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    profile = await _get_profile_or_404(session, project_id, profile_id)
+    return ApiEnvelope(data=_profile_data(profile))
+
+
+@router.put("/projects/{project_id}/profiles/{profile_id}", response_model=ApiEnvelope)
+async def update_profile(
+    project_id: str,
+    profile_id: str,
+    payload: dict,
+    _: CurrentUser = Depends(project_role_dependency("admin")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    profile = await _get_profile_or_404(session, project_id, profile_id)
+    if profile.project_id is None:
+        raise HTTPException(status_code=409, detail="Default profiles cannot be modified")
+    profile.name = payload.get("name", profile.name)
+    profile.classification = payload.get("classification", profile.classification)
+    profile.profile_payload_json = payload.get("profile_payload", profile.profile_payload_json)
+    profile.status = payload.get("status", profile.status)
+    await session.commit()
+    return ApiEnvelope(data=_profile_data(profile))
+
+
+@router.post("/projects/{project_id}/profiles/{profile_id}/evaluate", response_model=ApiEnvelope)
+async def evaluate_profile(
+    project_id: str,
+    profile_id: str,
+    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    profile = await _get_profile_or_404(session, project_id, profile_id)
+    return ApiEnvelope(data=await evaluate_profile_applicability(session, project_id=project_id, profile=profile))
+
+
+@router.get("/projects/{project_id}/standards-references", response_model=ApiEnvelope)
+async def list_standards_references(
+    project_id: str,
+    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    _ = project_id
+    refs = list(await session.scalars(select(StandardsReference)))
+    return ApiEnvelope(data=[_standards_reference_data(ref) for ref in refs])
+
+
+@router.post("/projects/{project_id}/standards-references", response_model=ApiEnvelope)
+async def create_standards_reference(
+    project_id: str,
+    payload: dict,
+    _: CurrentUser = Depends(project_role_dependency("admin")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    _ = project_id
+    ref = StandardsReference(
+        standard=payload["standard"],
+        edition=payload.get("edition", ""),
+        part_or_process=payload.get("part_or_process", ""),
+        clause_or_process_id=payload["clause_or_process_id"],
+        title=payload.get("title", ""),
+        reference_type=payload.get("reference_type", "requirement"),
+        source_access=payload.get("source_access", "public"),
+        review_status=payload.get("review_status", "draft_public_reference"),
+    )
+    session.add(ref)
+    await session.commit()
+    return ApiEnvelope(data=_standards_reference_data(ref))
+
+
+@router.put("/projects/{project_id}/standards-references/{standards_reference_id}", response_model=ApiEnvelope)
+async def update_standards_reference(
+    project_id: str,
+    standards_reference_id: str,
+    payload: dict,
+    _: CurrentUser = Depends(project_role_dependency("admin")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    _ = project_id
+    ref = await session.get(StandardsReference, standards_reference_id)
+    if not ref:
+        raise HTTPException(status_code=404, detail="Standards reference not found")
+    for field in (
+        "standard",
+        "edition",
+        "part_or_process",
+        "clause_or_process_id",
+        "title",
+        "reference_type",
+        "source_access",
+        "review_status",
+    ):
+        if field in payload:
+            setattr(ref, field, payload[field])
+    await session.commit()
+    return ApiEnvelope(data=_standards_reference_data(ref))
+
+
+@router.get("/projects/{project_id}/standards-mappings", response_model=ApiEnvelope)
+async def list_standards_mappings(
+    project_id: str,
+    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    _ = project_id
+    mappings = list(await session.scalars(select(ArtefactStandardMapping)))
+    return ApiEnvelope(data=[_standards_mapping_data(mapping) for mapping in mappings])
+
+
+@router.put("/projects/{project_id}/standards-mappings", response_model=ApiEnvelope)
+async def upsert_standards_mapping(
+    project_id: str,
+    payload: dict,
+    _: CurrentUser = Depends(project_role_dependency("admin")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    _ = project_id
+    artefact_type = payload["artefact_type"]
+    standards_reference_id = payload["standards_reference_id"]
+    mapping = await session.get(ArtefactStandardMapping, (artefact_type, standards_reference_id))
+    if mapping is None:
+        mapping = ArtefactStandardMapping(
+            artefact_type=artefact_type,
+            standards_reference_id=standards_reference_id,
+        )
+        session.add(mapping)
+    mapping.required_content_json = payload.get("required_content", mapping.required_content_json)
+    mapping.review_expectation = payload.get("review_expectation", mapping.review_expectation)
+    mapping.independence_expectation = payload.get(
+        "independence_expectation",
+        mapping.independence_expectation,
+    )
+    mapping.verification_method_expectation = payload.get(
+        "verification_method_expectation",
+        mapping.verification_method_expectation,
+    )
+    await session.commit()
+    return ApiEnvelope(data=_standards_mapping_data(mapping))
+
+
 @router.get("/projects/{project_id}/schemas", response_model=ApiEnvelope)
 async def list_schemas(
     project_id: str,
@@ -316,4 +531,53 @@ def _tailoring_data(decision: TailoringDecision) -> dict:
         "status": decision.status,
         "rationale": decision.rationale,
         "evidence_refs": decision.evidence_refs_json,
+    }
+
+
+async def _get_profile_or_404(
+    session: AsyncSession,
+    project_id: str,
+    profile_id: str,
+) -> AssuranceProfile:
+    await seed_default_profiles(session)
+    profile = await session.get(AssuranceProfile, profile_id)
+    if not profile or (profile.project_id is not None and profile.project_id != project_id):
+        raise HTTPException(status_code=404, detail="Assurance profile not found")
+    return profile
+
+
+def _profile_data(profile: AssuranceProfile) -> dict:
+    return {
+        "profile_id": profile.profile_id,
+        "project_id": profile.project_id,
+        "name": profile.name,
+        "classification": profile.classification,
+        "inherits_from_profile_id": profile.inherits_from_profile_id,
+        "status": profile.status,
+        "profile_payload": profile.profile_payload_json,
+    }
+
+
+def _standards_reference_data(ref: StandardsReference) -> dict:
+    return {
+        "standards_reference_id": ref.standards_reference_id,
+        "standard": ref.standard,
+        "edition": ref.edition,
+        "part_or_process": ref.part_or_process,
+        "clause_or_process_id": ref.clause_or_process_id,
+        "title": ref.title,
+        "reference_type": ref.reference_type,
+        "source_access": ref.source_access,
+        "review_status": ref.review_status,
+    }
+
+
+def _standards_mapping_data(mapping: ArtefactStandardMapping) -> dict:
+    return {
+        "artefact_type": mapping.artefact_type,
+        "standards_reference_id": mapping.standards_reference_id,
+        "required_content": mapping.required_content_json,
+        "review_expectation": mapping.review_expectation,
+        "independence_expectation": mapping.independence_expectation,
+        "verification_method_expectation": mapping.verification_method_expectation,
     }

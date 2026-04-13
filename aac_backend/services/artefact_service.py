@@ -13,6 +13,16 @@ from aac_backend.repositories.domain import (
 from aac_backend.schemas.domain import ArtefactCreate, ArtefactUpdate, RelationshipCreate
 from aac_backend.services.event_service import record_event
 from aac_backend.services.impact_service import propagate_suspects
+from aac_backend.services.validation_service import relationship_type_allowed_for_types
+
+ALLOWED_STATUS_TRANSITIONS = {
+    "draft": {"under_review", "obsolete"},
+    "under_review": {"reviewed", "draft", "obsolete"},
+    "reviewed": {"approved", "draft", "obsolete"},
+    "approved": {"released", "obsolete"},
+    "released": {"obsolete"},
+    "obsolete": set(),
+}
 
 
 def fingerprint(payload: dict) -> str:
@@ -96,6 +106,8 @@ async def update_artefact(
     previous_status = artefact.status
     if artefact.status == "obsolete":
         raise ValueError("obsolete artefacts cannot be updated")
+    if data.status is not None and data.status != artefact.status:
+        raise ValueError("Use lifecycle transition endpoints to change artefact status")
     if data.base_revision_id and data.base_revision_id != artefact.current_revision_id:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Stale artefact revision")
 
@@ -157,6 +169,8 @@ async def change_artefact_status(
     await ensure_project_writable(session, artefact.project_id)
     if artefact.status == "obsolete" and new_status != "obsolete":
         raise ValueError("obsolete artefacts cannot transition")
+    if new_status != artefact.status and new_status not in ALLOWED_STATUS_TRANSITIONS.get(artefact.status, set()):
+        raise ValueError(f"transition {artefact.status} -> {new_status} is not permitted")
     artefact.status = new_status
     artefact.updated_at = datetime.now(UTC)
     await record_event(
@@ -210,6 +224,13 @@ async def create_relationship(
     target = await session.get(Artefact, data.target_artefact_id)
     if not source or not target or source.project_id != project_id or target.project_id != project_id:
         raise ValueError("relationship endpoints must exist in project")
+    if not relationship_type_allowed_for_types(
+        source.artefact_type,
+        target.artefact_type,
+        data.relationship_type,
+        same_artefact=source.artefact_id == target.artefact_id,
+    ):
+        raise ValueError("relationship type is not permitted for the source and target artefact types")
     relationship = Relationship(
         project_id=project_id,
         relationship_type=data.relationship_type,

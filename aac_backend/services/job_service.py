@@ -2,10 +2,12 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Any
 
+from arq import create_pool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from aac_backend.models.jobs import Job
 from aac_backend.services.event_service import record_event
+from aac_backend.workers.settings import redis_settings
 
 
 async def create_job(
@@ -43,6 +45,8 @@ async def run_tracked_job(
     job_type: str,
     submitted_by: str | None,
     operation: Callable[[Job], Awaitable[Any]],
+    arq_job_name: str | None = None,
+    arq_args: tuple = (),
 ) -> tuple[Job, Any]:
     job = await create_job(
         session,
@@ -50,6 +54,24 @@ async def run_tracked_job(
         job_type=job_type,
         submitted_by=submitted_by,
     )
+    if arq_job_name:
+        try:
+            redis = await create_pool(redis_settings())
+            arq_job = await redis.enqueue_job(arq_job_name, job.job_id, *arq_args)
+            await redis.close()
+        except Exception:
+            job.error_json = {"queue_fallback": "redis_unavailable_inline_execution"}
+        else:
+            job.state = "queued"
+            job.result_ref_json = {"arq_job_id": arq_job.job_id if arq_job else None}
+            await record_event(
+                session,
+                event_type="job.queued",
+                project_id=project_id,
+                actor_user_id=submitted_by,
+                payload={"job_id": job.job_id, "job_type": job_type, "arq_job_name": arq_job_name},
+            )
+            return job, None
     job.state = "running"
     job.started_at = datetime.now(UTC)
     try:

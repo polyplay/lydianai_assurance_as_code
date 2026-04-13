@@ -34,8 +34,12 @@ async def start_sphinx_import(
         job_type="sphinx_import",
         submitted_by=current.user.user_id,
         operation=operation,
+        arq_job_name="import_sphinx_job",
+        arq_args=(project_id, payload.model_dump(), current.user.user_id),
     )
     await session.commit()
+    if import_run is None:
+        return ApiEnvelope(status="accepted", data={"job": job_data(job)})
     return ApiEnvelope(
         status="requires_user_decision" if import_run.state == "waiting_for_user" else "accepted",
         data={"job": job_data(job), "import_run": _import_run_data(import_run)},

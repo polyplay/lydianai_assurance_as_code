@@ -103,8 +103,12 @@ async def impact(
         job_type="impact_analysis",
         submitted_by=current.user.user_id,
         operation=operation,
+        arq_job_name="impact_job",
+        arq_args=(project_id, artefact_id, current.user.user_id),
     )
     await session.commit()
+    if run is None:
+        return ApiEnvelope(status="accepted", data={"job": job_data(job)})
     return ApiEnvelope(status="accepted", data={"job": job_data(job), "impact": _impact_run_data(run)})
 
 

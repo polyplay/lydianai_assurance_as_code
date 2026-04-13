@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aac
+      POSTGRES_USER: aac
+      POSTGRES_PASSWORD: aac
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aac -d aac"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    environment:
+      AAC_DATABASE_URL: postgresql+asyncpg://aac:aac@postgres:5432/aac
+      AAC_REDIS_URL: redis://redis:6379/0
+      AAC_JWT_SECRET: change-me-change-me-change-me-change-me
+      AAC_ENVIRONMENT: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    build: .
+    command: ["arq", "aac_backend.workers.settings.WorkerSettings"]
+    environment:
+      AAC_DATABASE_URL: postgresql+asyncpg://aac:aac@postgres:5432/aac
+      AAC_REDIS_URL: redis://redis:6379/0
+      AAC_JWT_SECRET: change-me-change-me-change-me-change-me
+      AAC_ENVIRONMENT: development
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

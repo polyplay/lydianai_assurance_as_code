@@ -12,9 +12,11 @@ from aac_backend.models.baselines import (
 )
 from aac_backend.models.jobs import Job, ProjectUpdateLock
 from aac_backend.models.validation import ValidationIssue
+from aac_backend.rules.catalog import RULE_CATALOG
 from aac_backend.schemas.domain import BaselineCreate
 from aac_backend.services.event_service import record_event
 from aac_backend.services.impact_service import open_suspects_for_project
+from aac_backend.services.validation_service import run_validation
 
 
 async def create_baseline(
@@ -45,6 +47,12 @@ async def create_baseline(
     )
     await session.flush()
     try:
+        validation_run = await run_validation(
+            session,
+            project_id,
+            actor_user_id,
+            scope={"type": "project", "trigger": "baseline_eligibility"},
+        )
         open_issues = list(
             await session.scalars(
                 select(ValidationIssue).where(
@@ -57,13 +65,18 @@ async def create_baseline(
             issue for issue in open_issues if "baseline" in issue.blocking_contexts_json
         ]
         open_suspects = await open_suspects_for_project(session, project_id)
+        eligibility_result = {
+            "validation_run_id": validation_run.validation_run_id,
+            "passed": not blocking_issues and not open_suspects,
+            "blocking_issue_ids": [issue.validation_issue_id for issue in blocking_issues],
+            "open_suspect_state_ids": [suspect.suspect_state_id for suspect in open_suspects],
+            "blocking_issue_count": len(blocking_issues),
+            "open_suspect_count": len(open_suspects),
+        }
         if blocking_issues or open_suspects:
             job.state = "failed"
             job.completed_at = datetime.now(UTC)
-            job.error_json = {
-                "blocking_issue_count": len(blocking_issues),
-                "open_suspect_count": len(open_suspects),
-            }
+            job.error_json = eligibility_result
             raise ValueError("baseline eligibility failed")
 
         baseline = Baseline(
@@ -74,6 +87,7 @@ async def create_baseline(
             created_by=actor_user_id,
             created_at=datetime.now(UTC),
             profile_id=data.profile_id,
+            eligibility_result_json=eligibility_result,
         )
         session.add(baseline)
         await session.flush()
@@ -115,6 +129,9 @@ async def create_baseline(
         baseline.summary_json = {
             "artefact_count": len(artefacts),
             "relationship_count": len(relationships),
+            "validation_summary": validation_run.summary_json,
+            "suspect_summary": {"open_suspect_count": len(open_suspects)},
+            "release_gate_status": baseline.release_gate_status,
         }
         job.state = "completed"
         job.completed_at = datetime.now(UTC)
@@ -130,6 +147,7 @@ async def create_baseline(
         lock = await session.get(ProjectUpdateLock, project_id)
         if lock:
             await session.delete(lock)
+            await session.flush()
 
 
 async def run_release_gate(
@@ -144,6 +162,16 @@ async def run_release_gate(
         ).order_by(ReleaseGateResult.evaluation_number.desc())
     )
     evaluation_number = int(existing_count or 0) + 1
+    validation_run = await run_validation(
+        session,
+        project_id,
+        actor_user_id,
+        scope={
+            "type": "baseline",
+            "trigger": "release_gate",
+            "baseline_id": baseline.baseline_id,
+        },
+    )
     issues = list(
         await session.scalars(
             select(ValidationIssue).where(
@@ -152,6 +180,12 @@ async def run_release_gate(
             )
         )
     )
+    baseline_artefact_ids = await _baseline_artefact_ids(session, baseline.baseline_id)
+    scoped_issues = [
+        issue
+        for issue in issues
+        if _issue_applies_to_baseline(issue, baseline_artefact_ids)
+    ]
     open_suspects = await open_suspects_for_project(session, project_id)
     blocking = [
         {
@@ -160,7 +194,7 @@ async def run_release_gate(
             "severity": issue.severity,
             "summary": issue.message,
         }
-        for issue in issues
+        for issue in scoped_issues
         if "release_gate" in issue.blocking_contexts_json
     ]
     passed = not blocking
@@ -182,8 +216,11 @@ async def run_release_gate(
         result="pass" if passed else "fail",
         started_at=datetime.now(UTC),
         completed_at=datetime.now(UTC),
-        evaluated_rules_count=1,
-        passed_rules_count=1 if passed else 0,
+        evaluated_rules_count=_rule_count_for_mode("release_gate"),
+        passed_rules_count=max(
+            _rule_count_for_mode("release_gate") - len({issue["rule_id"] for issue in blocking}),
+            0,
+        ),
         blocking_issues_json=blocking,
         open_suspect_states_json=suspect_blocks,
     )
@@ -194,9 +231,32 @@ async def run_release_gate(
         event_type="release_gate.completed",
         project_id=project_id,
         actor_user_id=actor_user_id,
-        payload={"result": result.result, "blocking_issue_count": len(blocking)},
+        payload={
+            "result": result.result,
+            "blocking_issue_count": len(blocking),
+            "validation_run_id": validation_run.validation_run_id,
+        },
     )
     return result
+
+
+async def _baseline_artefact_ids(session: AsyncSession, baseline_id: str) -> set[str]:
+    return set(
+        await session.scalars(
+            select(BaselineArtefactRevision.artefact_id).where(
+                BaselineArtefactRevision.baseline_id == baseline_id
+            )
+        )
+    )
+
+
+def _issue_applies_to_baseline(issue: ValidationIssue, baseline_artefact_ids: set[str]) -> bool:
+    affected = set(issue.affected_artefact_ids_json or [])
+    return not affected or bool(affected & baseline_artefact_ids)
+
+
+def _rule_count_for_mode(mode: str) -> int:
+    return sum(1 for rule in RULE_CATALOG.values() if mode in rule.execution_modes)
 
 
 async def approve_baseline(

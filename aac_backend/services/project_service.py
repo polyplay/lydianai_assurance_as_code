@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aac_backend.models.projects import Project, ProjectConfiguration
 from aac_backend.schemas.domain import ProjectCreate
 from aac_backend.services.event_service import record_event
+from aac_backend.services.profile_service import seed_default_profiles
 
 
 async def create_project(session: AsyncSession, data: ProjectCreate, actor_user_id: str) -> Project:
+    await seed_default_profiles(session)
     existing = await session.scalar(select(Project).where(Project.project_key == data.project_key))
     if existing:
         raise ValueError("project_key already exists")
@@ -16,7 +18,7 @@ async def create_project(session: AsyncSession, data: ProjectCreate, actor_user_
         project_key=data.project_key,
         name=data.name,
         description=data.description,
-        active_profile_id=data.active_profile_id,
+        active_profile_id=data.active_profile_id or "ASIL_D_DEFAULT",
         status="active",
     )
     session.add(project)

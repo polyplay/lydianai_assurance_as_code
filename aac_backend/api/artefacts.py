@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from aac_backend.api.dependencies import CurrentUser, get_current_user, project_role_dependency
+from aac_backend.api.dependencies import (
+    CurrentUser,
+    get_current_user,
+    project_role_dependency,
+    require_project_roles,
+)
 from aac_backend.database import get_session
 from aac_backend.models.artefacts import Artefact, ArtefactRevision
 from aac_backend.repositories.domain import ArtefactRepository
@@ -70,12 +75,7 @@ async def submit_for_review(
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
     if artefact.owner_user_id != current.user.user_id:
         await project_role_dependency("admin", "quality_engineer")(project_id, current, session)
-    artefact = await change_artefact_status(
-        session,
-        artefact,
-        new_status="under_review",
-        actor_user_id=current.user.user_id,
-    )
+    artefact = await _change_status_or_409(session, artefact, "under_review", current.user.user_id)
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
 
@@ -88,12 +88,7 @@ async def mark_reviewed(
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await change_artefact_status(
-        session,
-        artefact,
-        new_status="reviewed",
-        actor_user_id=current.user.user_id,
-    )
+    artefact = await _change_status_or_409(session, artefact, "reviewed", current.user.user_id)
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
 
@@ -106,12 +101,7 @@ async def reject_review(
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await change_artefact_status(
-        session,
-        artefact,
-        new_status="draft",
-        actor_user_id=current.user.user_id,
-    )
+    artefact = await _change_status_or_409(session, artefact, "draft", current.user.user_id)
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
 
@@ -124,12 +114,7 @@ async def approve_artefact(
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await change_artefact_status(
-        session,
-        artefact,
-        new_status="approved",
-        actor_user_id=current.user.user_id,
-    )
+    artefact = await _change_status_or_409(session, artefact, "approved", current.user.user_id)
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
 
@@ -142,12 +127,7 @@ async def release_artefact(
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await change_artefact_status(
-        session,
-        artefact,
-        new_status="released",
-        actor_user_id=current.user.user_id,
-    )
+    artefact = await _change_status_or_409(session, artefact, "released", current.user.user_id)
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
 
@@ -161,12 +141,7 @@ async def status_transition(
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await change_artefact_status(
-        session,
-        artefact,
-        new_status=payload["status"],
-        actor_user_id=current.user.user_id,
-    )
+    artefact = await _change_status_or_409(session, artefact, payload["status"], current.user.user_id)
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
 
@@ -292,6 +267,33 @@ async def update_artefact_endpoint(
     artefact = await session.get(Artefact, artefact_id)
     if not artefact or artefact.project_id != project_id:
         raise HTTPException(status_code=404, detail="Artefact not found")
-    artefact = await update_artefact(session, artefact, payload, current.user.user_id)
+    if artefact.status == "released":
+        await require_project_roles(
+            session=session,
+            project_id=project_id,
+            current=current,
+            allowed_roles={"admin", "quality_engineer"},
+        )
+    try:
+        artefact = await update_artefact(session, artefact, payload, current.user.user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
     return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+
+
+async def _change_status_or_409(
+    session: AsyncSession,
+    artefact: Artefact,
+    new_status: str,
+    actor_user_id: str,
+) -> Artefact:
+    try:
+        return await change_artefact_status(
+            session,
+            artefact,
+            new_status=new_status,
+            actor_user_id=actor_user_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
