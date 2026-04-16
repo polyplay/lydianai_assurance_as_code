@@ -4,7 +4,7 @@
 
 This document defines the platform resource model and API requirement basis for the Assurance-as-Code tool.
 
-The resource model is intended to support a software-system assurance workflow at ASIL D, with configuration support for lower ASIL profiles where some artefacts may be optional or not applicable.
+The resource model is intended to support a software-system assurance workflow up to ASIL D and Automotive SPICE PAM 4.0 capability level 3, with configuration support for lower ASIL profiles and lower ASPICE capability targets where some artefacts may be optional or not applicable.
 
 The back-end owns all canonical resources, versions, baselines, rule evaluations, and API behavior.
 
@@ -28,7 +28,7 @@ The platform shall distinguish between:
 - generated artefacts produced by the platform
 
 AAC-SYS-DEC-005
-The platform shall maintain a standards traceability matrix that maps resource classes, relationships, rules, and profile obligations to ISO 26262, Automotive SPICE Level 3, ISO/IEC/IEEE 29119, UNECE R155, and UNECE R156 references.
+The platform shall maintain a standards traceability matrix that maps resource classes, relationships, rules, and profile obligations to ISO 26262, Automotive SPICE PAM 4.0, ISO/IEC/IEEE 29119, UNECE R155, and UNECE R156 references.
 
 AAC-SYS-DEC-006
 Standards-derived resource obligations shall include review status indicating whether they have been reviewed against the controlled standard text.
@@ -37,6 +37,9 @@ Standards-derived resource obligations shall include review status indicating wh
 
 AAC-CORE-FR-001
 The system shall support configurable assurance profiles.
+
+AAC-CORE-FR-001A
+The system shall support a project assurance configuration that combines ISO 26262 ASIL classification, Automotive SPICE PAM 4.0 capability target, ISO 29119 test scope, UNECE R155 applicability, UNECE R156 applicability, and front-end visibility policy.
 
 AAC-CORE-FR-002
 The system shall provide at least these profile levels:
@@ -61,6 +64,15 @@ The system shall allow a project to define its active assurance profile at proje
 
 AAC-CORE-FR-007
 When a lower ASIL profile is selected, the system shall apply the configured mandatory/optional rule set for that profile instead of the ASIL D default.
+
+AAC-CORE-FR-007A
+When a lower ASPICE capability target is selected, the system shall apply the configured process evidence and rule set for that target instead of the CL3 default.
+
+AAC-CORE-FR-007B
+The system shall support one project-level default ASPICE capability target and per-process capability overrides for scoped Automotive SPICE PAM 4.0 processes.
+
+AAC-CORE-FR-007C
+The system shall derive front-end artefact visibility from the active project assurance configuration using the configured visibility policy. The MVP default visibility policy shall be `relevant_first`.
 
 AAC-CORE-FR-008
 When an artefact is marked not applicable, the system shall require a rationale, approver, timestamp, and scope of applicability.

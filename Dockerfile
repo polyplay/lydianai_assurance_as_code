@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY alembic.ini ./
 COPY aac_backend ./aac_backend
+COPY web ./web
 
 EXPOSE 8000
 

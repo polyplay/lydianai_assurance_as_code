@@ -16,7 +16,16 @@ from aac_backend.models.projects import AssuranceProfile, Project, ProjectConfig
 from aac_backend.models.standards import ArtefactStandardMapping, StandardsReference
 from aac_backend.schemas.common import ApiEnvelope
 from aac_backend.schemas.domain import ProjectCreate, ProjectRead
-from aac_backend.services.project_service import archive_project, create_project
+from aac_backend.services.artefact_schema_service import (
+    all_schema_summaries,
+    apply_schema_override,
+    schema_for_artefact_type,
+)
+from aac_backend.services.project_service import (
+    apply_assurance_configuration,
+    archive_project,
+    create_project,
+)
 from aac_backend.services.profile_service import (
     clone_profile_payload,
     evaluate_profile_applicability,
@@ -210,7 +219,7 @@ async def get_config(
 async def update_config(
     project_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     config = await session.scalar(
@@ -223,6 +232,17 @@ async def update_config(
     config.baseline_policy_json = payload.get("baseline_policy", config.baseline_policy_json)
     config.validation_policy_json = payload.get("validation_policy", config.validation_policy_json)
     config.reporting_policy_json = payload.get("reporting_policy", config.reporting_policy_json)
+    if "assurance_configuration" in payload:
+        project = await session.get(Project, project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        await apply_assurance_configuration(
+            session,
+            project=project,
+            config=config,
+            raw_configuration=payload["assurance_configuration"],
+            actor_user_id=current.user.user_id,
+        )
     await session.commit()
     return ApiEnvelope(data=_config_data(config))
 
@@ -422,8 +442,10 @@ async def upsert_standards_mapping(
 async def list_schemas(
     project_id: str,
     _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
+    session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
-    return ApiEnvelope(data={"project_id": project_id, "schema_mode": "generic_artefact_payload"})
+    config = await _get_config_or_404(session, project_id)
+    return ApiEnvelope(data={"project_id": project_id, "schemas": all_schema_summaries(config)})
 
 
 @router.get("/projects/{project_id}/schemas/{artefact_type}", response_model=ApiEnvelope)
@@ -431,15 +453,14 @@ async def get_schema(
     project_id: str,
     artefact_type: str,
     _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
+    session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
-    return ApiEnvelope(
-        data={
-            "project_id": project_id,
-            "artefact_type": artefact_type,
-            "enabled_fields": ["base", "payload"],
-            "mandatory_fields": ["artefact_type", "title", "source.source_object_id"],
-        }
-    )
+    config = await _get_config_or_404(session, project_id)
+    try:
+        schema = schema_for_artefact_type(artefact_type, config).as_dict()
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return ApiEnvelope(data={"project_id": project_id, **schema})
 
 
 @router.put("/projects/{project_id}/schemas/{artefact_type}", response_model=ApiEnvelope)
@@ -448,8 +469,15 @@ async def tailor_schema(
     artefact_type: str,
     payload: dict,
     _: CurrentUser = Depends(project_role_dependency("admin")),
+    session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
-    return ApiEnvelope(data={"project_id": project_id, "artefact_type": artefact_type, **payload})
+    config = await _get_config_or_404(session, project_id)
+    try:
+        schema = apply_schema_override(config, artefact_type, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await session.commit()
+    return ApiEnvelope(data={"project_id": project_id, **schema})
 
 
 @router.post("/projects/{project_id}/tailoring-decisions", response_model=ApiEnvelope)
@@ -470,9 +498,7 @@ async def create_tailoring_decision(
         rationale=payload["rationale"],
         evidence_refs_json=payload.get("evidence_refs", []),
         requested_by=current.user.user_id,
-        approved_by=current.user.user_id,
-        approved_at=datetime.now(UTC),
-        status="approved",
+        status="draft",
     )
     session.add(decision)
     await session.commit()
@@ -489,6 +515,28 @@ async def list_tailoring_decisions(
         await session.scalars(select(TailoringDecision).where(TailoringDecision.project_id == project_id))
     )
     return ApiEnvelope(data=[_tailoring_data(decision) for decision in decisions])
+
+
+@router.post(
+    "/projects/{project_id}/tailoring-decisions/{tailoring_decision_id}/approve",
+    response_model=ApiEnvelope,
+)
+async def approve_tailoring_decision(
+    project_id: str,
+    tailoring_decision_id: str,
+    current: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    decision = await session.get(TailoringDecision, tailoring_decision_id)
+    if not decision or decision.project_id != project_id:
+        raise HTTPException(status_code=404, detail="Tailoring decision not found")
+    if not decision.rationale or not decision.evidence_refs_json:
+        raise HTTPException(status_code=409, detail="Tailoring approval requires rationale and evidence")
+    decision.status = "approved"
+    decision.approved_by = current.user.user_id
+    decision.approved_at = datetime.now(UTC)
+    await session.commit()
+    return ApiEnvelope(data=_tailoring_data(decision))
 
 
 @router.post(
@@ -517,8 +565,21 @@ def _config_data(config: ProjectConfiguration) -> dict:
         "sphinx_source_root": config.sphinx_source_root,
         "baseline_policy": config.baseline_policy_json,
         "validation_policy": config.validation_policy_json,
+        "assurance_configuration": (config.validation_policy_json or {}).get(
+            "project_assurance_configuration",
+            {},
+        ),
         "reporting_policy": config.reporting_policy_json,
     }
+
+
+async def _get_config_or_404(session: AsyncSession, project_id: str) -> ProjectConfiguration:
+    config = await session.scalar(
+        select(ProjectConfiguration).where(ProjectConfiguration.project_id == project_id)
+    )
+    if not config:
+        raise HTTPException(status_code=404, detail="Project config not found")
+    return config
 
 
 def _tailoring_data(decision: TailoringDecision) -> dict:
@@ -531,6 +592,9 @@ def _tailoring_data(decision: TailoringDecision) -> dict:
         "status": decision.status,
         "rationale": decision.rationale,
         "evidence_refs": decision.evidence_refs_json,
+        "requested_by": decision.requested_by,
+        "approved_by": decision.approved_by,
+        "approved_at": decision.approved_at,
     }
 
 

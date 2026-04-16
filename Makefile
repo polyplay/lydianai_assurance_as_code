@@ -1,4 +1,4 @@
-.PHONY: install lint test compile migrate dev worker compose-up compose-down
+.PHONY: install lint test compile migrate dev worker compose-up compose-down smoke-test
 
 install:
 	python3 -m venv .venv
@@ -27,3 +27,6 @@ compose-up:
 
 compose-down:
 	docker compose down
+
+smoke-test:
+	bash scripts/e2e_smoke_test.sh

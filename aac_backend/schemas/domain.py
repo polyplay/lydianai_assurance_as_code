@@ -6,6 +6,25 @@ from aac_backend.schemas.common import OrmModel
 
 
 ArtefactStatus = Literal["draft", "under_review", "reviewed", "approved", "released", "obsolete"]
+AsilLevel = Literal["QM", "ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"]
+VisibilityPolicy = Literal["relevant_first", "strict_hide", "show_all_tagged"]
+
+
+class AssuranceConfiguration(BaseModel):
+    project_type: str = "software_system"
+    asil_level: AsilLevel = "ASIL_D"
+    aspice_model: Literal["ASPICE_PAM_4_0"] = "ASPICE_PAM_4_0"
+    aspice_default_capability_level: int = Field(default=3, ge=1, le=3)
+    aspice_scoped_processes: list[str] = Field(default_factory=list)
+    aspice_process_overrides: dict[str, int] = Field(default_factory=dict)
+    r155_applicable: bool = False
+    r156_applicable: bool = False
+    has_cybersecurity_relevance: bool | None = None
+    has_software_update_relevance: bool | None = None
+    test_scope: list[str] = Field(
+        default_factory=lambda: ["unit", "integration", "software_qualification"]
+    )
+    visibility_policy: VisibilityPolicy = "relevant_first"
 
 
 class ProjectCreate(BaseModel):
@@ -13,6 +32,7 @@ class ProjectCreate(BaseModel):
     name: str
     description: str = ""
     active_profile_id: str | None = None
+    assurance_configuration: AssuranceConfiguration | None = None
 
 
 class ProjectRead(OrmModel):

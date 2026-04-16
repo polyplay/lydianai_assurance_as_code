@@ -3,14 +3,17 @@ import json
 from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from aac_backend.models.artefacts import Artefact, ArtefactRevision, Relationship, RelationshipRevision
+from aac_backend.models.projects import ProjectConfiguration
 from aac_backend.repositories.domain import (
     ArtefactRepository,
     has_project_update_lock,
 )
 from aac_backend.schemas.domain import ArtefactCreate, ArtefactUpdate, RelationshipCreate
+from aac_backend.services.artefact_schema_service import validate_artefact_payload
 from aac_backend.services.event_service import record_event
 from aac_backend.services.impact_service import propagate_suspects
 from aac_backend.services.validation_service import relationship_type_allowed_for_types
@@ -23,6 +26,8 @@ ALLOWED_STATUS_TRANSITIONS = {
     "released": {"obsolete"},
     "obsolete": set(),
 }
+
+ASIL_RANK = {"QM": 0, "ASIL_A": 1, "ASIL_B": 2, "ASIL_C": 3, "ASIL_D": 4}
 
 
 def fingerprint(payload: dict) -> str:
@@ -45,6 +50,9 @@ async def create_artefact(
     actor_user_id: str,
 ) -> Artefact:
     await ensure_project_writable(session, project_id)
+    config = await _project_config(session, project_id)
+    validate_artefact_payload(data.artefact_type, data.payload, config)
+    validate_asil_not_above_project(data.artefact_type, data.payload, config)
     repo = ArtefactRepository(session)
     existing = await repo.by_source_identity(
         project_id,
@@ -112,6 +120,9 @@ async def update_artefact(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Stale artefact revision")
 
     payload = data.payload if data.payload is not None else artefact.payload_json
+    config = await _project_config(session, artefact.project_id)
+    validate_artefact_payload(artefact.artefact_type, payload, config)
+    validate_asil_not_above_project(artefact.artefact_type, payload, config)
     if data.title is not None:
         artefact.title = data.title
     if data.description is not None:
@@ -260,3 +271,30 @@ async def create_relationship(
         affected_relationship_ids=[relationship.relationship_id],
     )
     return relationship
+
+
+async def _project_config(session: AsyncSession, project_id: str) -> ProjectConfiguration | None:
+    return await session.scalar(
+        select(ProjectConfiguration).where(ProjectConfiguration.project_id == project_id)
+    )
+
+
+def validate_asil_not_above_project(
+    artefact_type: str,
+    payload: dict,
+    config: ProjectConfiguration | None,
+) -> None:
+    _ = artefact_type
+    artefact_asil = payload.get("asil_level")
+    if not artefact_asil:
+        return
+    project_asil = (
+        (((config.validation_policy_json if config else {}) or {}).get("project_assurance_configuration") or {})
+        .get("asil_level")
+    )
+    if not project_asil:
+        return
+    if ASIL_RANK.get(str(artefact_asil), -1) > ASIL_RANK.get(str(project_asil), -1):
+        raise ValueError(
+            f"artefact ASIL level {artefact_asil} exceeds project maximum {project_asil}"
+        )

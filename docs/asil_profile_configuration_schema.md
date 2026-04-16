@@ -6,14 +6,14 @@ This document defines the configurable assurance profile schema used by the Assu
 
 Profiles control which artefacts, relationships, rules, evidence types, and review states are mandatory, optional, conditional, disabled, or not applicable for a project.
 
-The default high-rigor profile is ASIL D. Lower ASIL profiles may tailor requirements down by configuration.
+The default high-rigor profile is ASIL D with Automotive SPICE PAM 4.0 capability level 3 expectations. Lower ASIL or lower ASPICE capability targets may tailor requirements down by configuration.
 
 ## 2. Reference Basis
 
 The profile model is structured to support:
 
 - ISO 26262 software-system functional safety evidence, especially software requirements, architecture, implementation, integration, verification, configuration, and safety analysis concerns.
-- Automotive SPICE Level 3 evidence expectations, especially defined process use, work products, traceability, verification, validation, quality assurance, configuration management, problem resolution, and change management.
+- Automotive SPICE PAM 4.0 evidence expectations up to capability level 3, especially defined process use, work products, traceability, verification, validation, quality assurance, configuration management, problem resolution, and change management.
 - ISO/IEC/IEEE 29119 testing artefacts, especially test processes and test documentation.
 - UNECE R155 cybersecurity management evidence where cybersecurity-related safety interactions exist.
 - UNECE R156 software update management evidence where software release/update control is in scope.
@@ -39,6 +39,15 @@ The project lead shall be able to make an artefact optional when evidence and ra
 
 AAC-PROFILE-FR-006
 Project lead tailoring decisions shall be versioned, audited, and preserved in baselines.
+
+AAC-PROFILE-FR-007
+The system shall derive artefact visibility, mandatory artefact classes, required fields, validation rules, review expectations, and release-gate criteria from the project assurance configuration.
+
+AAC-PROFILE-FR-008
+The project assurance configuration shall treat ISO 26262 ASIL classification and Automotive SPICE capability target as separate configuration axes.
+
+AAC-PROFILE-FR-009
+When several configured standards or process targets apply to the same artefact or rule, the stricter applicability shall win unless an approved tailoring decision exists.
 
 ## 4. Applicability Values
 
@@ -113,9 +122,24 @@ profile:
   standards_traceability_matrix_ref: string
   inherits_from: string | null
   project_classification: enum[QM, ASIL_A, ASIL_B, ASIL_C, ASIL_D]
+  project_assurance_configuration:
+    project_type: enum[software_system]
+    asil_level: enum[QM, ASIL_A, ASIL_B, ASIL_C, ASIL_D]
+    aspice_model: enum[ASPICE_PAM_4_0]
+    aspice_default_capability_level: integer[1..3]
+    aspice_scoped_processes: [string]
+    aspice_process_overrides:
+      <ASPICE process ID>: integer[1..3]
+    r155_applicable: boolean
+    r156_applicable: boolean
+    has_cybersecurity_relevance: boolean
+    has_software_update_relevance: boolean
+    test_scope: [unit, integration, software_qualification, system, acceptance]
+    visibility_policy: enum[relevant_first, strict_hide, show_all_tagged]
   artefact_classes:
     <ArtefactClass>:
-      applicability: enum[mandatory, optional, conditional, disabled]
+      applicability: enum[mandatory, optional, conditional, disabled, not_applicable]
+      visible: boolean
       condition: string | null
       standards_refs: [string]
       required_status_for_baseline: [string]
@@ -125,7 +149,7 @@ profile:
       tailoring_approval_role: enum[admin, project_lead, quality_engineer]
   relationship_types:
     <relationship_type>:
-      applicability: enum[mandatory, optional, conditional, disabled]
+      applicability: enum[mandatory, optional, conditional, disabled, not_applicable]
       condition: string | null
       standards_refs: [string]
       source_types: [string]
@@ -143,6 +167,18 @@ profile:
     <report_type>:
       applicability: enum[mandatory, optional, conditional, disabled]
 ```
+
+AAC-PROFILE-DR-021
+`aspice_model` shall be fixed to `ASPICE_PAM_4_0` for the current implementation.
+
+AAC-PROFILE-DR-022
+`aspice_default_capability_level` shall support values 1, 2, and 3 only.
+
+AAC-PROFILE-DR-023
+`aspice_process_overrides` shall allow a project to target a different capability level for a specific scoped process than the project default.
+
+AAC-PROFILE-DR-024
+`visibility_policy=relevant_first` shall show mandatory and conditional artefacts in the normal workflow and keep optional artefacts available from an advanced catalogue.
 
 ## 7. ASIL D Default Profile
 
@@ -202,6 +238,26 @@ Lower ASIL profiles may reduce mandatory review, analysis, evidence, and coverag
 AAC-PROFILE-FR-034
 Lower ASIL profile defaults shall document every relaxed obligation relative to ASIL D using standards references and tailoring rationale.
 
+## 8.1 Combined ASIL And ASPICE Capability Profiles
+
+AAC-PROFILE-FR-040
+The system shall support project creation with both a highest ISO 26262 classification and an Automotive SPICE PAM 4.0 target capability level.
+
+AAC-PROFILE-FR-041
+The system shall support one project-level default ASPICE capability target and per-process overrides.
+
+AAC-PROFILE-FR-042
+For a project configured as `ASIL_B` and ASPICE CL2, the system shall not require ASIL D-only confirmation or CL3 process deployment artefacts unless another configured scope makes them mandatory.
+
+AAC-PROFILE-FR-043
+For any ASPICE process configured at CL3, the system shall require process definition and process deployment evidence through `ProcessComplianceRecord` and `ASPICEScopeDecision`.
+
+AAC-PROFILE-FR-044
+For projects where UNECE R155 is applicable, the derived profile shall require cybersecurity lifecycle artefacts such as `ThreatAnalysisRiskAssessment`, `CybersecurityRequirement`, and `CybersecurityManagementEvidence`.
+
+AAC-PROFILE-FR-045
+For projects where UNECE R156 is applicable, the derived profile shall require software update lifecycle artefacts such as `SoftwareUpdateManagementEvidence`, `SoftwareVersionRecord`, `UpdateCampaign`, `UpdateIntegrityEvidence`, and `SoftwareBillOfMaterials`.
+
 ## 9. Conditional Examples
 
 AAC-PROFILE-DR-030
@@ -251,6 +307,13 @@ Profile evaluation shall produce:
   "required_relationships": [],
   "missing_relationships": [],
   "enabled_rules": [],
+  "disabled_rules": [],
+  "visible_artefact_types": [],
+  "mandatory_artefact_types": [],
+  "conditional_artefact_types": [],
+  "optional_artefact_types": [],
+  "not_applicable_artefact_types": [],
+  "assurance_configuration": {},
   "tailoring_decisions_applied": [],
   "blocking_gaps": []
 }

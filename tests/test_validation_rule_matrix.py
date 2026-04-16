@@ -155,7 +155,18 @@ RULE_CASES = [
     ),
     (
         "AAC-RULE-RULE-004",
-        lambda: _context([_artefact("A", "SoftwareRequirement")]),
+        lambda: _context(
+            [
+                _artefact(
+                    "A",
+                    "SoftwareRequirement",
+                    payload={
+                        "statement": "The software shall do the thing.",
+                        "verification_intent": {"methods": ["test"]},
+                    },
+                )
+            ]
+        ),
         lambda: _context([_artefact("A", "SoftwareRequirement", title="")]),
     ),
     (
@@ -194,7 +205,15 @@ RULE_CASES = [
     ),
     (
         "AAC-RULE-RULE-012",
-        lambda: _context([_artefact("REQ", "SoftwareRequirement", payload={"verification_intent": "test"})]),
+        lambda: _context(
+            [
+                _artefact(
+                    "REQ",
+                    "SoftwareRequirement",
+                    payload={"verification_intent": {"methods": ["test"]}},
+                )
+            ]
+        ),
         lambda: _context([_artefact("REQ", "SoftwareRequirement")]),
     ),
     (

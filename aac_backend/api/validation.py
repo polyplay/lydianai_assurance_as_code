@@ -20,11 +20,14 @@ PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
 @router.post("/projects/{project_id}/validation/run", response_model=ApiEnvelope)
 async def validation_run(
     project_id: str,
+    payload: dict | None = None,
     current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
+    scope = payload or {"type": "project", "mode": "baseline"}
+
     async def operation(job):
-        run = await run_validation(session, project_id, current.user.user_id)
+        run = await run_validation(session, project_id, current.user.user_id, scope=scope)
         job.result_ref_json = {"resource_type": "ValidationRun", "resource_id": run.validation_run_id}
         return run
 
@@ -35,7 +38,7 @@ async def validation_run(
         submitted_by=current.user.user_id,
         operation=operation,
         arq_job_name="validation_job",
-        arq_args=(project_id, current.user.user_id),
+        arq_args=(project_id, current.user.user_id, scope),
     )
     await session.commit()
     if run is None:

@@ -1,0 +1,1619 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assurance-as-Code Console</title>
+  <style>
+    :root {
+      color: #16211d;
+      background: #f6f8f7;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f6f8f7;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid #d8dfdb;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    h3 {
+      font-size: 16px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr);
+      min-height: calc(100vh - 65px);
+    }
+
+    aside {
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow: auto;
+      border-right: 1px solid #d8dfdb;
+      background: #ffffff;
+      padding: 18px;
+    }
+
+    .workspace {
+      width: min(1240px, 100%);
+      padding: 22px 28px 36px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .band {
+      border-top: 1px solid #d8dfdb;
+      padding-top: 16px;
+    }
+
+    .stage {
+      display: none;
+    }
+
+    .stage.active {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid #d8dfdb;
+      border-radius: 6px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .rail {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .rail button {
+      text-align: left;
+      background: #ffffff;
+      color: #16211d;
+      border-color: #c2cbc6;
+      font-weight: 650;
+      padding: 10px 12px;
+    }
+
+    .rail button.active {
+      background: #126149;
+      border-color: #126149;
+      color: #ffffff;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .field-group {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .inline-control {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 132px;
+      gap: 8px;
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      width: 100%;
+      border-radius: 6px;
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    input,
+    textarea,
+    select {
+      min-height: 38px;
+      border: 1px solid #aebbb5;
+      padding: 9px 10px;
+      background: #fbfcfc;
+      color: #16211d;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      min-height: auto;
+    }
+
+    textarea {
+      min-height: 132px;
+      resize: vertical;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid #126149;
+      background: #126149;
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 9px 12px;
+    }
+
+    button.secondary {
+      background: #ffffff;
+      border-color: #8b3b32;
+      color: #8b3b32;
+    }
+
+    .status {
+      min-height: 36px;
+      padding: 9px 10px;
+      border: 1px solid #c2cbc6;
+      border-radius: 6px;
+      background: #edf3f0;
+      font-size: 14px;
+    }
+
+    .hint {
+      color: #5b6963;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #d8dfdb;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    pre {
+      max-height: 360px;
+      margin: 0;
+      overflow: auto;
+      padding: 12px;
+      border: 1px solid #c2cbc6;
+      border-radius: 6px;
+      background: #101513;
+      color: #e8efe9;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    details {
+      border: 1px solid #d8dfdb;
+      border-radius: 6px;
+      background: #ffffff;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 12px 14px;
+      font-weight: 750;
+    }
+
+    details pre {
+      border: 0;
+      border-top: 1px solid #293531;
+      border-radius: 0 0 6px 6px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid #d8dfdb;
+      border-radius: 6px;
+      padding: 12px;
+      background: #fbfcfc;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .metric span {
+      color: #5b6963;
+      font-size: 13px;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid #b7c4bd;
+      border-radius: 6px;
+      padding: 6px 8px;
+      background: #eef4f1;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .compact-field textarea {
+      min-height: 84px;
+    }
+
+    .debug-panel {
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 980px) {
+      main,
+      .row,
+      .row-3 {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid #d8dfdb;
+      }
+
+      .workspace {
+        padding: 16px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Assurance-as-Code Console</h1>
+    <div id="sessionStatus" class="status">No active session</div>
+  </header>
+
+  <main>
+    <aside class="stack">
+      <section class="stack">
+        <h2>Session</h2>
+        <label>
+          API base URL
+          <input id="baseUrl" placeholder="http://127.0.0.1:8000">
+        </label>
+        <label>
+          Username
+          <input id="username" autocomplete="username">
+        </label>
+        <label>
+          Password
+          <input id="password" type="password" autocomplete="current-password">
+        </label>
+        <button id="loginButton">Sign in</button>
+      </section>
+
+      <section class="stack band">
+        <h2>Project</h2>
+        <button id="loadProjectsButton">Load projects</button>
+        <label>
+          Active project
+          <select id="projectSelect"></select>
+        </label>
+        <button id="refreshProjectButton">Refresh project data</button>
+      </section>
+
+      <nav class="rail" aria-label="Project workflow">
+        <button class="active" data-stage-button="setup">1. Setup</button>
+        <button data-stage-button="team">2. Team</button>
+        <button data-stage-button="requirements">3. Requirements</button>
+        <button data-stage-button="vmodel">4. V-model Artefacts</button>
+        <button data-stage-button="trace">5. Traceability</button>
+        <button data-stage-button="review">6. Review And Release</button>
+        <button data-stage-button="validate">7. Validation</button>
+        <button data-stage-button="baseline">8. Baseline</button>
+      </nav>
+    </aside>
+
+    <div class="workspace stack">
+      <section class="panel">
+        <div class="row">
+          <div>
+            <h2 id="projectTitle">No project selected</h2>
+            <div id="projectMeta" class="hint">Create or load a project to start the ASPICE V-model flow.</div>
+          </div>
+          <div id="workflowStatus" class="status">Start with project setup.</div>
+        </div>
+      </section>
+
+      <section id="stage-setup" class="stage active">
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Project Setup</h2>
+              <p class="hint">Admin creates the project and chooses the highest ASIL classification. The profile drives mandatory artefacts and validation expectations.</p>
+            </div>
+          </div>
+          <div class="row-3">
+            <label>
+              Project key
+              <input id="projectKey" placeholder="PROJ_SW_01">
+            </label>
+            <label>
+              Project name
+              <input id="projectName" placeholder="Software item assurance">
+            </label>
+            <label>
+              Highest ASIL
+              <select id="projectAsil">
+                <option value="ASIL_D">ASIL D</option>
+                <option value="ASIL_C">ASIL C</option>
+                <option value="ASIL_B">ASIL B</option>
+                <option value="ASIL_A">ASIL A</option>
+                <option value="QM">QM</option>
+              </select>
+            </label>
+          </div>
+          <div class="row-3">
+            <label>
+              ASPICE capability target
+              <select id="aspiceDefaultCapability">
+                <option value="3">CL3</option>
+                <option value="2">CL2</option>
+                <option value="1">CL1</option>
+              </select>
+            </label>
+            <label>
+              UNECE R155
+              <select id="r155Applicable">
+                <option value="false">Not applicable</option>
+                <option value="true">Applicable</option>
+              </select>
+            </label>
+            <label>
+              UNECE R156
+              <select id="r156Applicable">
+                <option value="false">Not applicable</option>
+                <option value="true">Applicable</option>
+              </select>
+            </label>
+          </div>
+          <label class="compact-field">
+            ASPICE process capability overrides JSON
+            <textarea id="aspiceProcessOverrides" spellcheck="false">{
+  "SWE.1": 2,
+  "SWE.2": 2,
+  "SWE.3": 2,
+  "SWE.4": 2,
+  "SWE.5": 2,
+  "SWE.6": 2
+}</textarea>
+          </label>
+          <label>
+            Test scope
+            <input id="testScope" value="unit,integration,software_qualification">
+          </label>
+          <label class="compact-field">
+            Project description
+            <textarea id="projectDescription" placeholder="Scope, item boundary, and initial assumptions"></textarea>
+          </label>
+          <button id="createProjectButton">Create project</button>
+        </div>
+
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <h3>Profile Applicability</h3>
+              <p class="hint">The active profile controls which artefacts are visible, optional, and mandatory for the selected ASIL and ASPICE capability target.</p>
+            </div>
+          </div>
+          <button id="evaluateProfileButton">Evaluate active profile</button>
+          <div id="profileSummary" class="summary-grid">
+            <div class="metric"><strong>0</strong><span>Visible artefacts</span></div>
+            <div class="metric"><strong>0</strong><span>Mandatory artefacts</span></div>
+            <div class="metric"><strong>0</strong><span>Optional artefacts</span></div>
+            <div class="metric"><strong>0</strong><span>Enabled rules</span></div>
+          </div>
+          <div>
+            <h3>Mandatory Artefacts</h3>
+            <div id="mandatoryArtefactChips" class="chip-list">
+              <span class="hint">Create or load a project to evaluate the active profile.</span>
+            </div>
+          </div>
+          <details>
+            <summary>Profile JSON</summary>
+            <pre id="profileOutput">{}</pre>
+          </details>
+        </div>
+      </section>
+
+      <section id="stage-team" class="stage">
+        <div class="panel">
+          <h2>Team And Roles</h2>
+          <p class="hint">Admin creates users and assigns project roles. Project lead owns baselines, quality engineer releases artefacts, users create and update artefacts.</p>
+          <div class="row-3">
+            <label>
+              Username
+              <input id="newUsername" placeholder="engineer1">
+            </label>
+            <label>
+              Display name
+              <input id="newDisplayName" placeholder="Engineer One">
+            </label>
+            <label>
+              Email
+              <input id="newEmail" placeholder="engineer1@example.com">
+            </label>
+          </div>
+          <div class="row-3">
+            <label>
+              Temporary password
+              <input id="newPassword" type="password" placeholder="change-me">
+            </label>
+            <label>
+              Project role
+              <select id="newProjectRole">
+                <option value="user">User</option>
+                <option value="quality_engineer">Quality Engineer</option>
+                <option value="project_lead">Project Lead</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            <button id="createUserAndAssignButton">Create and add to project</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Existing Users</h3>
+          <div class="row-3">
+            <button id="loadUsersButton">Load users</button>
+            <label>
+              User
+              <select id="existingUserSelect"></select>
+            </label>
+            <label>
+              Role
+              <select id="existingUserRole">
+                <option value="user">User</option>
+                <option value="quality_engineer">Quality Engineer</option>
+                <option value="project_lead">Project Lead</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+          </div>
+          <button id="assignExistingUserButton">Add selected user to project</button>
+          <h3>Project Members</h3>
+          <button id="loadMembersButton">Load members</button>
+          <div id="membersTable"></div>
+        </div>
+      </section>
+
+      <section id="stage-requirements" class="stage">
+        <div class="panel">
+          <h2>Requirements</h2>
+          <p class="hint">Create requirements directly or upload controlled requirement source documents. Uploaded PDF, DOC, and DOCX files are stored as evidence references.</p>
+          <div class="row-3">
+            <label>
+              Requirement type
+              <select id="requirementType">
+                <option value="SoftwareRequirement">Software Requirement</option>
+                <option value="SoftwareSafetyRequirement">Software Safety Requirement</option>
+                <option value="DerivedSoftwareRequirement">Derived Software Requirement</option>
+              </select>
+            </label>
+            <div class="field-group">
+              <span>Source object ID</span>
+              <div class="inline-control">
+                <input id="requirementSourceId" placeholder="REQ_SW_001">
+                <button id="generateRequirementIdButton" type="button" class="secondary">Generate</button>
+              </div>
+            </div>
+            <label>
+              ASIL
+              <select id="requirementAsil">
+                <option value="ASIL_D">ASIL D</option>
+                <option value="ASIL_C">ASIL C</option>
+                <option value="ASIL_B">ASIL B</option>
+                <option value="ASIL_A">ASIL A</option>
+                <option value="QM">QM</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            Requirement title
+            <input id="requirementTitle" placeholder="Detect loss of signal">
+          </label>
+          <label>
+            Requirement statement
+            <textarea id="requirementStatement" placeholder="The software shall..."></textarea>
+          </label>
+          <div class="row">
+            <label>
+              Verification method
+              <select id="requirementVerificationMethod">
+                <option value="test">Test</option>
+                <option value="analysis">Analysis</option>
+                <option value="inspection">Inspection</option>
+                <option value="review">Review</option>
+              </select>
+            </label>
+            <button id="createRequirementButton">Create requirement</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Upload Requirement Source</h3>
+          <input id="requirementFile" type="file" accept=".pdf,.doc,.docx,application/pdf">
+          <button id="uploadRequirementFileButton">Upload requirement document</button>
+        </div>
+      </section>
+
+      <section id="stage-vmodel" class="stage">
+        <div class="panel">
+          <h2>ASPICE V-model Artefacts</h2>
+          <p class="hint">Select a stage, create the expected artefact, then link it in traceability. Payload defaults are implementation starters and can be edited before creation.</p>
+          <div class="row-3">
+            <label>
+              V-model stage
+              <select id="vmodelStageSelect"></select>
+            </label>
+            <label>
+              Artefact type
+              <select id="artefactTypeSelect"></select>
+            </label>
+            <label>
+              Advanced catalogue
+              <span><input id="includeOptionalArtefacts" type="checkbox"> Include optional artefacts</span>
+            </label>
+            <div class="field-group">
+              <span>Source object ID</span>
+              <div class="inline-control">
+                <input id="artefactSourceId" placeholder="ARCH_001">
+                <button id="generateArtefactIdButton" type="button" class="secondary">Generate</button>
+              </div>
+            </div>
+          </div>
+          <label>
+            Artefact title
+            <input id="artefactTitle" placeholder="Software architecture">
+          </label>
+          <label>
+            Payload JSON
+            <textarea id="artefactPayload" spellcheck="false">{}</textarea>
+          </label>
+          <button id="createArtefactButton">Create artefact</button>
+        </div>
+
+        <div class="panel">
+          <h3>Artefact Inventory</h3>
+          <button id="loadArtefactsButton">Load artefacts</button>
+          <div id="artefactsTable"></div>
+        </div>
+      </section>
+
+      <section id="stage-trace" class="stage">
+        <div class="panel">
+          <h2>Traceability</h2>
+          <p class="hint">Trace requirements through architecture, implementation, verification, and evidence. Create relationships as artefacts are added.</p>
+          <div class="row-3">
+            <label>
+              Source artefact
+              <select id="relationshipSource"></select>
+            </label>
+            <label>
+              Relationship type
+              <select id="relationshipType">
+                <option value="allocates_to">allocates_to</option>
+                <option value="satisfies">satisfies</option>
+                <option value="derives_from">derives_from</option>
+                <option value="implements">implements</option>
+                <option value="verifies">verifies</option>
+                <option value="references">references</option>
+                <option value="depends_on">depends_on</option>
+                <option value="interacts_via">interacts_via</option>
+                <option value="protects">protects</option>
+              </select>
+            </label>
+            <label>
+              Target artefact
+              <select id="relationshipTarget"></select>
+            </label>
+          </div>
+          <button id="createRelationshipButton">Create relationship</button>
+        </div>
+
+        <div class="panel">
+          <h3>Trace Artefact</h3>
+          <div class="row">
+            <label>
+              Artefact
+              <select id="traceArtefactSelect"></select>
+            </label>
+            <button id="traceButton">Run trace</button>
+          </div>
+          <pre id="traceOutput">{}</pre>
+        </div>
+      </section>
+
+      <section id="stage-review" class="stage">
+        <div class="panel">
+          <h2>Review And Release</h2>
+          <p class="hint">Move artefacts through draft, review, approval, and release. Project lead approves; quality engineer releases.</p>
+          <div class="row">
+            <label>
+              Artefact
+              <select id="lifecycleArtefactSelect"></select>
+            </label>
+            <label>
+              Action
+              <select id="lifecycleAction">
+                <option value="submit-for-review">Submit for review</option>
+                <option value="mark-reviewed">Mark reviewed</option>
+                <option value="approve">Approve</option>
+                <option value="release">Release</option>
+                <option value="reject">Reject to draft</option>
+              </select>
+            </label>
+          </div>
+          <button id="applyLifecycleButton">Apply lifecycle action</button>
+        </div>
+      </section>
+
+      <section id="stage-validate" class="stage">
+        <div class="panel">
+          <h2>Validation</h2>
+          <p class="hint">Run the rule engine and inspect open issues before baseline creation or release gate execution.</p>
+          <div class="row-3">
+            <button id="runValidationButton">Run validation</button>
+            <button id="loadIssuesButton">Load issues</button>
+            <button id="generateValidationReportButton">Generate validation report</button>
+          </div>
+          <div id="issuesTable"></div>
+        </div>
+      </section>
+
+      <section id="stage-baseline" class="stage">
+        <div class="panel">
+          <h2>Baseline And Release Gate</h2>
+          <p class="hint">Project lead creates baselines. Quality engineer runs release gates and releases approved artefacts or baselines.</p>
+          <div class="row">
+            <label>
+              Baseline name
+              <input id="baselineName" value="Manual baseline">
+            </label>
+            <button id="createBaselineButton">Create baseline</button>
+          </div>
+          <div class="row">
+            <label>
+              Baseline ID
+              <input id="releaseGateBaselineId" placeholder="BASE_...">
+            </label>
+            <button id="releaseGateButton">Run release gate</button>
+          </div>
+          <button id="loadBaselinesButton">Load baselines</button>
+          <div id="baselinesTable"></div>
+        </div>
+      </section>
+
+      <details id="resultDetails" class="debug-panel">
+        <summary>API Result</summary>
+        <pre id="output">{}</pre>
+      </details>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      token: localStorage.getItem("aac_token") || "",
+      username: localStorage.getItem("aac_username") || "",
+      artefacts: [],
+      projects: [],
+      users: [],
+      config: null,
+      profileEvaluation: null,
+    };
+
+    const profiles = {
+      ASIL_D_DEFAULT: "ASIL D",
+      ASIL_C_DEFAULT: "ASIL C",
+      ASIL_B_DEFAULT: "ASIL B",
+      ASIL_A_DEFAULT: "ASIL A",
+      QM_DEFAULT: "QM",
+    };
+
+    const asilRanks = { QM: 0, ASIL_A: 1, ASIL_B: 2, ASIL_C: 3, ASIL_D: 4 };
+    const asilDisplayOrder = ["ASIL_D", "ASIL_C", "ASIL_B", "ASIL_A", "QM"];
+    const asilLabels = {
+      QM: "QM",
+      ASIL_A: "ASIL A",
+      ASIL_B: "ASIL B",
+      ASIL_C: "ASIL C",
+      ASIL_D: "ASIL D",
+    };
+
+    const sourceIdPrefixes = {
+      SoftwareRequirement: "REQ_SW",
+      SoftwareSafetyRequirement: "SSR",
+      DerivedSoftwareRequirement: "DSR",
+      SoftwareArchitecture: "ARCH",
+      SoftwareComponent: "COMP",
+      InterfaceContract: "IF",
+      AssumptionGuaranteeContract: "AG",
+      Safeguard: "SAFE",
+      SoftwareUnitDesign: "SUD",
+      SoftwareUnit: "UNIT",
+      ImplementationItem: "IMPL",
+      BuildConfiguration: "BUILD",
+      TestPlan: "TP",
+      TestSpecification: "TS",
+      TestCase: "TC",
+      TestProcedure: "TPROC",
+      TestEnvironment: "TENV",
+      TestResult: "TRES",
+      CoverageResult: "COV",
+      RequirementsCoverageRecord: "RCOV",
+      TestCompletionReport: "TCR",
+      StaticAnalysisResult: "SA",
+      CodingGuidelineComplianceRecord: "CGC",
+      ChangeRequest: "CHG",
+      ChangeSet: "CHSET",
+      DefectRecord: "DEF",
+      ProcessComplianceRecord: "PCR",
+      ASPICEScopeDecision: "ASPICE",
+      ThreatAnalysisRiskAssessment: "TARA",
+      CybersecurityRequirement: "CSR",
+      SoftwareVersionRecord: "SWVER",
+      UpdateCampaign: "UPD",
+      SoftwareBillOfMaterials: "SBOM",
+    };
+
+    const vmodelStages = [
+      {
+        id: "system-software-requirements",
+        label: "Requirements and allocation",
+        types: ["SoftwareRequirement", "SoftwareSafetyRequirement", "DerivedSoftwareRequirement"],
+      },
+      {
+        id: "architecture",
+        label: "Software architecture",
+        types: ["SoftwareArchitecture", "SoftwareComponent", "InterfaceContract", "AssumptionGuaranteeContract", "Safeguard", "FreedomFromInterferenceArgument", "ASILDecompositionArgument"],
+      },
+      {
+        id: "unit-implementation",
+        label: "Unit design and implementation",
+        types: ["SoftwareUnitDesign", "SoftwareUnit", "ImplementationItem", "BuildConfiguration"],
+      },
+      {
+        id: "verification",
+        label: "Verification and test",
+        types: ["TestPlan", "TestSpecification", "TestCase", "TestProcedure", "TestEnvironment", "TestResult", "CoverageResult", "RequirementsCoverageRecord", "TestCompletionReport", "TestRiskAssessment"],
+      },
+      {
+        id: "quality-change",
+        label: "Quality, review, and change",
+        types: ["RequirementReviewRecord", "ArchitectureReviewRecord", "ImplementationReviewRecord", "StaticAnalysisResult", "CodingGuidelineComplianceRecord", "ChangeRequest", "ChangeSet", "DefectRecord", "ProcessComplianceRecord", "ASPICEScopeDecision"],
+      },
+      {
+        id: "cybersecurity-update",
+        label: "Cybersecurity and software update",
+        types: ["ThreatAnalysisRiskAssessment", "CybersecurityRequirement", "CybersecurityManagementEvidence", "CybersecurityInterfaceEvidence", "SoftwareUpdateManagementEvidence", "SoftwareVersionRecord", "UpdateCampaign", "UpdateIntegrityEvidence", "SoftwareBillOfMaterials"],
+      },
+    ];
+
+    const payloadTemplates = {
+      SoftwareRequirement: { statement: "The software shall...", verification_intent: { methods: ["test"] } },
+      SoftwareSafetyRequirement: { statement: "The software shall...", asil_level: "ASIL_D", safety_relevant: true, verification_intent: { methods: ["test"] } },
+      DerivedSoftwareRequirement: { statement: "The software shall...", derived_from: ["REQ_SW_001"], verification_intent: { methods: ["analysis"] } },
+      SoftwareArchitecture: { architecture_scope: "Software item", components: [], interfaces: [], safety_mechanisms: [], allocation_rationale: "Draft allocation rationale" },
+      SoftwareComponent: { classification: "ASIL_D", responsibilities: ["Responsibility"] },
+      InterfaceContract: { source_component: "COMP_A", destination_component: "COMP_B", interaction_kind: "signal", payload_definition: [{ name: "value", type: "uint16", allowed_range: "0..65535" }] },
+      AssumptionGuaranteeContract: { assumptions: [{ text: "Assumption" }], guarantees: [{ text: "Guarantee", satisfies_refs: ["REQ_SW_001"] }] },
+      Safeguard: { safeguard_type: "runtime_monitor", allocated_component: "COMP_A" },
+      SoftwareUnitDesign: { software_unit: "UNIT_001", design_description: "Design description" },
+      SoftwareUnit: { parent_component: "COMP_A", responsibilities: ["Responsibility"] },
+      ImplementationItem: { repo_path: "src/module.py", language: "Python" },
+      BuildConfiguration: { build_id: "BUILD_001", compiler_toolchain: "python-3.12" },
+      TestSpecification: { objective: "Verify requirement", test_basis: ["REQ_SW_001"], verification_method: "test" },
+      TestCase: { test_specification: "TS_001", expected_results: ["pass"], pass_fail_criteria: "Observed result matches expected result" },
+      TestProcedure: { test_cases: ["TC_001"], test_environment: "ENV_001" },
+      TestEnvironment: { environment_name: "Local test environment" },
+      TestResult: { test_case: "TC_001", test_environment: "ENV_001", verdict: "pass" },
+      CoverageResult: { coverage_type: "requirements", scope: "project", target: 100, achieved: 0, gaps: [] },
+      RequirementReviewRecord: { reviewed_artefacts: ["REQ_SW_001"], review_method: "peer_review", reviewers: [], independence_level: "independent", result: "pass" },
+      ArchitectureReviewRecord: { reviewed_artefacts: ["ARCH_001"], reviewers: [], independence_level: "independent", result: "pass" },
+      ImplementationReviewRecord: { reviewed_items: ["IMPL_001"], reviewers: [], independence_level: "independent", result: "pass" },
+      StaticAnalysisResult: { tool: "ruff", summary: "No findings" },
+      CodingGuidelineComplianceRecord: { guideline: "Project coding guideline", compliance_status: "compliant" },
+      ChangeRequest: { change_id: "CHG_001", summary: "Change summary", status: "draft" },
+      DefectRecord: { defect_id: "DEF_001", summary: "Defect summary", status: "open" },
+      FreedomFromInterferenceArgument: { scope: "Mixed criticality interaction", interference_channels: [], prevention_mechanisms: [], verification_refs: [], argument_summary: "Draft FFI argument" },
+      ASILDecompositionArgument: { decomposed_requirement: "REQ_001", decomposition_rationale: "Draft decomposition rationale", independence_argument: "Draft independence argument", allocated_elements: [], verification_refs: [] },
+      ProcessComplianceRecord: { process_ref: "SWE.1", scope: "Project", compliance_status: "planned", deviations: [], evidence_refs: [] },
+      ASPICEScopeDecision: { process_id: "SWE.1", process_name: "Software Requirements Analysis", scope_status: "in_scope", rationale: "Software project process", affected_work_products: [], evidence_refs: [] },
+      ThreatAnalysisRiskAssessment: { scope: "Software item", assets: [], threat_scenarios: [], risk_ratings: [], treatment_decisions: [], cybersecurity_goals: [], evidence_refs: [] },
+      CybersecurityRequirement: { statement: "The software shall...", source_tara_refs: ["TARA_001"], security_relevant: true, allocated_to: [], verification_intent: { methods: ["test"] } },
+      CybersecurityManagementEvidence: { csms_scope: "Project", process_refs: [], risk_treatment_refs: [], verification_refs: [], monitoring_refs: [], incident_response_refs: [], evidence_refs: [] },
+      CybersecurityInterfaceEvidence: { interface_id: "IF_001", threat_refs: [], risk_rating: "medium", mitigations: [], verification_refs: [], residual_risk: "accepted", evidence_refs: [] },
+      SoftwareUpdateManagementEvidence: { sums_scope: "Project", process_refs: [], update_package_refs: [], approval_refs: [], integrity_refs: [], version_refs: [], evidence_refs: [] },
+      SoftwareVersionRecord: { software_item: "Software item", version_identifier: "0.1.0", baseline_ref: "BASE_001", build_configuration_ref: "BUILD_001", compatible_vehicle_refs: [], release_status: "draft", evidence_refs: [] },
+      UpdateCampaign: { campaign_id: "UPD_001", scope: "Project", software_versions: [], delivery_method: "service", authorization_refs: [], rollback_plan: "Draft rollback plan", monitoring_plan: "Draft monitoring plan", evidence_refs: [] },
+      UpdateIntegrityEvidence: { update_package_ref: "PKG_001", signature_ref: "SIG_001", hashes: [], verification_method: "signature_check", verification_result: "pass", evidence_refs: [] },
+      SoftwareBillOfMaterials: { software_item: "Software item", version_ref: "0.1.0", components: [], suppliers: [], licenses: [], vulnerability_refs: [], evidence_refs: [] },
+      TestRiskAssessment: { scope: "Project", product_risks: [], test_risk_level: "medium", mitigations: [], linked_test_plan: "TP_001", evidence_refs: [] },
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const baseUrl = () => (byId("baseUrl").value || window.location.origin).replace(/\/$/, "");
+    const selectedProjectId = () => byId("projectSelect").value;
+
+    byId("baseUrl").value = localStorage.getItem("aac_base_url") || window.location.origin;
+    initialiseVModelSelectors();
+    renderProfileSummary({});
+    applyProjectAsilConstraints();
+    generateRequirementSourceId();
+    updateSessionStatus();
+
+    async function request(method, path, body) {
+      const headers = { Accept: "application/json" };
+      if (body !== undefined) {
+        headers["Content-Type"] = "application/json";
+      }
+      if (state.token) {
+        headers.Authorization = `Bearer ${state.token}`;
+      }
+      const response = await fetch(`${baseUrl()}${path}`, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+      return parseResponse(response);
+    }
+
+    async function requestForm(method, path, formData) {
+      const headers = { Accept: "application/json" };
+      if (state.token) {
+        headers.Authorization = `Bearer ${state.token}`;
+      }
+      const response = await fetch(`${baseUrl()}${path}`, { method, headers, body: formData });
+      return parseResponse(response);
+    }
+
+    async function parseResponse(response) {
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearSession("Session expired or sign-in failed");
+        }
+        throw new Error(`HTTP ${response.status}: ${JSON.stringify(data)}`);
+      }
+      return data;
+    }
+
+    function show(data) {
+      byId("output").textContent = JSON.stringify(data, null, 2);
+      if (data?.error) {
+        byId("resultDetails").open = true;
+        byId("workflowStatus").textContent = data.error;
+      }
+    }
+
+    function updateSessionStatus() {
+      byId("sessionStatus").textContent = state.token
+        ? `Signed in as ${state.username || "user"}`
+        : "No active session";
+    }
+
+    function clearSession(message) {
+      state.token = "";
+      state.username = "";
+      localStorage.removeItem("aac_token");
+      localStorage.removeItem("aac_username");
+      byId("sessionStatus").textContent = message || "No active session";
+    }
+
+    async function run(action) {
+      try {
+        localStorage.setItem("aac_base_url", baseUrl());
+        const result = await action();
+        show(result);
+        return result;
+      } catch (error) {
+        show({ error: error.message });
+        return null;
+      }
+    }
+
+    function requireProject() {
+      const projectId = selectedProjectId();
+      if (!projectId) {
+        throw new Error("Select a project first");
+      }
+      return projectId;
+    }
+
+    function option(value, label) {
+      const item = document.createElement("option");
+      item.value = value;
+      item.textContent = label;
+      return item;
+    }
+
+    function projectAsilLevel() {
+      return state.config?.assurance_configuration?.asil_level || byId("projectAsil").value || "ASIL_D";
+    }
+
+    function applyProjectAsilConstraints() {
+      const maxAsil = projectAsilLevel();
+      setAsilOptions("requirementAsil", maxAsil);
+      updateRequirementAsilHelp(maxAsil);
+    }
+
+    function setAsilOptions(selectId, maxAsil) {
+      const select = byId(selectId);
+      const current = select.value;
+      const allowed = asilDisplayOrder.filter((level) => asilRanks[level] <= asilRanks[maxAsil]);
+      select.innerHTML = "";
+      for (const level of allowed) {
+        select.append(option(level, asilLabels[level]));
+      }
+      select.value = allowed.includes(current) ? current : maxAsil;
+    }
+
+    function updateRequirementAsilHelp(maxAsil) {
+      byId("requirementAsil").title = `Maximum allowed by project: ${asilLabels[maxAsil] || maxAsil}`;
+    }
+
+    function assertAsilWithinProject(asilLevel) {
+      const maxAsil = projectAsilLevel();
+      if (asilRanks[asilLevel] > asilRanks[maxAsil]) {
+        throw new Error(`ASIL ${asilLabels[asilLevel]} exceeds project maximum ${asilLabels[maxAsil]}`);
+      }
+    }
+
+    function capAsilValue(value) {
+      const maxAsil = projectAsilLevel();
+      if (!value || asilRanks[value] === undefined) {
+        return value;
+      }
+      return asilRanks[value] > asilRanks[maxAsil] ? maxAsil : value;
+    }
+
+    function capPayloadAsilFields(payload) {
+      const next = { ...payload };
+      if (next.asil_level) {
+        next.asil_level = capAsilValue(next.asil_level);
+      }
+      if (next.classification && asilRanks[next.classification] !== undefined) {
+        next.classification = capAsilValue(next.classification);
+      }
+      return next;
+    }
+
+    function sourcePrefixForType(type) {
+      if (sourceIdPrefixes[type]) {
+        return sourceIdPrefixes[type];
+      }
+      const acronym = (type.match(/[A-Z]/g) || []).join("");
+      return acronym || "ART";
+    }
+
+    function generatedSourceObjectId(type) {
+      const prefix = sourcePrefixForType(type);
+      const used = new Set(state.artefacts.map((artefact) => artefact.source_object_id));
+      let candidate = "";
+      do {
+        candidate = `${prefix}_${randomToken(8)}`;
+      } while (used.has(candidate));
+      return candidate;
+    }
+
+    function randomToken(length) {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const bytes = new Uint8Array(length);
+      if (window.crypto?.getRandomValues) {
+        window.crypto.getRandomValues(bytes);
+      } else {
+        for (let index = 0; index < length; index += 1) {
+          bytes[index] = Math.floor(Math.random() * 256);
+        }
+      }
+      return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+    }
+
+    function setGeneratedSourceId(inputId, type) {
+      const input = byId(inputId);
+      input.value = generatedSourceObjectId(type);
+      input.dataset.generated = "true";
+    }
+
+    function generateRequirementSourceId() {
+      setGeneratedSourceId("requirementSourceId", byId("requirementType").value);
+    }
+
+    function generateArtefactSourceId() {
+      setGeneratedSourceId("artefactSourceId", byId("artefactTypeSelect").value || "Artefact");
+    }
+
+    function setStage(stageId) {
+      document.querySelectorAll("[data-stage-button]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.stageButton === stageId);
+      });
+      document.querySelectorAll(".stage").forEach((stage) => {
+        stage.classList.toggle("active", stage.id === `stage-${stageId}`);
+      });
+      byId("workflowStatus").textContent = `Active step: ${stageId.replaceAll("-", " ")}`;
+    }
+
+    function initialiseVModelSelectors() {
+      const stageSelect = byId("vmodelStageSelect");
+      stageSelect.innerHTML = "";
+      for (const stage of vmodelStages) {
+        stageSelect.append(option(stage.id, stage.label));
+      }
+      updateArtefactTypeOptions();
+    }
+
+    function updateArtefactTypeOptions() {
+      const selectedStage = vmodelStages.find((stage) => stage.id === byId("vmodelStageSelect").value) || vmodelStages[0];
+      const typeSelect = byId("artefactTypeSelect");
+      typeSelect.innerHTML = "";
+      const types = applicableTypesForStage(selectedStage);
+      for (const type of types) {
+        typeSelect.append(option(type, type));
+      }
+      if (!types.length) {
+        typeSelect.append(option("", "No applicable artefacts for this stage"));
+      }
+      updatePayloadTemplate();
+    }
+
+    function applicableTypesForStage(stage) {
+      const evaluation = state.profileEvaluation || {};
+      const visible = new Set(evaluation.visible_artefact_types || []);
+      const optional = new Set(evaluation.optional_artefact_types || []);
+      if (!visible.size && !optional.size) {
+        return stage.types;
+      }
+      const includeOptional = byId("includeOptionalArtefacts").checked;
+      return stage.types.filter((type) => visible.has(type) || (includeOptional && optional.has(type)));
+    }
+
+    function updatePayloadTemplate() {
+      const type = byId("artefactTypeSelect").value;
+      if (!type) {
+        byId("artefactPayload").value = "{}";
+        return;
+      }
+      byId("artefactPayload").value = JSON.stringify(capPayloadAsilFields(payloadTemplates[type] || {}), null, 2);
+      if (!byId("artefactTitle").value) {
+        byId("artefactTitle").value = type;
+      }
+      if (!byId("artefactSourceId").value || byId("artefactSourceId").dataset.generated === "true") {
+        generateArtefactSourceId();
+      }
+    }
+
+    function renderProject(project) {
+      byId("projectTitle").textContent = project ? `${project.project_key}: ${project.name}` : "No project selected";
+      const assurance = state.config?.assurance_configuration;
+      const assuranceText = assurance
+        ? `${assurance.aspice_model || "ASPICE_PAM_4_0"} CL${assurance.aspice_default_capability_level}; ${assurance.asil_level}; R155 ${assurance.r155_applicable ? "on" : "off"}; R156 ${assurance.r156_applicable ? "on" : "off"}`
+        : `Profile ${profiles[project?.active_profile_id] || project?.active_profile_id}`;
+      byId("projectMeta").textContent = project
+        ? `${assuranceText}; status ${project.status}`
+        : "Create or load a project to start the ASPICE V-model flow.";
+    }
+
+    function populateArtefactSelectors() {
+      const selectors = ["relationshipSource", "relationshipTarget", "traceArtefactSelect", "lifecycleArtefactSelect"];
+      for (const id of selectors) {
+        const select = byId(id);
+        select.innerHTML = "";
+        for (const artefact of state.artefacts) {
+          select.append(option(artefact.artefact_id, `${artefact.source_object_id} | ${artefact.artefact_type} | ${artefact.status}`));
+        }
+      }
+    }
+
+    function renderArtefacts(artefacts) {
+      state.artefacts = artefacts || [];
+      populateArtefactSelectors();
+      if (byId("requirementSourceId").dataset.generated === "true") {
+        generateRequirementSourceId();
+      }
+      if (byId("artefactSourceId").dataset.generated === "true") {
+        generateArtefactSourceId();
+      }
+      byId("artefactsTable").innerHTML = table(
+        ["Source ID", "Type", "Title", "Status", "Revision"],
+        state.artefacts.map((item) => [
+          item.source_object_id,
+          item.artefact_type,
+          item.title,
+          item.status,
+          item.current_revision_id || "",
+        ]),
+      );
+    }
+
+    function table(headers, rows) {
+      if (!rows.length) {
+        return '<div class="hint">No records loaded.</div>';
+      }
+      return `
+        <table>
+          <thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead>
+          <tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(String(cell ?? ""))}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    document.querySelectorAll("[data-stage-button]").forEach((button) => {
+      button.addEventListener("click", () => setStage(button.dataset.stageButton));
+    });
+
+    byId("vmodelStageSelect").addEventListener("change", updateArtefactTypeOptions);
+    byId("artefactTypeSelect").addEventListener("change", updatePayloadTemplate);
+    byId("includeOptionalArtefacts").addEventListener("change", updateArtefactTypeOptions);
+    byId("projectAsil").addEventListener("change", () => {
+      updateDefaultCapabilityForAsil();
+      applyProjectAsilConstraints();
+    });
+    byId("requirementType").addEventListener("change", () => {
+      applyProjectAsilConstraints();
+      if (!byId("requirementSourceId").value || byId("requirementSourceId").dataset.generated === "true") {
+        generateRequirementSourceId();
+      }
+    });
+    byId("generateRequirementIdButton").addEventListener("click", generateRequirementSourceId);
+    byId("generateArtefactIdButton").addEventListener("click", generateArtefactSourceId);
+    byId("requirementSourceId").addEventListener("input", () => {
+      byId("requirementSourceId").dataset.generated = "false";
+    });
+    byId("artefactSourceId").addEventListener("input", () => {
+      byId("artefactSourceId").dataset.generated = "false";
+    });
+
+    byId("loginButton").addEventListener("click", () => run(async () => {
+      clearSession("Signing in...");
+      const username = byId("username").value.trim();
+      const response = await request("POST", "/api/v1/auth/login", {
+        username,
+        password: byId("password").value,
+      });
+      state.token = response.data.access_token;
+      state.username = username;
+      localStorage.setItem("aac_token", state.token);
+      localStorage.setItem("aac_username", state.username);
+      updateSessionStatus();
+      return response;
+    }));
+
+    byId("loadProjectsButton").addEventListener("click", loadProjects);
+    byId("refreshProjectButton").addEventListener("click", () => run(refreshProjectData));
+
+    async function loadProjects() {
+      return run(async () => {
+        const response = await request("GET", "/api/v1/projects");
+        state.projects = response.data || [];
+        const select = byId("projectSelect");
+        select.innerHTML = "";
+        for (const project of state.projects) {
+          select.append(option(project.project_id, `${project.project_key} - ${project.name}`));
+        }
+        renderProject(state.projects[0]);
+        if (state.projects.length) {
+          await refreshProjectData();
+        }
+        return response;
+      });
+    }
+
+    byId("projectSelect").addEventListener("change", () => {
+      renderProject(state.projects.find((project) => project.project_id === selectedProjectId()));
+      run(refreshProjectData);
+    });
+
+    async function refreshProjectData() {
+      const projectId = requireProject();
+      const config = await request("GET", `/api/v1/projects/${projectId}/config`);
+      state.config = config.data;
+      await evaluateActiveProfile(projectId);
+      applyProjectAsilConstraints();
+      const artefacts = await request("GET", `/api/v1/projects/${projectId}/artefacts`);
+      renderArtefacts(artefacts.data || []);
+      await loadMembers();
+      renderProject(state.projects.find((project) => project.project_id === projectId));
+      return { status: "refreshed", artefact_count: state.artefacts.length };
+    }
+
+    byId("createProjectButton").addEventListener("click", () => run(async () => {
+      const asil = byId("projectAsil").value;
+      const response = await request("POST", "/api/v1/projects", {
+        project_key: byId("projectKey").value,
+        name: byId("projectName").value,
+        description: byId("projectDescription").value,
+        active_profile_id: `${asil}_DEFAULT`,
+        assurance_configuration: {
+          asil_level: asil,
+          aspice_model: "ASPICE_PAM_4_0",
+          aspice_default_capability_level: Number(byId("aspiceDefaultCapability").value),
+          aspice_process_overrides: parseJsonObject(byId("aspiceProcessOverrides").value),
+          r155_applicable: byId("r155Applicable").value === "true",
+          r156_applicable: byId("r156Applicable").value === "true",
+          test_scope: byId("testScope").value.split(",").map((item) => item.trim()).filter(Boolean),
+          visibility_policy: "relevant_first",
+        },
+      });
+      await loadProjects();
+      byId("projectSelect").value = response.data.project_id;
+      renderProject(response.data);
+      await refreshProjectData();
+      setStage("team");
+      return response;
+    }));
+
+    byId("evaluateProfileButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      return evaluateActiveProfile(projectId);
+    }));
+
+    async function evaluateActiveProfile(projectId) {
+      const project = state.projects.find((item) => item.project_id === projectId) || await request("GET", `/api/v1/projects/${projectId}`);
+      const profileId = project.data ? project.data.active_profile_id : project.active_profile_id;
+      if (!profileId) {
+        return { data: {} };
+      }
+      const response = await request("POST", `/api/v1/projects/${projectId}/profiles/${profileId}/evaluate`, {});
+      state.profileEvaluation = response.data || {};
+      byId("profileOutput").textContent = JSON.stringify(state.profileEvaluation, null, 2);
+      renderProfileSummary(state.profileEvaluation);
+      updateArtefactTypeOptions();
+      return response;
+    }
+
+    function renderProfileSummary(evaluation) {
+      const visible = evaluation.visible_artefact_types || [];
+      const mandatory = evaluation.mandatory_artefact_types || [];
+      const optional = evaluation.optional_artefact_types || [];
+      const enabledRules = evaluation.enabled_rules || [];
+      byId("profileSummary").innerHTML = [
+        metricCard(visible.length, "Visible artefacts"),
+        metricCard(mandatory.length, "Mandatory artefacts"),
+        metricCard(optional.length, "Optional artefacts"),
+        metricCard(enabledRules.length, "Enabled rules"),
+      ].join("");
+
+      const missing = new Set(evaluation.missing_mandatory_artefact_types || []);
+      const chips = mandatory.slice(0, 24).map((type) => {
+        const suffix = missing.has(type) ? " missing" : "";
+        return `<span class="chip">${escapeHtml(type)}${suffix}</span>`;
+      });
+      if (mandatory.length > 24) {
+        chips.push(`<span class="chip">+${mandatory.length - 24} more</span>`);
+      }
+      byId("mandatoryArtefactChips").innerHTML = chips.length
+        ? chips.join("")
+        : '<span class="hint">Create or load a project to evaluate the active profile.</span>';
+    }
+
+    function metricCard(value, label) {
+      return `<div class="metric"><strong>${escapeHtml(String(value))}</strong><span>${escapeHtml(label)}</span></div>`;
+    }
+
+    function parseJsonObject(value) {
+      const parsed = JSON.parse(value || "{}");
+      if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
+        throw new Error("Expected a JSON object");
+      }
+      return parsed;
+    }
+
+    function updateDefaultCapabilityForAsil() {
+      const defaults = { QM: "1", ASIL_A: "1", ASIL_B: "2", ASIL_C: "3", ASIL_D: "3" };
+      byId("aspiceDefaultCapability").value = defaults[byId("projectAsil").value] || "3";
+    }
+
+    byId("loadUsersButton").addEventListener("click", () => run(loadUsers));
+    byId("loadMembersButton").addEventListener("click", () => run(loadMembers));
+
+    async function loadUsers() {
+      const response = await request("GET", "/api/v1/users");
+      state.users = response.data || [];
+      const select = byId("existingUserSelect");
+      select.innerHTML = "";
+      for (const user of state.users) {
+        select.append(option(user.user_id, `${user.username} - ${user.display_name}`));
+      }
+      return response;
+    }
+
+    async function loadMembers() {
+      const projectId = selectedProjectId();
+      if (!projectId) {
+        return { data: [] };
+      }
+      const response = await request("GET", `/api/v1/projects/${projectId}/members`);
+      byId("membersTable").innerHTML = table(
+        ["Username", "Role", "User ID"],
+        (response.data || []).map((member) => [member.username, member.role, member.user_id]),
+      );
+      return response;
+    }
+
+    byId("createUserAndAssignButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const created = await request("POST", "/api/v1/users", {
+        username: byId("newUsername").value,
+        display_name: byId("newDisplayName").value,
+        email: byId("newEmail").value,
+        password: byId("newPassword").value,
+        roles: [],
+      });
+      await request("POST", `/api/v1/projects/${projectId}/members`, {
+        user_id: created.data.user_id,
+        role: byId("newProjectRole").value,
+      });
+      await loadMembers();
+      return created;
+    }));
+
+    byId("assignExistingUserButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const response = await request("POST", `/api/v1/projects/${projectId}/members`, {
+        user_id: byId("existingUserSelect").value,
+        role: byId("existingUserRole").value,
+      });
+      await loadMembers();
+      return response;
+    }));
+
+    byId("createRequirementButton").addEventListener("click", () => run(async () => {
+      const type = byId("requirementType").value;
+      const selectedAsil = byId("requirementAsil").value;
+      assertAsilWithinProject(selectedAsil);
+      const payload = {
+        statement: byId("requirementStatement").value,
+        verification_intent: { methods: [byId("requirementVerificationMethod").value] },
+      };
+      if (type !== "DerivedSoftwareRequirement") {
+        payload.asil_level = selectedAsil;
+      }
+      if (type === "DerivedSoftwareRequirement") {
+        payload.derived_from = [];
+      }
+      const response = await createArtefact(type, byId("requirementTitle").value, byId("requirementSourceId").value, payload);
+      await refreshProjectData();
+      generateRequirementSourceId();
+      return response;
+    }));
+
+    byId("uploadRequirementFileButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const file = byId("requirementFile").files[0];
+      if (!file) {
+        throw new Error("Choose a PDF, DOC, or DOCX file first");
+      }
+      const form = new FormData();
+      form.append("file", file);
+      form.append("evidence_type", "requirement_source_document");
+      return requestForm("POST", `/api/v1/projects/${projectId}/evidence/upload`, form);
+    }));
+
+    byId("createArtefactButton").addEventListener("click", () => run(async () => {
+      const payload = JSON.parse(byId("artefactPayload").value || "{}");
+      const response = await createArtefact(
+        byId("artefactTypeSelect").value,
+        byId("artefactTitle").value,
+        byId("artefactSourceId").value,
+        capPayloadAsilFields(payload),
+      );
+      await refreshProjectData();
+      generateArtefactSourceId();
+      return response;
+    }));
+
+    async function createArtefact(type, title, sourceObjectId, payload) {
+      const projectId = requireProject();
+      if (!type) {
+        throw new Error("Select an applicable artefact type first");
+      }
+      const sourceId = sourceObjectId || generatedSourceObjectId(type);
+      return request("POST", `/api/v1/projects/${projectId}/artefacts`, {
+        artefact_type: type,
+        title,
+        description: "",
+        status: "draft",
+        source: {
+          source_kind: "api",
+          source_tool: "web-console",
+          source_object_id: sourceId,
+          source_document: "web-console",
+        },
+        payload,
+      });
+    }
+
+    byId("loadArtefactsButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const response = await request("GET", `/api/v1/projects/${projectId}/artefacts`);
+      renderArtefacts(response.data || []);
+      return response;
+    }));
+
+    byId("createRelationshipButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      return request("POST", `/api/v1/projects/${projectId}/relationships`, {
+        source_artefact_id: byId("relationshipSource").value,
+        relationship_type: byId("relationshipType").value,
+        target_artefact_id: byId("relationshipTarget").value,
+        payload: { created_from: "web-console" },
+      });
+    }));
+
+    byId("traceButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const response = await request("GET", `/api/v1/projects/${projectId}/trace/${byId("traceArtefactSelect").value}`);
+      byId("traceOutput").textContent = JSON.stringify(response.data, null, 2);
+      return response;
+    }));
+
+    byId("applyLifecycleButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const artefactId = byId("lifecycleArtefactSelect").value;
+      const action = byId("lifecycleAction").value;
+      const response = await request("POST", `/api/v1/projects/${projectId}/artefacts/${artefactId}/${action}`, {});
+      await refreshProjectData();
+      return response;
+    }));
+
+    byId("runValidationButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      return request("POST", `/api/v1/projects/${projectId}/validation/run`, {});
+    }));
+
+    byId("loadIssuesButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const response = await request("GET", `/api/v1/projects/${projectId}/validation/issues`);
+      byId("issuesTable").innerHTML = table(
+        ["Rule", "Severity", "Status", "Message"],
+        (response.data || []).map((issue) => [issue.rule_id, issue.severity, issue.status, issue.message]),
+      );
+      return response;
+    }));
+
+    byId("generateValidationReportButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      return request("POST", `/api/v1/projects/${projectId}/reports`, {
+        report_type: "validation_summary",
+        format: "json",
+      });
+    }));
+
+    byId("createBaselineButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const response = await request("POST", `/api/v1/projects/${projectId}/baselines`, {
+        name: byId("baselineName").value,
+        description: "Created from the web console",
+      });
+      const baselineId = response.data.baseline?.baseline_id || response.data.job?.result_ref?.resource_id;
+      if (baselineId) {
+        byId("releaseGateBaselineId").value = baselineId;
+      }
+      return response;
+    }));
+
+    byId("releaseGateButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      return request("POST", `/api/v1/projects/${projectId}/release-gate/run`, {
+        baseline_id: byId("releaseGateBaselineId").value,
+      });
+    }));
+
+    byId("loadBaselinesButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const response = await request("GET", `/api/v1/projects/${projectId}/baselines`);
+      byId("baselinesTable").innerHTML = table(
+        ["Baseline ID", "Name", "State", "Release gate"],
+        (response.data || []).map((baseline) => [
+          baseline.baseline_id,
+          baseline.name,
+          baseline.state,
+          baseline.release_gate_status,
+        ]),
+      );
+      return response;
+    }));
+  </script>
+</body>
+</html>

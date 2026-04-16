@@ -1428,3 +1428,163 @@ Unknown fields shall be rejected in strict mode and preserved as raw import meta
   }
 }
 ```
+
+## Cybersecurity, Software Update, And Test Risk Artefacts
+
+### ThreatAnalysisRiskAssessment
+
+```json
+{
+  "payload": {
+    "scope": "string",
+    "assets": [],
+    "threat_scenarios": [],
+    "risk_ratings": [],
+    "treatment_decisions": [],
+    "cybersecurity_goals": [],
+    "evidence_refs": []
+  }
+}
+```
+
+### CybersecurityRequirement
+
+```json
+{
+  "payload": {
+    "statement": "string",
+    "source_tara_refs": ["string"],
+    "security_relevant": true,
+    "allocated_to": ["string"],
+    "verification_intent": {},
+    "acceptance_criteria": ["string"]
+  }
+}
+```
+
+### CybersecurityManagementEvidence
+
+```json
+{
+  "payload": {
+    "csms_scope": "string",
+    "process_refs": ["string"],
+    "risk_treatment_refs": ["string"],
+    "verification_refs": ["string"],
+    "monitoring_refs": ["string"],
+    "incident_response_refs": ["string"],
+    "evidence_refs": ["string"]
+  }
+}
+```
+
+### CybersecurityInterfaceEvidence
+
+```json
+{
+  "payload": {
+    "interface_id": "string",
+    "threat_refs": ["string"],
+    "risk_rating": "string",
+    "mitigations": ["string"],
+    "verification_refs": ["string"],
+    "residual_risk": "string",
+    "evidence_refs": ["string"]
+  }
+}
+```
+
+### SoftwareUpdateManagementEvidence
+
+```json
+{
+  "payload": {
+    "sums_scope": "string",
+    "process_refs": ["string"],
+    "update_package_refs": ["string"],
+    "approval_refs": ["string"],
+    "integrity_refs": ["string"],
+    "version_refs": ["string"],
+    "evidence_refs": ["string"]
+  }
+}
+```
+
+### SoftwareVersionRecord
+
+```json
+{
+  "payload": {
+    "software_item": "string",
+    "version_identifier": "string",
+    "baseline_ref": "string",
+    "build_configuration_ref": "string",
+    "compatible_vehicle_refs": ["string"],
+    "release_status": "draft|approved|released|obsolete",
+    "evidence_refs": ["string"]
+  }
+}
+```
+
+### UpdateCampaign
+
+```json
+{
+  "payload": {
+    "campaign_id": "string",
+    "scope": "string",
+    "software_versions": ["string"],
+    "delivery_method": "service|ota|factory|other",
+    "authorization_refs": ["string"],
+    "rollback_plan": "string",
+    "monitoring_plan": "string",
+    "evidence_refs": ["string"]
+  }
+}
+```
+
+### UpdateIntegrityEvidence
+
+```json
+{
+  "payload": {
+    "update_package_ref": "string",
+    "signature_ref": "string",
+    "hashes": [],
+    "verification_method": "string",
+    "verification_result": "pass|fail|blocked",
+    "evidence_refs": ["string"]
+  }
+}
+```
+
+### SoftwareBillOfMaterials
+
+```json
+{
+  "payload": {
+    "software_item": "string",
+    "version_ref": "string",
+    "components": [],
+    "suppliers": [],
+    "licenses": [],
+    "vulnerability_refs": [],
+    "evidence_refs": ["string"]
+  }
+}
+```
+
+### TestRiskAssessment
+
+```json
+{
+  "payload": {
+    "scope": "string",
+    "product_risks": [],
+    "test_risk_level": "low|medium|high",
+    "mitigations": [],
+    "linked_test_plan": "string",
+    "evidence_refs": ["string"]
+  }
+}
+```

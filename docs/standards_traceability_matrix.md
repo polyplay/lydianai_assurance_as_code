@@ -170,9 +170,15 @@ Automotive SPICE 4.0 is the default ASPICE basis. The VDA QMC public PDF identif
 
 | Tool Resource | Regulation Anchor | Required Tool Content |
 |---|---|---|
+| ThreatAnalysisRiskAssessment | UNECE R155 | assets, threat scenarios, risk ratings, treatments, cybersecurity goals |
+| CybersecurityRequirement | UNECE R155 | requirement statement, TARA source, allocation, verification intent |
 | CybersecurityManagementEvidence | UNECE R155 | CSMS reference, cybersecurity risk evidence, treatment status, interface relevance |
 | CybersecurityInterfaceEvidence | UNECE R155 | security-relevant interface, threat/risk reference, mitigation/evidence |
 | SoftwareUpdateManagementEvidence | UNECE R156 | SUMS reference, update package, version identification, approval, integrity evidence |
+| SoftwareVersionRecord | UNECE R156 | software item, version identifier, baseline/build linkage, release status |
+| UpdateCampaign | UNECE R156 | update scope, authorization, rollout, rollback, monitoring |
+| UpdateIntegrityEvidence | UNECE R156 | update package signature/hash verification evidence |
+| SoftwareBillOfMaterials | UNECE R156 | software composition evidence for update and vulnerability tracking |
 | ReleaseGateResult | UNECE R156 | release/update approval, version, affected software items |
 | AuditEvent | UNECE R155/R156 | traceability of changes, approvals, releases, and updates |
 

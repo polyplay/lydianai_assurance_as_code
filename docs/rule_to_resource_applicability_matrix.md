@@ -4,7 +4,7 @@
 
 This document defines how validation, consistency, traceability, testing, baseline, release, ASPICE, ISO 29119, UNECE R155, and UNECE R156 oriented rules apply to platform resources.
 
-The matrix is profile-driven. ASIL D defaults are strict. Lower ASIL or QM profiles may tailor severity, blocking behavior, and applicability.
+The matrix is project-configuration-driven. ASIL D and Automotive SPICE PAM 4.0 CL3 defaults are strict. Lower ASIL, QM, or lower ASPICE capability targets may tailor severity, blocking behavior, visibility, and applicability.
 
 ## 2. Rule Schema
 
@@ -14,7 +14,7 @@ Each rule shall be defined using:
 rule:
   id: string
   title: string
-  source_basis: [ISO26262, ASPICE_L3, ISO29119, UNECE_R155, UNECE_R156, TOOL]
+  source_basis: [ISO26262, ASPICE_PAM_4_0, ISO29119, UNECE_R155, UNECE_R156, TOOL]
   objective: string
   applies_to_resources: [string]
   applies_to_relationships: [string]
@@ -36,21 +36,21 @@ rule:
 
 | Rule ID | Title | Basis | Applies To | ASIL D Default | Execution |
 |---|---|---|---|---|---|
-| AAC-RULE-RULE-001 | Referenced artefact exists | TOOL, ASPICE_L3 | Relationship | critical | import, immediate, baseline, release_gate |
-| AAC-RULE-RULE-002 | Relationship type allowed | TOOL, ASPICE_L3 | Relationship | critical | import, immediate, baseline, release_gate |
-| AAC-RULE-RULE-003 | Unique artefact ID | TOOL, ASPICE_L3 | Artefact | critical | import, immediate |
-| AAC-RULE-RULE-004 | Required metadata present | ASPICE_L3, ISO26262 | Artefact | critical | import, baseline, release_gate |
-| AAC-RULE-RULE-005 | Profile mandatory artefact present | ISO26262, ASPICE_L3, ISO29119 | Project, Baseline | critical | baseline, release_gate |
-| AAC-RULE-RULE-006 | Tailoring decision complete | ISO26262, ASPICE_L3 | TailoringDecision | critical | baseline, release_gate |
-| AAC-RULE-RULE-010 | ASIL safety requirement allocated | ISO26262, ASPICE_L3 | SoftwareSafetyRequirement | critical | immediate, baseline, release_gate |
-| AAC-RULE-RULE-011 | Requirement decomposition traced | ISO26262, ASPICE_L3 | Requirement | major | baseline, release_gate |
+| AAC-RULE-RULE-001 | Referenced artefact exists | TOOL, ASPICE_PAM_4_0 | Relationship | critical | import, immediate, baseline, release_gate |
+| AAC-RULE-RULE-002 | Relationship type allowed | TOOL, ASPICE_PAM_4_0 | Relationship | critical | import, immediate, baseline, release_gate |
+| AAC-RULE-RULE-003 | Unique artefact ID | TOOL, ASPICE_PAM_4_0 | Artefact | critical | import, immediate |
+| AAC-RULE-RULE-004 | Required metadata present | ASPICE_PAM_4_0, ISO26262 | Artefact | critical | import, baseline, release_gate |
+| AAC-RULE-RULE-005 | Profile mandatory artefact present | ISO26262, ASPICE_PAM_4_0, ISO29119 | Project, Baseline | critical | baseline, release_gate |
+| AAC-RULE-RULE-006 | Tailoring decision complete | ISO26262, ASPICE_PAM_4_0 | TailoringDecision | critical | baseline, release_gate |
+| AAC-RULE-RULE-010 | ASIL safety requirement allocated | ISO26262, ASPICE_PAM_4_0 | SoftwareSafetyRequirement | critical | immediate, baseline, release_gate |
+| AAC-RULE-RULE-011 | Requirement decomposition traced | ISO26262, ASPICE_PAM_4_0 | Requirement | major | baseline, release_gate |
 | AAC-RULE-RULE-012 | Requirement has verification intent | ISO26262, ISO29119 | Requirement | critical | baseline, release_gate |
-| AAC-RULE-RULE-013 | Released requirement has verification evidence | ISO26262, ISO29119, ASPICE_L3 | Requirement | critical | release_gate |
+| AAC-RULE-RULE-013 | Released requirement has verification evidence | ISO26262, ISO29119, ASPICE_PAM_4_0 | Requirement | critical | release_gate |
 | AAC-RULE-RULE-014 | Safety requirement traces to safety source | ISO26262 | SoftwareSafetyRequirement | critical | baseline, release_gate |
-| AAC-RULE-RULE-020 | Component classification defined | ISO26262, ASPICE_L3 | SoftwareComponent | critical | import, baseline |
-| AAC-RULE-RULE-021 | Software architecture covers requirements | ISO26262, ASPICE_L3 | SoftwareArchitecture, SoftwareComponent | critical | baseline, release_gate |
-| AAC-RULE-RULE-022 | Interface contract exists for component interaction | ISO26262, ASPICE_L3 | SoftwareComponent, InterfaceContract | critical | immediate, baseline |
-| AAC-RULE-RULE-023 | Interface source and destination valid | ISO26262, ASPICE_L3 | InterfaceContract | critical | import, immediate |
+| AAC-RULE-RULE-020 | Component classification defined | ISO26262, ASPICE_PAM_4_0 | SoftwareComponent | critical | import, baseline |
+| AAC-RULE-RULE-021 | Software architecture covers requirements | ISO26262, ASPICE_PAM_4_0 | SoftwareArchitecture, SoftwareComponent | critical | baseline, release_gate |
+| AAC-RULE-RULE-022 | Interface contract exists for component interaction | ISO26262, ASPICE_PAM_4_0 | SoftwareComponent, InterfaceContract | critical | immediate, baseline |
+| AAC-RULE-RULE-023 | Interface source and destination valid | ISO26262, ASPICE_PAM_4_0 | InterfaceContract | critical | import, immediate |
 | AAC-RULE-RULE-024 | Interface payload semantics defined | ISO26262 | InterfaceContract | critical | baseline, release_gate |
 | AAC-RULE-RULE-025 | QM-to-ASIL interface has failure behavior | ISO26262 | InterfaceContract | critical | immediate, baseline, release_gate |
 | AAC-RULE-RULE-026 | Timing-relevant interface has timing verification | ISO26262, ISO29119 | InterfaceContract, TestSpecification | critical | baseline, release_gate |
@@ -58,29 +58,54 @@ rule:
 | AAC-RULE-RULE-030 | Assumption covered by safeguard or test | ISO26262 | Assumption, AssumptionGuaranteeContract | critical | immediate, baseline, release_gate |
 | AAC-RULE-RULE-031 | Guarantee mapped to requirement or safeguard | ISO26262 | AssumptionGuaranteeContract | major | baseline |
 | AAC-RULE-RULE-032 | Safeguard allocated to ASIL component | ISO26262 | Safeguard | critical | immediate, baseline, release_gate |
-| AAC-RULE-RULE-033 | Released safeguard has implementation | ISO26262, ASPICE_L3 | Safeguard, ImplementationItem | critical | release_gate |
+| AAC-RULE-RULE-033 | Released safeguard has implementation | ISO26262, ASPICE_PAM_4_0 | Safeguard, ImplementationItem | critical | release_gate |
 | AAC-RULE-RULE-034 | Released safeguard has verification | ISO26262, ISO29119 | Safeguard, TestSpecification, TestResult | critical | release_gate |
-| AAC-RULE-RULE-040 | Software unit traces to design and requirement | ISO26262, ASPICE_L3 | SoftwareUnit, SoftwareUnitDesign | critical | baseline, release_gate |
-| AAC-RULE-RULE-041 | Implementation item references valid source | ASPICE_L3 | ImplementationItem, SourceCodeReference | major | baseline |
-| AAC-RULE-RULE-042 | Build configuration identified | ISO26262, ASPICE_L3 | BuildConfiguration | critical | baseline, release_gate |
-| AAC-RULE-RULE-043 | Static analysis evidence present or tailored | ISO26262, ASPICE_L3 | StaticAnalysisResult | major | release_gate |
-| AAC-RULE-RULE-044 | Coding guideline compliance evidence present or tailored | ISO26262, ASPICE_L3 | CodingGuidelineComplianceRecord | major | release_gate |
-| AAC-RULE-RULE-050 | Test specification traces to test basis | ISO29119, ISO26262, ASPICE_L3 | TestSpecification | critical | baseline, release_gate |
+| AAC-RULE-RULE-040 | Software unit traces to design and requirement | ISO26262, ASPICE_PAM_4_0 | SoftwareUnit, SoftwareUnitDesign | critical | baseline, release_gate |
+| AAC-RULE-RULE-041 | Implementation item references valid source | ASPICE_PAM_4_0 | ImplementationItem, SourceCodeReference | major | baseline |
+| AAC-RULE-RULE-042 | Build configuration identified | ISO26262, ASPICE_PAM_4_0 | BuildConfiguration | critical | baseline, release_gate |
+| AAC-RULE-RULE-043 | Static analysis evidence present or tailored | ISO26262, ASPICE_PAM_4_0 | StaticAnalysisResult | major | release_gate |
+| AAC-RULE-RULE-044 | Coding guideline compliance evidence present or tailored | ISO26262, ASPICE_PAM_4_0 | CodingGuidelineComplianceRecord | major | release_gate |
+| AAC-RULE-RULE-050 | Test specification traces to test basis | ISO29119, ISO26262, ASPICE_PAM_4_0 | TestSpecification | critical | baseline, release_gate |
 | AAC-RULE-RULE-051 | Test case has expected result and pass criteria | ISO29119 | TestCase | critical | baseline, release_gate |
 | AAC-RULE-RULE-052 | Test procedure references environment | ISO29119 | TestProcedure, TestEnvironment | major | baseline |
-| AAC-RULE-RULE-053 | Test result references valid test case/spec | ISO29119, ASPICE_L3 | TestResult | critical | immediate, baseline |
-| AAC-RULE-RULE-054 | Failed test result linked to defect or waiver | ISO29119, ASPICE_L3 | TestResult, DefectRecord | critical | release_gate |
-| AAC-RULE-RULE-055 | Requirements coverage exists | ISO26262, ISO29119, ASPICE_L3 | RequirementsCoverageRecord | critical | release_gate |
-| AAC-RULE-RULE-060 | Change has impact analysis | ASPICE_L3, ISO26262 | ChangeSet, ImpactAnalysisResult | critical | baseline, release_gate |
-| AAC-RULE-RULE-061 | Defect resolution traced | ASPICE_L3 | DefectRecord | major | release_gate |
-| AAC-RULE-RULE-062 | Configuration items baselined | ASPICE_L3, ISO26262 | Baseline | critical | baseline |
+| AAC-RULE-RULE-053 | Test result references valid test case/spec | ISO29119, ASPICE_PAM_4_0 | TestResult | critical | immediate, baseline |
+| AAC-RULE-RULE-054 | Failed test result linked to defect or waiver | ISO29119, ASPICE_PAM_4_0 | TestResult, DefectRecord | critical | release_gate |
+| AAC-RULE-RULE-055 | Requirements coverage exists | ISO26262, ISO29119, ASPICE_PAM_4_0 | RequirementsCoverageRecord | critical | release_gate |
+| AAC-RULE-RULE-060 | Change has impact analysis | ASPICE_PAM_4_0, ISO26262 | ChangeSet, ImpactAnalysisResult | critical | baseline, release_gate |
+| AAC-RULE-RULE-061 | Defect resolution traced | ASPICE_PAM_4_0 | DefectRecord | major | release_gate |
+| AAC-RULE-RULE-062 | Configuration items baselined | ASPICE_PAM_4_0, ISO26262 | Baseline | critical | baseline |
 | AAC-RULE-RULE-063 | Confirmation measure evidence exists | ISO26262 | ConfirmationMeasureRecord | major | release_gate |
 | AAC-RULE-RULE-070 | Cybersecurity relevant item has CS evidence | UNECE_R155 | InterfaceContract, SoftwareComponent | critical when condition applies | baseline, release_gate |
 | AAC-RULE-RULE-071 | Software update relevant item has SUMS evidence | UNECE_R156 | BuildConfiguration, Baseline, ReleaseGateResult | critical when condition applies | release_gate |
-| AAC-RULE-RULE-080 | Released upstream change creates suspect state | ISO26262, ASPICE_L3 | Artefact, Relationship | major | immediate |
-| AAC-RULE-RULE-081 | Suspect artefact not releasable | ISO26262, ASPICE_L3 | SuspectState | critical | release_gate |
-| AAC-RULE-RULE-090 | Baseline contains no critical issues | TOOL, ISO26262, ASPICE_L3 | Baseline | critical | baseline, release_gate |
-| AAC-RULE-RULE-091 | Release gate fails on critical issues | TOOL, ISO26262, ASPICE_L3 | ReleaseGateResult | critical | release_gate |
+| AAC-RULE-RULE-080 | Released upstream change creates suspect state | ISO26262, ASPICE_PAM_4_0 | Artefact, Relationship | major | immediate |
+| AAC-RULE-RULE-081 | Suspect artefact not releasable | ISO26262, ASPICE_PAM_4_0 | SuspectState | critical | release_gate |
+| AAC-RULE-RULE-090 | Baseline contains no critical issues | TOOL, ISO26262, ASPICE_PAM_4_0 | Baseline | critical | baseline, release_gate |
+| AAC-RULE-RULE-091 | Release gate fails on critical issues | TOOL, ISO26262, ASPICE_PAM_4_0 | ReleaseGateResult | critical | release_gate |
+
+## 3.1 Dynamic Applicability Derivation
+
+AAC-RULE-FR-010
+The system shall derive rule enablement from these project configuration dimensions:
+
+- `asil_level`: `QM`, `ASIL_A`, `ASIL_B`, `ASIL_C`, or `ASIL_D`
+- `aspice_model`: fixed to `ASPICE_PAM_4_0`
+- `aspice_default_capability_level`: `CL1`, `CL2`, or `CL3`
+- `aspice_process_overrides`: per-process `CL1`, `CL2`, or `CL3`
+- `r155_applicable`
+- `r156_applicable`
+- `test_scope`
+
+AAC-RULE-FR-011
+Rules that are not applicable for the derived project configuration shall be marked disabled and shall not execute.
+
+AAC-RULE-FR-012
+If a rule is enabled by any configured standards dimension, it shall remain enabled unless an approved tailoring decision or admin configuration disables it.
+
+AAC-RULE-FR-013
+If multiple dimensions assign different severities to the same rule, the stricter severity shall be used.
+
+AAC-RULE-FR-014
+For ASPICE PAM 4.0 CL3 targets, PA3.1 and PA3.2 evidence rules shall be enabled for the scoped processes.
 
 ## 3.1 Detailed Standards-Driven Rule Groups
 
@@ -114,7 +139,7 @@ Each rule shall define whether the rule is mandatory, optional, conditional, or 
 | Change management | STD-ISO26262-8-8 | changes have impact analysis and re-verification scope |
 | Tool confidence | STD-ISO26262-8-11 | tool confidence or qualification evidence exists where applicable |
 
-### ASPICE Level 3 Rule Anchors
+### Automotive SPICE PAM 4.0 Capability Rule Anchors
 
 | Rule Group | Standards Refs | Tool Rule Intent |
 |---|---|---|

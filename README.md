@@ -46,10 +46,22 @@ The Swagger UI is available at:
 http://127.0.0.1:8000/api/v1/docs
 ```
 
+The lightweight web console is available at:
+
+```text
+http://127.0.0.1:8000/app
+```
+
 The nginx proxy listens on:
 
 ```text
 http://127.0.0.1:8080
+```
+
+If any default host ports are already in use, override them when starting Compose:
+
+```bash
+AAC_POSTGRES_PORT=15432 AAC_REDIS_PORT=16379 AAC_API_PORT=18000 AAC_NGINX_PORT=18080 docker compose up --build
 ```
 
 The API container runs Alembic migrations automatically before starting Uvicorn.
@@ -141,6 +153,7 @@ make lint          # run ruff
 make compile       # compile Python files
 make compose-up    # run the Docker Compose stack
 make compose-down  # stop the Docker Compose stack
+make smoke-test    # run the Docker/API end-to-end smoke test
 ```
 
 ## Environment Variables
@@ -176,6 +189,21 @@ The API is mounted under `/api/v1`. Important entry points include:
 
 Use `/api/v1/docs` for the complete OpenAPI documentation.
 
+## CLI Workflows
+
+The `aac` command supports the same MVP workflows as the web console. Pass `--base-url`
+explicitly or set `AAC_API_URL`; pass `--token` or set `AAC_TOKEN` after login.
+
+```bash
+.venv/bin/aac login --username admin --password 'change-me'
+.venv/bin/aac projects --token "$AAC_TOKEN"
+.venv/bin/aac import-sphinx --project-id PROJ_001 --file needs.json --version-update-mode automatic_new_version
+.venv/bin/aac validation-run --project-id PROJ_001
+.venv/bin/aac trace --project-id PROJ_001 --artefact-id ART_001
+.venv/bin/aac baseline-create --project-id PROJ_001 --name "Baseline 1"
+.venv/bin/aac release-gate --project-id PROJ_001 --baseline-id BASE_001
+```
+
 ## Verification
 
 Run the standard checks before committing:
@@ -186,6 +214,16 @@ Run the standard checks before committing:
 .venv/bin/python -m compileall aac_backend
 docker compose config
 ```
+
+Run the end-to-end smoke test against a running Docker Compose stack:
+
+```bash
+AAC_API_BASE_URL=http://127.0.0.1:18000 make smoke-test
+```
+
+The smoke test creates a unique admin, an ASIL D + Automotive SPICE PAM 4.0 CL3 project,
+project members, a requirement, a test case, a traceability link, then confirms validation
+raises ASIL D mandatory artefact gaps and baseline creation is blocked.
 
 At the time of this README update, the test suite covers route contracts, service-level
 regressions, and validation rule evaluator pass/fail behavior.

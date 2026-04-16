@@ -5,12 +5,21 @@ from pydantic import ValidationError
 
 from aac_backend.models.artefacts import Artefact, Relationship
 from aac_backend.models.jobs import ProjectUpdateLock
+from aac_backend.models.projects import ProjectConfiguration
 from aac_backend.rules.catalog import RULE_CATALOG
 from aac_backend.schemas.domain import ArtefactStatusTransition
 from aac_backend.services import validation_service
-from aac_backend.services.artefact_service import change_artefact_status
+from aac_backend.services.artefact_schema_service import (
+    apply_schema_override,
+    schema_for_artefact_type,
+    validate_artefact_payload,
+)
+from aac_backend.services.artefact_service import change_artefact_status, validate_asil_not_above_project
 from aac_backend.services.baseline_service import _release_project_update_lock, _rule_count_for_mode
 from aac_backend.services.impact_service import _traverse_dependents
+from aac_backend.services.import_service import _canonical_artefact_type, _normalize_payload
+from aac_backend.services.traceability_service import _trace_direction
+from aac_backend.services.validation_service import ValidationContext, _issue, _meta_rule_issues
 
 
 def test_run_validation_does_not_seed_rule_catalog_in_hot_path() -> None:
@@ -37,6 +46,112 @@ def test_rule_count_for_mode_excludes_project_disabled_rules() -> None:
 def test_status_transition_schema_rejects_unknown_status() -> None:
     with pytest.raises(ValidationError):
         ArtefactStatusTransition(status="ready_for_launch")
+
+
+def test_artefact_schema_registry_enforces_type_specific_required_fields() -> None:
+    with pytest.raises(ValueError, match="verification_intent"):
+        validate_artefact_payload("SoftwareRequirement", {"statement": "The software shall respond."})
+
+    validate_artefact_payload(
+        "SoftwareRequirement",
+        {
+            "statement": "The software shall respond.",
+            "verification_intent": {"methods": ["test"]},
+        },
+    )
+
+
+def test_artefact_payload_rejects_asil_above_project_classification() -> None:
+    config = ProjectConfiguration(
+        project_id="PROJ_1",
+        validation_policy_json={
+            "project_assurance_configuration": {"asil_level": "ASIL_B"}
+        },
+    )
+
+    with pytest.raises(ValueError, match="exceeds project maximum ASIL_B"):
+        validate_asil_not_above_project(
+            "SoftwareSafetyRequirement",
+            {"asil_level": "ASIL_D", "statement": "The software shall respond."},
+            config,
+        )
+
+    validate_asil_not_above_project(
+        "SoftwareSafetyRequirement",
+        {"asil_level": "ASIL_B", "statement": "The software shall respond."},
+        config,
+    )
+
+
+def test_schema_override_rejects_disabling_mandatory_fields_without_mutating_config() -> None:
+    config = ProjectConfiguration(project_id="PROJ_1", validation_policy_json={})
+
+    with pytest.raises(ValueError, match="Mandatory fields"):
+        apply_schema_override(config, "SoftwareRequirement", {"disabled_fields": ["statement"]})
+
+    assert config.validation_policy_json == {}
+
+
+def test_schema_override_tails_optional_fields() -> None:
+    config = ProjectConfiguration(project_id="PROJ_1", validation_policy_json={})
+
+    schema = apply_schema_override(
+        config,
+        "SoftwareRequirement",
+        {"disabled_fields": ["rationale"]},
+    )
+
+    assert "rationale" in schema["disabled_fields"]
+    assert "rationale" not in schema_for_artefact_type("SoftwareRequirement", config).enabled_fields
+
+
+def test_sphinx_need_mapping_normalizes_tool_fields_to_canonical_payload() -> None:
+    raw_need = {
+        "id": "SSR_1",
+        "type": "sw_safety_req",
+        "title": "Safety requirement",
+        "content": "The software shall detect the fault.",
+        "asil": "ASIL_D",
+        "verification_method": "test",
+    }
+
+    assert _canonical_artefact_type(raw_need) == "SoftwareSafetyRequirement"
+    payload = _normalize_payload(raw_need, "SoftwareSafetyRequirement")
+    assert payload["statement"] == "The software shall detect the fault."
+    assert payload["asil_level"] == "ASIL_D"
+    assert payload["verification_intent"] == {"methods": ["test"]}
+
+
+def test_transitive_traceability_returns_chain_depth_and_path() -> None:
+    relationships = [
+        _relationship("R1", "derives_from", "REQ_2", "REQ_1"),
+        _relationship("R2", "verifies", "TEST_1", "REQ_2"),
+    ]
+
+    traced = _trace_direction(relationships, "TEST_1", "forward")
+
+    assert [edge["target_artefact_id"] for edge in traced] == ["REQ_2", "REQ_1"]
+    assert traced[1]["depth"] == 2
+    assert [edge["relationship_id"] for edge in traced[1]["path"]] == ["R2", "R1"]
+
+
+def test_meta_rules_raise_release_gate_issue_for_critical_blocker() -> None:
+    run = validation_service.ValidationRun(validation_run_id="VRUN_1", project_id="PROJ_1")
+    context = ValidationContext(
+        project_id="PROJ_1",
+        mode="release_gate",
+        artefacts=[],
+        relationships=[],
+        tailoring_decisions=[],
+        open_suspects=[],
+        validation_policy={},
+        profile_payload={},
+    )
+    blocking_issue = _issue(run, "AAC-RULE-RULE-001", "Broken trace", [])
+
+    meta_issues = _meta_rule_issues(run, context, [blocking_issue])
+
+    assert [issue.rule_id for issue in meta_issues] == ["AAC-RULE-RULE-091"]
 
 
 @pytest.mark.asyncio

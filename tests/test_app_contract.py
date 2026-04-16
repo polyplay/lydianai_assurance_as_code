@@ -11,6 +11,7 @@ def test_app_exposes_core_routes() -> None:
     assert "/api/v1/projects/{project_id}/imports/sphinx" in paths
     assert "/api/v1/projects/{project_id}/validation/run" in paths
     assert "/api/v1/projects/{project_id}/release-gate/run" in paths
+    assert "/app" in paths
 
 
 def test_app_exposes_documented_mvp_endpoint_methods() -> None:
@@ -25,9 +26,14 @@ def test_app_exposes_documented_mvp_endpoint_methods() -> None:
         ("POST", "/api/v1/users/{user_id}/password-reset"),
         ("POST", "/api/v1/users/me/password"),
         ("GET", "/api/v1/projects/{project_id}/schemas"),
+        ("GET", "/api/v1/projects/{project_id}/schemas/{artefact_type}"),
         ("PUT", "/api/v1/projects/{project_id}/schemas/{artefact_type}"),
         ("PUT", "/api/v1/projects/{project_id}"),
         ("POST", "/api/v1/projects/{project_id}/tailoring-decisions"),
+        (
+            "POST",
+            "/api/v1/projects/{project_id}/tailoring-decisions/{tailoring_decision_id}/approve",
+        ),
         ("GET", "/api/v1/projects/{project_id}/profiles"),
         ("POST", "/api/v1/projects/{project_id}/profiles"),
         ("GET", "/api/v1/projects/{project_id}/profiles/{profile_id}"),
@@ -54,6 +60,7 @@ def test_app_exposes_documented_mvp_endpoint_methods() -> None:
         ("POST", "/api/v1/projects/{project_id}/baselines/{baseline_id}/release"),
         ("POST", "/api/v1/projects/{project_id}/test-results/import"),
         ("GET", "/api/v1/projects/{project_id}/test-results"),
+        ("POST", "/api/v1/projects/{project_id}/evidence/upload"),
         ("GET", "/api/v1/projects/{project_id}/audit-events"),
         (
             "GET",

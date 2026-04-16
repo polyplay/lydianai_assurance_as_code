@@ -39,6 +39,9 @@ Each criterion is classified as:
 | ACC-PROJ-002 | ASIL D default profile is available and cannot be deleted | MUST PASS | Automated test |
 | ACC-PROJ-003 | A Project Lead can create a tailoring decision; it requires approval before taking effect | MUST PASS | Automated test |
 | ACC-PROJ-004 | An approved not-applicable tailoring decision for a mandatory artefact type suppresses RULE-005 for that type | MUST PASS | Automated test |
+| ACC-PROJ-005 | Admin can create a project with ASIL, Automotive SPICE PAM 4.0 capability target, R155/R156 flags, test scope, and visibility policy | MUST PASS | Automated test |
+| ACC-PROJ-006 | Profile evaluation returns visible, mandatory, conditional, optional, and not-applicable artefact classes derived from project configuration | MUST PASS | Automated test |
+| ACC-PROJ-007 | ASPICE CL3 process targets require PA3.1/PA3.2 evidence artefacts, while CL2 targets do not | MUST PASS | Automated test |
 
 ### 3.3 Sphinx Import
 

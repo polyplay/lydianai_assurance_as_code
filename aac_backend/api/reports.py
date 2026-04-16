@@ -1,10 +1,14 @@
+import hashlib
+import re
 from datetime import UTC, datetime
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from aac_backend.api.dependencies import CurrentUser, project_role_dependency
+from aac_backend.config import get_settings
 from aac_backend.database import get_session
 from aac_backend.models.artefacts import Relationship
 from aac_backend.models.audit import AuditEvent, EvidenceReference, GeneratedReport
@@ -16,6 +20,7 @@ from aac_backend.services.job_service import job_data, run_tracked_job
 
 router = APIRouter(tags=["reports"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
+REQUIREMENT_UPLOAD_EXTENSIONS = {".pdf", ".doc", ".docx"}
 
 
 @router.post("/projects/{project_id}/test-results/import", response_model=ApiEnvelope)
@@ -75,6 +80,53 @@ async def create_evidence(
     session.add(evidence)
     await session.commit()
     return ApiEnvelope(data={"evidence_id": evidence.evidence_id})
+
+
+@router.post("/projects/{project_id}/evidence/upload", response_model=ApiEnvelope)
+async def upload_evidence(
+    project_id: str,
+    file: UploadFile = File(...),
+    evidence_type: str = Form(default="requirement_source_document"),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    session: AsyncSession = Depends(get_session),
+) -> ApiEnvelope:
+    filename = _safe_filename(file.filename or "upload")
+    extension = Path(filename).suffix.lower()
+    if evidence_type == "requirement_source_document" and extension not in REQUIREMENT_UPLOAD_EXTENSIONS:
+        raise HTTPException(status_code=409, detail="Requirement uploads must be PDF, DOC, or DOCX")
+
+    content = await file.read()
+    checksum = hashlib.sha256(content).hexdigest()
+    project_dir = Path(get_settings().upload_dir) / project_id
+    project_dir.mkdir(parents=True, exist_ok=True)
+    stored_name = f"{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}_{checksum[:12]}_{filename}"
+    stored_path = project_dir / stored_name
+    stored_path.write_bytes(content)
+
+    evidence = EvidenceReference(
+        project_id=project_id,
+        evidence_type=evidence_type,
+        uri=str(stored_path),
+        checksum=checksum,
+        metadata_json={
+            "original_filename": file.filename,
+            "content_type": file.content_type,
+            "size_bytes": len(content),
+        },
+        created_by=current.user.user_id,
+        created_at=datetime.now(UTC),
+    )
+    session.add(evidence)
+    await session.commit()
+    return ApiEnvelope(
+        data={
+            "evidence_id": evidence.evidence_id,
+            "evidence_type": evidence.evidence_type,
+            "uri": evidence.uri,
+            "checksum": evidence.checksum,
+            "metadata": evidence.metadata_json,
+        }
+    )
 
 
 @router.get("/projects/{project_id}/evidence/{evidence_id}", response_model=ApiEnvelope)
@@ -177,6 +229,11 @@ async def delete_report(
     report.state = "obsolete"
     await session.commit()
     return ApiEnvelope(data=_report_data(report))
+
+
+def _safe_filename(filename: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", filename).strip("._")
+    return cleaned or "upload"
 
 
 def _report_data(report: GeneratedReport) -> dict:

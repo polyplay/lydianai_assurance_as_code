@@ -170,9 +170,16 @@ The `scope` field on `TestSpecification` and `TestResult` identifies which lifec
 | `EvidenceReference` | — | External evidence pointer |
 | `EvidenceBundle` | — | Grouped evidence collection |
 | `GeneratedReport` | See §3.8 for testing sub-types | Includes traceability matrices, interface assurance reports |
+| `ThreatAnalysisRiskAssessment` | `TARA` | UNECE R155 cybersecurity risk assessment |
+| `CybersecurityRequirement` | — | Requirement derived from TARA/cybersecurity goal |
 | `CybersecurityManagementEvidence` | — | UNECE R155 |
 | `CybersecurityInterfaceEvidence` | — | UNECE R155 |
 | `SoftwareUpdateManagementEvidence` | — | UNECE R156 |
+| `SoftwareVersionRecord` | — | Software version identification for update/release control |
+| `UpdateCampaign` | — | Software update campaign authorization and rollout evidence |
+| `UpdateIntegrityEvidence` | — | Update package integrity/signature verification evidence |
+| `SoftwareBillOfMaterials` | `SBOM` | Software composition evidence for update and vulnerability tracking |
+| `TestRiskAssessment` | — | ISO 29119 test risk evidence |
 
 ### 3.12 Infrastructure Resources
 
@@ -280,7 +287,7 @@ basis: ASPICE SUP.1
 asil_d_applicability: mandatory
 description: >
   Documents QA activities, QA plan, independence of QA function, and QA findings.
-  Required for ASPICE Level 3 SUP.1 process capability evidence.
+  Required for Automotive SPICE PAM 4.0 CL3 SUP.1 process capability evidence.
 required_fields:
   - qa_plan_reference          # reference to QA plan document
   - qa_activity_summary        # list of QA activities performed
@@ -294,7 +301,7 @@ required_fields:
 
 ```yaml
 artefact_type: ProjectScope
-basis: ASPICE Level 3 (scoping)
+basis: Automotive SPICE PAM 4.0 CL3 (scoping)
 asil_d_applicability: mandatory
 description: >
   Documents the scope of the assurance assessment: which ASPICE processes are in-scope,
@@ -313,7 +320,7 @@ required_fields:
 
 ```yaml
 artefact_type: ASPICEScopeDecision
-basis: ASPICE Level 3 PA3.1/PA3.2
+basis: Automotive SPICE PAM 4.0 CL3 PA3.1/PA3.2
 asil_d_applicability: mandatory
 description: >
   Records the decision to include or exclude a specific ASPICE process from the project scope,

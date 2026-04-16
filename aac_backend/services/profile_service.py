@@ -5,10 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from aac_backend.models.artefacts import Artefact
 from aac_backend.models.projects import AssuranceProfile, TailoringDecision
-from aac_backend.rules.catalog import RULE_CATALOG
-from aac_backend.services.validation_service import (
-    MANDATORY_ASIL_D_ARTEFACT_TYPES,
-    RELATIONSHIP_TYPES,
+from aac_backend.services.assurance_configuration_service import (
+    MANDATORY_ARTEFACTS_BY_ASIL,
+    default_assurance_configuration_for_asil,
+    derive_profile_payload,
 )
 
 DEFAULT_PROFILE_IDS = (
@@ -23,9 +23,16 @@ DEFAULT_PROFILE_IDS = (
 async def seed_default_profiles(session: AsyncSession) -> None:
     for profile_id in DEFAULT_PROFILE_IDS:
         existing = await session.get(AssuranceProfile, profile_id)
-        if existing is not None:
-            continue
         classification = profile_id.replace("_DEFAULT", "")
+        if existing is not None:
+            existing.name = profile_id
+            existing.classification = classification
+            existing.inherits_from_profile_id = (
+                "ASIL_D_DEFAULT" if profile_id != "ASIL_D_DEFAULT" else None
+            )
+            existing.profile_payload_json = default_profile_payload(classification)
+            existing.status = "active"
+            continue
         session.add(
             AssuranceProfile(
                 profile_id=profile_id,
@@ -40,45 +47,7 @@ async def seed_default_profiles(session: AsyncSession) -> None:
 
 
 def default_profile_payload(classification: str) -> dict:
-    mandatory_types = sorted(_mandatory_types_for(classification))
-    return {
-        "project_classification": classification,
-        "artefact_classes": {
-            artefact_type: {
-                "applicability": "mandatory",
-                "required_status_for_baseline": ["approved", "released"],
-                "required_status_for_release": ["released"],
-                "evidence_required": True,
-                "tailoring_allowed": True,
-                "tailoring_approval_role": "project_lead",
-            }
-            for artefact_type in mandatory_types
-        },
-        "relationship_types": {
-            relationship_type: {
-                "applicability": "optional",
-                "source_types": [],
-                "target_types": [],
-                "min_count": None,
-            }
-            for relationship_type in sorted(RELATIONSHIP_TYPES)
-        },
-        "rules": {
-            rule_id: {
-                "enabled": True,
-                "severity": rule.severity,
-                "execution_modes": list(rule.execution_modes),
-                "blocking_contexts": list(rule.blocking_contexts),
-                "tailoring_allowed": rule.severity != "critical",
-            }
-            for rule_id, rule in RULE_CATALOG.items()
-        },
-        "reports": {
-            "traceability_matrix": {"applicability": "mandatory"},
-            "validation_summary": {"applicability": "mandatory"},
-            "baseline_comparison": {"applicability": "mandatory"},
-        },
-    }
+    return derive_profile_payload(default_assurance_configuration_for_asil(classification))
 
 
 async def evaluate_profile_applicability(
@@ -120,6 +89,37 @@ async def evaluate_profile_applicability(
         "profile_id": profile.profile_id,
         "classification": profile.classification,
         "mandatory_artefact_types": sorted(mandatory),
+        "conditional_artefact_types": sorted(
+            artefact_type
+            for artefact_type, config in artefact_classes.items()
+            if config.get("applicability") == "conditional"
+        ),
+        "optional_artefact_types": sorted(
+            artefact_type
+            for artefact_type, config in artefact_classes.items()
+            if config.get("applicability") == "optional"
+        ),
+        "not_applicable_artefact_types": sorted(
+            artefact_type
+            for artefact_type, config in artefact_classes.items()
+            if config.get("applicability") == "not_applicable"
+        ),
+        "visible_artefact_types": sorted(
+            artefact_type
+            for artefact_type, config in artefact_classes.items()
+            if config.get("visible") is True
+        ),
+        "enabled_rules": sorted(
+            rule_id
+            for rule_id, config in (payload.get("rules") or {}).items()
+            if config.get("enabled") is True
+        ),
+        "disabled_rules": sorted(
+            rule_id
+            for rule_id, config in (payload.get("rules") or {}).items()
+            if config.get("enabled") is False or config.get("severity") == "disabled"
+        ),
+        "assurance_configuration": payload.get("project_assurance_configuration", {}),
         "present_mandatory_artefact_types": present,
         "tailored_not_applicable_artefact_types": tailored,
         "missing_mandatory_artefact_types": missing,
@@ -137,24 +137,4 @@ def clone_profile_payload(payload: dict, updates: dict) -> dict:
 
 
 def _mandatory_types_for(classification: str) -> set[str]:
-    if classification in {"ASIL_D", "ASIL_C"}:
-        return set(MANDATORY_ASIL_D_ARTEFACT_TYPES)
-    if classification == "ASIL_B":
-        return set(MANDATORY_ASIL_D_ARTEFACT_TYPES) - {
-            "ConfirmationMeasureRecord",
-            "QualityAssuranceRecord",
-        }
-    if classification == "ASIL_A":
-        return {
-            "SoftwareRequirement",
-            "SoftwareArchitecture",
-            "SoftwareComponent",
-            "ImplementationItem",
-            "BuildConfiguration",
-            "TestSpecification",
-            "TestCase",
-            "TestResult",
-            "RequirementsCoverageRecord",
-            "ChangeSet",
-        }
-    return {"SoftwareRequirement", "ImplementationItem", "TestCase", "TestResult"}
+    return set(MANDATORY_ARTEFACTS_BY_ASIL.get(classification, MANDATORY_ARTEFACTS_BY_ASIL["ASIL_D"]))

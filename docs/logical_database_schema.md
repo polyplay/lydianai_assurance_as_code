@@ -4,7 +4,7 @@
 
 This document defines the logical relational-plus-graph-query database schema.
 
-The schema is designed for canonical artefacts, relationship graph traversal, automatic versioning, baselines, ASPICE Level 3 process evidence, ISO 26262 software-system evidence, ISO 29119 test evidence, UNECE R155 cybersecurity evidence references, and UNECE R156 software update evidence references.
+The schema is designed for canonical artefacts, relationship graph traversal, automatic versioning, baselines, Automotive SPICE PAM 4.0 CL3 process evidence, ISO 26262 software-system evidence, ISO 29119 test evidence, UNECE R155 cybersecurity evidence references, and UNECE R156 software update evidence references.
 
 ## 2. Design Principles
 
@@ -486,4 +486,4 @@ Transitive traversal shall be implemented in the graph service using relationshi
 
 ## 14. Standards Review Gap
 
-The schema supports ISO 26262, ASPICE Level 3, ISO 29119, UNECE R155, and UNECE R156 evidence patterns at resource level. Clause-exact table coverage shall be validated later against licensed standards and project process definitions.
+The schema supports ISO 26262, Automotive SPICE PAM 4.0 CL3, ISO 29119, UNECE R155, and UNECE R156 evidence patterns at resource level. Clause-exact table coverage shall be validated later against licensed standards and project process definitions.

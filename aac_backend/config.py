@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     jwt_secret: str = Field(default="change-me-change-me-change-me-change-me", alias="AAC_JWT_SECRET")
     jwt_expiry_hours: int = Field(default=8, alias="AAC_JWT_EXPIRY_HOURS")
     environment: str = Field(default="development", alias="AAC_ENVIRONMENT")
+    upload_dir: str = Field(default="var/uploads", alias="AAC_UPLOAD_DIR")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", populate_by_name=True)
 

@@ -9,64 +9,26 @@ from aac_backend.models.impact import SuspectState
 from aac_backend.models.projects import AssuranceProfile, Project, ProjectConfiguration, TailoringDecision
 from aac_backend.models.validation import ValidationIssue, ValidationRule, ValidationRun
 from aac_backend.rules.catalog import RULE_CATALOG
+from aac_backend.services.assurance_configuration_service import (
+    ASIL_D_MANDATORY_ARTEFACT_TYPES,
+    RELATIONSHIP_TYPES,
+)
+from aac_backend.services.artefact_schema_service import required_fields_for_artefact_type
 from aac_backend.services.event_service import record_event
 
 VALID_ASIL_LEVELS = {"QM", "ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D", "mixed"}
 REQUIREMENT_TYPES = {"SoftwareRequirement", "SoftwareSafetyRequirement", "DerivedSoftwareRequirement"}
 SAFETY_SOURCE_TYPES = {"TechnicalSafetyRequirement", "HardwareSoftwareInterface", "SafetyGoal"}
 TEST_TYPES = {"TestCase", "TestSpecification", "TestResult"}
-VALID_VERIFICATION_INTENTS = {"test", "analysis", "inspection", "simulation", "formal_verification"}
-MANDATORY_ASIL_D_ARTEFACT_TYPES = {
-    "ProjectScope",
-    "SafetyPlan",
-    "SoftwareSafetyPlan",
-    "SafetyCase",
-    "SafetyGoal",
-    "FunctionalSafetyRequirement",
-    "TechnicalSafetyRequirement",
-    "SoftwareSafetyRequirement",
-    "SoftwareRequirement",
-    "SoftwareArchitecture",
-    "SoftwareComponent",
-    "InterfaceContract",
-    "AssumptionGuaranteeContract",
-    "Safeguard",
-    "SoftwareUnitDesign",
-    "SoftwareUnit",
-    "ImplementationItem",
-    "BuildConfiguration",
-    "ToolInventoryItem",
-    "TestPlan",
-    "TestSpecification",
-    "TestCase",
-    "TestProcedure",
-    "TestEnvironment",
-    "TestResult",
-    "RequirementsCoverageRecord",
-    "ReviewRecord",
-    "QualityAssuranceRecord",
-    "ChangeRequest",
-    "ChangeSet",
-    "DefectRecord",
-    "ConfirmationMeasureRecord",
+VALID_VERIFICATION_INTENTS = {
+    "analysis",
+    "formal_verification",
+    "inspection",
+    "review",
+    "simulation",
+    "test",
 }
-RELATIONSHIP_TYPES = {
-    "allocates_to",
-    "assumes",
-    "constrains",
-    "depends_on",
-    "derives_from",
-    "guarantees",
-    "implements",
-    "interacts_via",
-    "mitigates",
-    "produces_result_for",
-    "protects",
-    "references",
-    "satisfies",
-    "traces_to",
-    "verifies",
-}
+MANDATORY_ASIL_D_ARTEFACT_TYPES = set(ASIL_D_MANDATORY_ARTEFACT_TYPES)
 
 
 async def seed_rule_catalog(session: AsyncSession) -> None:
@@ -159,11 +121,12 @@ async def run_validation(
     )
 
     for rule_id, rule in RULE_CATALOG.items():
-        if context.mode not in rule.execution_modes:
+        if context.mode not in context.rule_execution_modes(rule_id, rule.execution_modes):
             continue
         if context.rule_disabled(rule_id):
             continue
         issues.extend(_evaluate_rule(run, context, rule_id))
+    issues.extend(_meta_rule_issues(run, context, issues))
 
     for issue in issues:
         session.add(issue)
@@ -214,6 +177,7 @@ class ValidationContext:
         self.validation_policy = validation_policy or {}
         self.profile_payload = profile_payload or {}
         self.by_id = {artefact.artefact_id: artefact for artefact in artefacts}
+        self.by_source_object_id = {artefact.source_object_id: artefact for artefact in artefacts}
         self.by_type: dict[str, list[Artefact]] = defaultdict(list)
         self.by_source: dict[tuple[str, str], list[Relationship]] = defaultdict(list)
         self.by_target: dict[tuple[str, str], list[Relationship]] = defaultdict(list)
@@ -224,15 +188,40 @@ class ValidationContext:
             self.by_target[(relationship.target_artefact_id, relationship.relationship_type)].append(relationship)
 
     def rule_disabled(self, rule_id: str) -> bool:
-        rule_cfg = (self.validation_policy.get("rules") or {}).get(rule_id, {})
+        rule_cfg = self.rule_config(rule_id)
         return rule_cfg.get("enabled") is False or rule_cfg.get("severity") == "disabled"
 
+    def rule_config(self, rule_id: str) -> dict:
+        cfg = dict(((self.profile_payload.get("rules") or {}).get(rule_id)) or {})
+        cfg.update(((self.validation_policy.get("rules") or {}).get(rule_id)) or {})
+        return cfg
+
+    def rule_execution_modes(self, rule_id: str, default: tuple[str, ...]) -> tuple[str, ...]:
+        configured = self.rule_config(rule_id).get("execution_modes")
+        return tuple(configured or default)
+
+    def rule_severity(self, rule_id: str, default: str) -> str:
+        return str(self.rule_config(rule_id).get("severity") or default)
+
+    def rule_blocking_contexts(self, rule_id: str, default: list[str]) -> list[str]:
+        return list(self.rule_config(rule_id).get("blocking_contexts", default))
+
     def payload_value(self, artefact: Artefact, key: str, default=None):
+        if artefact is None:
+            return default
         if hasattr(artefact, key):
             value = getattr(artefact, key)
             if value not in (None, "", [], {}):
                 return value
         return artefact.payload_json.get(key, default)
+
+    def artefact_by_ref(self, ref: str | None) -> Artefact | None:
+        if not ref:
+            return None
+        return self.by_id.get(ref) or self.by_source_object_id.get(ref)
+
+    def ref_exists(self, ref: str | None) -> bool:
+        return self.artefact_by_ref(ref) is not None
 
     def mandatory_artefact_types(self) -> set[str]:
         artefact_classes = self.profile_payload.get("artefact_classes") or {}
@@ -241,7 +230,9 @@ class ValidationContext:
             for artefact_type, config in artefact_classes.items()
             if config.get("applicability") == "mandatory"
         }
-        return mandatory or set(MANDATORY_ASIL_D_ARTEFACT_TYPES)
+        if "artefact_classes" in self.profile_payload:
+            return mandatory
+        return set(MANDATORY_ASIL_D_ARTEFACT_TYPES)
 
     def has_type_level_tailoring(self, artefact_type: str) -> bool:
         return any(
@@ -313,7 +304,14 @@ def _evaluate_rule(
     evaluator = RULE_EVALUATORS.get(rule_id)
     if evaluator is None:
         return []
-    return evaluator(run, context)
+    issues = evaluator(run, context)
+    for issue in issues:
+        issue.severity = context.rule_severity(rule_id, issue.severity)
+        issue.blocking_contexts_json = context.rule_blocking_contexts(
+            rule_id,
+            issue.blocking_contexts_json,
+        )
+    return issues
 
 
 def _issue_for_artefact(
@@ -442,9 +440,10 @@ def _rule_003(run: ValidationRun, context: ValidationContext) -> list[Validation
 def _rule_004(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     issues = []
     for artefact in context.artefacts:
+        payload_required_fields = required_fields_for_artefact_type(artefact.artefact_type)
         missing = [
             field
-            for field in ("artefact_type", "title", "source_object_id")
+            for field in ("artefact_type", "title", "source_object_id", *payload_required_fields)
             if not context.payload_value(artefact, field)
         ]
         if missing:
@@ -543,6 +542,19 @@ def _rule_011(run: ValidationRun, context: ValidationContext) -> list[Validation
     return issues
 
 
+def _verification_intent_valid(intent) -> bool:
+    if isinstance(intent, str):
+        return intent in VALID_VERIFICATION_INTENTS
+    if isinstance(intent, list):
+        return bool(intent) and all(item in VALID_VERIFICATION_INTENTS for item in intent)
+    if isinstance(intent, dict):
+        methods = intent.get("methods") or intent.get("verification_methods") or []
+        if isinstance(methods, str):
+            methods = [methods]
+        return bool(methods) and all(method in VALID_VERIFICATION_INTENTS for method in methods)
+    return False
+
+
 def _rule_012(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     return [
         _issue_for_artefact(
@@ -553,7 +565,7 @@ def _rule_012(run: ValidationRun, context: ValidationContext) -> list[Validation
         )
         for artefact in context.artefacts
         if artefact.artefact_type in {"SoftwareSafetyRequirement", "SoftwareRequirement"}
-        and context.payload_value(artefact, "verification_intent") not in VALID_VERIFICATION_INTENTS
+        and not _verification_intent_valid(context.payload_value(artefact, "verification_intent"))
     ]
 
 
@@ -590,6 +602,15 @@ def _rule_014(run: ValidationRun, context: ValidationContext) -> list[Validation
     ]
 
 
+def _component_criticality(context: ValidationContext, component: Artefact | None) -> str | None:
+    if component is None:
+        return None
+    return context.payload_value(component, "criticality_classification") or context.payload_value(
+        component,
+        "classification",
+    )
+
+
 def _rule_020(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     return [
         _issue_for_artefact(
@@ -599,7 +620,7 @@ def _rule_020(run: ValidationRun, context: ValidationContext) -> list[Validation
             "SoftwareComponent criticality classification is missing or invalid",
         )
         for artefact in context.by_type.get("SoftwareComponent", [])
-        if context.payload_value(artefact, "criticality_classification") not in VALID_ASIL_LEVELS
+        if _component_criticality(context, artefact) not in VALID_ASIL_LEVELS
     ]
 
 
@@ -656,8 +677,16 @@ def _rule_022(run: ValidationRun, context: ValidationContext) -> list[Validation
             for rel in context.relationships
         )
         has_interface_artefact = any(
-            context.payload_value(interface, "source_component_id") == relationship.source_artefact_id
-            and context.payload_value(interface, "destination_component_id") == relationship.target_artefact_id
+            context.artefact_by_ref(
+                context.payload_value(interface, "source_component_id")
+                or context.payload_value(interface, "source_component")
+            )
+            is source
+            and context.artefact_by_ref(
+                context.payload_value(interface, "destination_component_id")
+                or context.payload_value(interface, "destination_component")
+            )
+            is target
             for interface in context.by_type.get("InterfaceContract", [])
         )
         if not has_interface_relation and not has_interface_artefact:
@@ -675,10 +704,10 @@ def _rule_022(run: ValidationRun, context: ValidationContext) -> list[Validation
 def _rule_023(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     issues = []
     for interface in context.by_type.get("InterfaceContract", []):
-        source_id = context.payload_value(interface, "source_component_id")
-        dest_id = context.payload_value(interface, "destination_component_id")
-        source = context.by_id.get(source_id)
-        dest = context.by_id.get(dest_id)
+        source_id = context.payload_value(interface, "source_component_id") or context.payload_value(interface, "source_component")
+        dest_id = context.payload_value(interface, "destination_component_id") or context.payload_value(interface, "destination_component")
+        source = context.artefact_by_ref(source_id)
+        dest = context.artefact_by_ref(dest_id)
         if (
             not source
             or not dest
@@ -700,13 +729,22 @@ def _rule_023(run: ValidationRun, context: ValidationContext) -> list[Validation
 def _rule_024(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     issues = []
     for interface in context.by_type.get("InterfaceContract", []):
-        data_elements = context.payload_value(interface, "data_elements", []) or []
+        data_elements = (
+            context.payload_value(interface, "data_elements", [])
+            or context.payload_value(interface, "payload_definition", [])
+            or []
+        )
         invalid_elements = [
             element
             for element in data_elements
-            if not element.get("name") or not element.get("type") or element.get("range") is None
+            if not element.get("name")
+            or not element.get("type")
+            or (element.get("range") is None and element.get("allowed_range") is None)
         ]
-        if not context.payload_value(interface, "payload_type") or not data_elements or invalid_elements:
+        if not (
+            context.payload_value(interface, "payload_type")
+            or context.payload_value(interface, "interaction_kind")
+        ) or not data_elements or invalid_elements:
             issues.append(
                 _issue_for_artefact(
                     run,
@@ -721,11 +759,21 @@ def _rule_024(run: ValidationRun, context: ValidationContext) -> list[Validation
 def _rule_025(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     issues = []
     for interface in context.by_type.get("InterfaceContract", []):
-        source = context.by_id.get(context.payload_value(interface, "source_component_id"))
-        dest = context.by_id.get(context.payload_value(interface, "destination_component_id"))
-        source_class = context.payload_value(source, "criticality_classification") if source else None
-        dest_class = context.payload_value(dest, "criticality_classification") if dest else None
-        crosses_qm_to_asil = context.payload_value(interface, "criticality_classification") == "QM_to_ASIL" or (
+        source = context.artefact_by_ref(
+            context.payload_value(interface, "source_component_id")
+            or context.payload_value(interface, "source_component")
+        )
+        dest = context.artefact_by_ref(
+            context.payload_value(interface, "destination_component_id")
+            or context.payload_value(interface, "destination_component")
+        )
+        source_class = _component_criticality(context, source)
+        dest_class = _component_criticality(context, dest)
+        interface_classification = (
+            context.payload_value(interface, "criticality_classification")
+            or context.payload_value(interface, "classification")
+        )
+        crosses_qm_to_asil = interface_classification == "QM_to_ASIL" or (
             source_class == "QM" and dest_class in {"ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"}
         )
         if not crosses_qm_to_asil:
@@ -758,11 +806,25 @@ def _rule_026(run: ValidationRun, context: ValidationContext) -> list[Validation
     issues = []
     for interface in context.by_type.get("InterfaceContract", []):
         timing = context.payload_value(interface, "timing", {}) or {}
-        timing_relevant = any(timing.get(key) is not None for key in ("period_ms", "deadline_ms", "jitter_ms"))
+        timing_relevant = any(
+            timing.get(key) is not None
+            for key in (
+                "period_ms",
+                "deadline_ms",
+                "jitter_ms",
+                "update_period_ms",
+                "timeout_ms",
+                "freshness_ms",
+                "response_time_ms",
+            )
+        )
         if not timing_relevant:
             continue
         has_spec = any(
-            interface.artefact_id in (context.payload_value(spec, "test_basis_refs", []) or [])
+            (
+                interface.artefact_id in (context.payload_value(spec, "test_basis_refs", []) or [])
+                or interface.source_object_id in (context.payload_value(spec, "test_basis_refs", []) or [])
+            )
             and context.payload_value(spec, "timing_verification") is True
             for spec in context.by_type.get("TestSpecification", [])
         )
@@ -781,13 +843,16 @@ def _rule_026(run: ValidationRun, context: ValidationContext) -> list[Validation
 def _rule_027(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     issues = []
     for interface in context.by_type.get("InterfaceContract", []):
-        source = context.by_id.get(context.payload_value(interface, "source_component_id"))
-        dest = context.by_id.get(context.payload_value(interface, "destination_component_id"))
-        classifications = {
-            context.payload_value(component, "criticality_classification")
-            for component in (source, dest)
-            if component is not None
-        }
+        source = context.artefact_by_ref(
+            context.payload_value(interface, "source_component_id")
+            or context.payload_value(interface, "source_component")
+        )
+        dest = context.artefact_by_ref(
+            context.payload_value(interface, "destination_component_id")
+            or context.payload_value(interface, "destination_component")
+        )
+        classifications = {_component_criticality(context, component) for component in (source, dest)}
+        classifications.discard(None)
         if not classifications.intersection({"ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"}):
             continue
         if not context.has_related(
@@ -858,7 +923,7 @@ def _rule_032(run: ValidationRun, context: ValidationContext) -> list[Validation
             artefact_type="SoftwareComponent",
         )
         if not components or any(
-            context.payload_value(component, "criticality_classification") not in {"ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"}
+            _component_criticality(context, component) not in {"ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"}
             for component in components
         ):
             issues.append(
@@ -1005,7 +1070,7 @@ def _rule_050(run: ValidationRun, context: ValidationContext) -> list[Validation
     issues = []
     for spec in context.by_type.get("TestSpecification", []):
         refs = context.payload_value(spec, "test_basis_refs", []) or []
-        if not refs or any(ref not in context.by_id for ref in refs):
+        if not refs or any(not context.ref_exists(ref) for ref in refs):
             issues.append(
                 _issue_for_artefact(
                     run,
@@ -1035,7 +1100,7 @@ def _rule_052(run: ValidationRun, context: ValidationContext) -> list[Validation
     issues = []
     for procedure in context.by_type.get("TestProcedure", []):
         environment_ref = context.payload_value(procedure, "test_environment_ref")
-        environment = context.by_id.get(environment_ref)
+        environment = context.artefact_by_ref(environment_ref)
         if not environment or environment.artefact_type != "TestEnvironment":
             issues.append(
                 _issue_for_artefact(
@@ -1053,7 +1118,7 @@ def _rule_053(run: ValidationRun, context: ValidationContext) -> list[Validation
     for result in context.by_type.get("TestResult", []):
         test_case_ref = context.payload_value(result, "test_case_ref")
         test_spec_ref = context.payload_value(result, "test_spec_ref")
-        if test_case_ref in context.by_id or test_spec_ref in context.by_id:
+        if context.ref_exists(test_case_ref) or context.ref_exists(test_spec_ref):
             continue
         issues.append(
             _issue_for_artefact(
@@ -1078,7 +1143,7 @@ def _rule_054(run: ValidationRun, context: ValidationContext) -> list[Validation
             "outgoing",
             artefact_type="DefectRecord",
         )
-        if not has_defect and waiver_ref not in context.by_id:
+        if not has_defect and not context.ref_exists(waiver_ref):
             issues.append(
                 _issue_for_artefact(
                     run,
@@ -1094,8 +1159,11 @@ def _rule_055(run: ValidationRun, context: ValidationContext) -> list[Validation
     records = context.by_type.get("RequirementsCoverageRecord", [])
     if not records and not context.has_tailoring_not_applicable("RequirementsCoverageRecord"):
         return [_issue(run, "AAC-RULE-RULE-055", "Requirements coverage record is absent", [])]
-    if records and not any((context.payload_value(record, "coverage_percentage") or 0) >= 100 for record in records):
-        return [_issue(run, "AAC-RULE-RULE-055", "Requirements coverage is below 100 percent", [])]
+    minimum = context.validation_policy.get("requirements_coverage_minimum", 100)
+    if records and not any(
+        (context.payload_value(record, "coverage_percentage") or 0) >= minimum for record in records
+    ):
+        return [_issue(run, "AAC-RULE-RULE-055", f"Requirements coverage is below {minimum} percent", [])]
     return []
 
 
@@ -1241,6 +1309,47 @@ def _rule_090(run: ValidationRun, context: ValidationContext) -> list[Validation
 
 def _rule_091(run: ValidationRun, context: ValidationContext) -> list[ValidationIssue]:
     return []
+
+
+def _meta_rule_issues(
+    run: ValidationRun,
+    context: ValidationContext,
+    issues: list[ValidationIssue],
+) -> list[ValidationIssue]:
+    critical_baseline = [
+        issue
+        for issue in issues
+        if issue.rule_id not in {"AAC-RULE-RULE-090", "AAC-RULE-RULE-091"}
+        and issue.severity == "critical"
+        and "baseline" in issue.blocking_contexts_json
+    ]
+    critical_release_gate = [
+        issue
+        for issue in issues
+        if issue.rule_id not in {"AAC-RULE-RULE-090", "AAC-RULE-RULE-091"}
+        and issue.severity == "critical"
+        and "release_gate" in issue.blocking_contexts_json
+    ]
+    meta_issues = []
+    if context.mode == "baseline" and critical_baseline and not context.rule_disabled("AAC-RULE-RULE-090"):
+        meta_issues.append(
+            _issue(
+                run,
+                "AAC-RULE-RULE-090",
+                f"Baseline contains {len(critical_baseline)} critical blocking issue(s)",
+                [],
+            )
+        )
+    if context.mode == "release_gate" and critical_release_gate and not context.rule_disabled("AAC-RULE-RULE-091"):
+        meta_issues.append(
+            _issue(
+                run,
+                "AAC-RULE-RULE-091",
+                f"Release gate fails because {len(critical_release_gate)} critical issue(s) are open",
+                [],
+            )
+        )
+    return meta_issues
 
 
 RULE_EVALUATORS = {

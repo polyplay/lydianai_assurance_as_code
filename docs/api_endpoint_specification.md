@@ -151,6 +151,32 @@ Password values shall be accepted only on account creation, password reset, or p
 | POST | `/api/v1/projects/{project_id}/members` | Add project member | Admin, Project Lead |
 | DELETE | `/api/v1/projects/{project_id}/members/{user_id}` | Remove project member | Admin, Project Lead |
 
+AAC-API-IR-130
+`POST /api/v1/projects` shall accept an optional `assurance_configuration` object. If supplied, the back-end shall create a project-specific derived assurance profile and make it the active profile.
+
+```json
+{
+  "project_key": "SW_ITEM_01",
+  "name": "Software item assurance",
+  "description": "Project scope",
+  "active_profile_id": "ASIL_B_DEFAULT",
+  "assurance_configuration": {
+    "project_type": "software_system",
+    "asil_level": "ASIL_B",
+    "aspice_model": "ASPICE_PAM_4_0",
+    "aspice_default_capability_level": 2,
+    "aspice_scoped_processes": ["SWE.1", "SWE.2", "SWE.3", "SWE.4", "SWE.5", "SWE.6", "SUP.8", "SUP.9", "SUP.10"],
+    "aspice_process_overrides": {
+      "SUP.8": 3
+    },
+    "r155_applicable": false,
+    "r156_applicable": false,
+    "test_scope": ["unit", "integration", "software_qualification"],
+    "visibility_policy": "relevant_first"
+  }
+}
+```
+
 ## 5. Project Configuration And Profiles
 
 | Method | Path | Purpose | Roles |
@@ -170,6 +196,15 @@ Password values shall be accepted only on account creation, password reset, or p
 | PUT | `/api/v1/projects/{project_id}/standards-references/{standards_reference_id}` | Update standards reference/review status | Admin |
 | GET | `/api/v1/projects/{project_id}/standards-mappings` | Query artefact/rule standards mappings | All project roles |
 | PUT | `/api/v1/projects/{project_id}/standards-mappings` | Update artefact/rule standards mappings | Admin |
+
+AAC-API-IR-150
+`GET /api/v1/projects/{project_id}/config` shall return the current `assurance_configuration` in addition to baseline, validation, and reporting policy.
+
+AAC-API-IR-151
+`PUT /api/v1/projects/{project_id}/config` shall accept `assurance_configuration`. Updating it shall regenerate derived artefact applicability, rule policy, and profile payload, then record an audit event.
+
+AAC-API-IR-152
+`POST /api/v1/projects/{project_id}/profiles/{profile_id}/evaluate` shall return `visible_artefact_types`, `mandatory_artefact_types`, `conditional_artefact_types`, `optional_artefact_types`, `not_applicable_artefact_types`, `enabled_rules`, `disabled_rules`, and `assurance_configuration`.
 
 ## 6. Artefacts
 
@@ -228,6 +263,16 @@ Password values shall be accepted only on account creation, password reset, or p
 | POST | `/api/v1/projects/{project_id}/validation/issues/{issue_id}/suppress` | Suppress issue | Admin |
 | POST | `/api/v1/projects/{project_id}/validation/issues/{issue_id}/reopen` | Reopen suppressed issue | Admin |
 | GET | `/api/v1/projects/{project_id}/rules` | Get rule catalog | All project roles |
+
+AAC-API-IR-260
+`POST /api/v1/projects/{project_id}/validation/run` shall accept an optional JSON body containing validation scope and mode. If omitted, the endpoint shall run project-level baseline validation.
+
+```json
+{
+  "type": "project",
+  "mode": "baseline"
+}
+```
 
 ## 11. Traceability And Impact
 

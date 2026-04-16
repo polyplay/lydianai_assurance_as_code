@@ -84,6 +84,16 @@ The Sphinx-Needs profile shall define these need types:
 | `ffi_argument` | FreedomFromInterferenceArgument |
 | `asil_decomposition` | ASILDecompositionArgument |
 | `assurance_argument` | AssuranceArgument |
+| `tara` | ThreatAnalysisRiskAssessment |
+| `cybersecurity_requirement` | CybersecurityRequirement |
+| `cybersecurity_evidence` | CybersecurityManagementEvidence |
+| `cybersecurity_interface` | CybersecurityInterfaceEvidence |
+| `sums_evidence` | SoftwareUpdateManagementEvidence |
+| `software_version` | SoftwareVersionRecord |
+| `update_campaign` | UpdateCampaign |
+| `update_integrity` | UpdateIntegrityEvidence |
+| `sbom` | SoftwareBillOfMaterials |
+| `test_risk` | TestRiskAssessment |
 | `tool_inventory` | ToolInventoryItem |
 | `tool_confidence` | ToolConfidenceAssessment |
 | `tool_qualification` | ToolQualificationEvidence |

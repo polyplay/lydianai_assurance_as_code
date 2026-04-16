@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from aac_backend.database import AsyncSessionLocal
@@ -40,15 +40,9 @@ async def create_baseline(
         )
         session.add(job)
         await session.flush()
-    session.add(
-        ProjectUpdateLock(
-            project_id=project_id,
-            lock_owner_job_id=job.job_id,
-            acquired_by=actor_user_id,
-            acquired_at=datetime.now(UTC),
-        )
-    )
     await session.flush()
+    await session.commit()
+    await _acquire_project_update_lock(project_id, job.job_id, actor_user_id)
     try:
         validation_run = await run_validation(
             session,
@@ -150,10 +144,10 @@ async def create_baseline(
         await _release_project_update_lock_in_new_session(project_id)
         raise
     except Exception:
-        await _release_project_update_lock(session, project_id)
+        await _release_project_update_lock_in_new_session(project_id)
         raise
     else:
-        await _release_project_update_lock(session, project_id)
+        await _release_project_update_lock_in_new_session(project_id)
         return baseline
 
 
@@ -267,6 +261,23 @@ async def _release_project_update_lock(session: AsyncSession, project_id: str) -
     if lock:
         await session.delete(lock)
         await session.flush()
+
+
+async def _acquire_project_update_lock(project_id: str, job_id: str, actor_user_id: str) -> None:
+    async with AsyncSessionLocal() as lock_session:
+        lock_session.add(
+            ProjectUpdateLock(
+                project_id=project_id,
+                lock_owner_job_id=job_id,
+                acquired_by=actor_user_id,
+                acquired_at=datetime.now(UTC),
+            )
+        )
+        try:
+            await lock_session.commit()
+        except IntegrityError as exc:
+            await lock_session.rollback()
+            raise ValueError("project update lock is already active") from exc
 
 
 async def _release_project_update_lock_in_new_session(project_id: str) -> None:

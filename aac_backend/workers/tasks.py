@@ -1,3 +1,4 @@
+import aac_backend.models.all_models  # noqa: F401
 from aac_backend.repositories.unit_of_work import unit_of_work
 from aac_backend.schemas.domain import BaselineCreate, ImportStart, ReleaseGateRun
 from aac_backend.services.baseline_service import create_baseline, run_release_gate
@@ -19,6 +20,7 @@ async def import_sphinx_job(ctx, job_id: str, project_id: str, payload: dict, ac
             if job:
                 job.state = "failed"
                 job.error_json = {"error": type(exc).__name__, "message": str(exc)}
+                await session.commit()
             raise
         if job:
             job.state = "completed" if run.state != "waiting_for_user" else "waiting_for_user"
@@ -27,14 +29,30 @@ async def import_sphinx_job(ctx, job_id: str, project_id: str, payload: dict, ac
         return run.import_run_id
 
 
-async def validation_job(ctx, job_id: str, project_id: str, actor_user_id: str) -> str:
+async def validation_job(
+    ctx,
+    job_id: str,
+    project_id: str,
+    actor_user_id: str,
+    scope: dict | None = None,
+) -> str:
     async with unit_of_work() as session:
+        from datetime import UTC, datetime
+
         from aac_backend.models.jobs import Job
 
         job = await session.get(Job, job_id)
         if job:
             job.state = "running"
-        run = await run_validation(session, project_id, actor_user_id)
+        try:
+            run = await run_validation(session, project_id, actor_user_id, scope=scope)
+        except Exception as exc:
+            if job:
+                job.state = "failed"
+                job.completed_at = datetime.now(UTC)
+                job.error_json = {"error": type(exc).__name__, "message": str(exc)}
+                await session.commit()
+            raise
         if job:
             job.state = "completed"
             job.progress_percent = 100
@@ -44,12 +62,22 @@ async def validation_job(ctx, job_id: str, project_id: str, actor_user_id: str) 
 
 async def baseline_job(ctx, job_id: str, project_id: str, payload: dict, actor_user_id: str) -> str:
     async with unit_of_work() as session:
+        from datetime import UTC, datetime
+
         from aac_backend.models.jobs import Job
 
         job = await session.get(Job, job_id)
         if job:
             job.state = "running"
-        baseline = await create_baseline(session, project_id, BaselineCreate(**payload), actor_user_id, job=job)
+        try:
+            baseline = await create_baseline(session, project_id, BaselineCreate(**payload), actor_user_id, job=job)
+        except Exception as exc:
+            if job:
+                job.state = "failed"
+                job.completed_at = datetime.now(UTC)
+                job.error_json = {"error": type(exc).__name__, "message": str(exc)}
+                await session.commit()
+            raise
         if job:
             job.state = "completed"
             job.progress_percent = 100
@@ -79,17 +107,27 @@ async def impact_job(ctx, job_id: str, project_id: str, artefact_id: str, actor_
 
 async def release_gate_job(ctx, job_id: str, project_id: str, payload: dict, actor_user_id: str) -> str:
     async with unit_of_work() as session:
+        from datetime import UTC, datetime
+
         from aac_backend.models.baselines import Baseline
         from aac_backend.models.jobs import Job
 
         job = await session.get(Job, job_id)
         if job:
             job.state = "running"
-        body = ReleaseGateRun(**payload)
-        baseline = await session.get(Baseline, body.baseline_id)
-        if baseline is None:
-            raise ValueError("Baseline not found")
-        result = await run_release_gate(session, project_id, baseline, actor_user_id)
+        try:
+            body = ReleaseGateRun(**payload)
+            baseline = await session.get(Baseline, body.baseline_id)
+            if baseline is None:
+                raise ValueError("Baseline not found")
+            result = await run_release_gate(session, project_id, baseline, actor_user_id)
+        except Exception as exc:
+            if job:
+                job.state = "failed"
+                job.completed_at = datetime.now(UTC)
+                job.error_json = {"error": type(exc).__name__, "message": str(exc)}
+                await session.commit()
+            raise
         if job:
             job.state = "completed"
             job.progress_percent = 100
