@@ -318,7 +318,27 @@ AAC-API-IR-260
 | GET | `/api/v1/projects/{project_id}/baselines/{baseline_id}/release-gate/results/latest` | Get latest release-gate result | All project roles |
 | GET | `/api/v1/projects/{project_id}/baselines/{baseline_id}/release-gate/results/{result_id}` | Get release-gate result | All project roles |
 
-## 14. Jobs And Audit
+## 14. Repository Integrations
+
+| Method | Path | Purpose | Roles |
+|---|---|---|---|
+| GET | `/api/v1/projects/{project_id}/repo-connectors` | List configured repository connectors | All project roles |
+| POST | `/api/v1/projects/{project_id}/repo-connectors` | Create GitHub repository connector | Admin |
+| GET | `/api/v1/projects/{project_id}/repo-connectors/{connector_id}` | Get repository connector metadata | All project roles |
+| PUT | `/api/v1/projects/{project_id}/repo-connectors/{connector_id}` | Update connector metadata or rotate secrets | Admin |
+| DELETE | `/api/v1/projects/{project_id}/repo-connectors/{connector_id}` | Soft-delete repository connector | Admin |
+| POST | `/api/v1/projects/{project_id}/repo-connectors/{connector_id}/test` | Test GitHub connectivity | Admin |
+| GET | `/api/v1/projects/{project_id}/repo-connectors/{connector_id}/status` | Read repository commit, checks, and statuses | All project roles |
+| POST | `/api/v1/projects/{project_id}/repo-connectors/{connector_id}/scan` | Trigger manual repository scan | Admin, Project Lead |
+| GET | `/api/v1/projects/{project_id}/repo-connectors/{connector_id}/scans/{scan_id}` | Get repository scan status | All project roles |
+| GET | `/api/v1/projects/{project_id}/baselines/{baseline_id}/repository-approvals` | List repository approvals published for a baseline | All project roles |
+| POST | `/api/v1/projects/{project_id}/baselines/{baseline_id}/repository-approvals` | Publish release approval to repository checks/statuses | Admin, Project Lead, Quality Engineer |
+| GET | `/api/v1/projects/{project_id}/repo-checks/{check_id}` | Get repository approval/check publication status | All project roles |
+| POST | `/api/v1/integrations/github/webhook/{connector_id}` | Receive GitHub webhook delivery | System |
+
+The detailed connector schemas, mapping file schema, state machines, GitHub check semantics, and deployment acceptance criteria are controlled by [Repository Integration Contract](repository_integration_contract.md).
+
+## 15. Jobs And Audit
 
 | Method | Path | Purpose | Roles |
 |---|---|---|---|

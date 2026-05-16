@@ -14,6 +14,11 @@ from aac_backend.models.baselines import (
 )
 from aac_backend.models.jobs import Job, ProjectUpdateLock
 from aac_backend.models.projects import ProjectConfiguration
+from aac_backend.models.repository_integrations import (
+    BaselineRepositoryRevision,
+    RepositoryConnector,
+    RepositoryRevision,
+)
 from aac_backend.models.validation import ValidationIssue
 from aac_backend.rules.catalog import RULE_CATALOG
 from aac_backend.schemas.domain import BaselineCreate
@@ -122,10 +127,16 @@ async def create_baseline(
                         relationship_type=relationship.relationship_type,
                     )
                 )
+        repository_revision_count = await _snapshot_repository_revisions(
+            session,
+            baseline.baseline_id,
+            project_id,
+        )
         baseline.state = "created"
         baseline.summary_json = {
             "artefact_count": len(artefacts),
             "relationship_count": len(relationships),
+            "repository_revision_count": repository_revision_count,
             "validation_summary": validation_run.summary_json,
             "suspect_summary": {"open_suspect_count": len(open_suspects)},
             "release_gate_status": baseline.release_gate_status,
@@ -249,6 +260,37 @@ async def _baseline_artefact_ids(session: AsyncSession, baseline_id: str) -> set
             )
         )
     )
+
+
+async def _snapshot_repository_revisions(
+    session: AsyncSession,
+    baseline_id: str,
+    project_id: str,
+) -> int:
+    connectors = list(
+        await session.scalars(
+            select(RepositoryConnector).where(
+                RepositoryConnector.project_id == project_id,
+                RepositoryConnector.status == "active",
+                RepositoryConnector.last_revision_id.is_not(None),
+            )
+        )
+    )
+    count = 0
+    for connector in connectors:
+        revision = await session.get(RepositoryRevision, connector.last_revision_id)
+        if revision is None:
+            continue
+        session.add(
+            BaselineRepositoryRevision(
+                baseline_id=baseline_id,
+                repository_connector_id=connector.repository_connector_id,
+                repository_revision_id=revision.repository_revision_id,
+                commit_sha=revision.commit_sha,
+            )
+        )
+        count += 1
+    return count
 
 
 def _issue_applies_to_baseline(issue: ValidationIssue, baseline_artefact_ids: set[str]) -> bool:

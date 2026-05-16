@@ -661,7 +661,39 @@ Baseline comparison APIs shall identify added, removed, changed, unchanged, and 
 AAC-API-IR-046
 Baseline APIs shall support filtering by project, component, interface, ASIL level, lifecycle status, and release status.
 
-## 11. Gaps To Close Next
+## 11. Repository Integration Resource Semantics
+
+AAC-API-IR-050
+The back-end shall support a `RepositoryConnector` resource that binds a project to a configured GitHub repository through a GitHub App installation or encrypted access-token connector.
+
+AAC-API-IR-051
+The back-end shall encrypt GitHub private key, GitHub access token, and webhook secret values at rest and shall not return secret values through API responses.
+
+AAC-API-IR-052
+The back-end shall support manual and webhook-triggered `RepositoryScanRun` jobs.
+
+AAC-API-IR-053
+Repository scans shall read `.aac/repo.yml` from the exact scanned commit and convert mappings into canonical `ImplementationItem`, `SourceCodeReference`, and `BuildConfiguration` artefacts.
+
+AAC-API-IR-054
+Repository scans shall create traceability relationships from implementation items to requirements and from source references to implementation items.
+
+AAC-API-IR-055
+Baseline creation shall snapshot active repository revisions alongside artefact and relationship revisions.
+
+AAC-API-IR-056
+When a project has an active repository connector, validation shall require repository-backed implementation and source-code references to include connector, commit, and path evidence.
+
+AAC-API-IR-057
+The back-end shall read repository status, current commit, GitHub checks, and GitHub commit statuses for a configured connector.
+
+AAC-API-IR-058
+The back-end shall publish baseline release approval to the exact commit SHA captured in the baseline repository snapshot after the latest release gate result has passed.
+
+AAC-API-IR-059
+Repository connector schemas, mapping-file schema, state machines, GitHub check semantics, conflict/versioning rules, and deployment acceptance criteria shall be controlled by [Repository Integration Contract](repository_integration_contract.md).
+
+## 12. Gaps To Close Next
 
 The following details are now covered by dedicated controlled documents:
 
@@ -676,5 +708,6 @@ The following details are now covered by dedicated controlled documents:
 - rule-to-resource applicability matrix: `rule_to_resource_applicability_matrix.md`
 - ASIL profile configuration schema: `asil_profile_configuration_schema.md`
 - Sphinx-Needs type and field mappings: `sphinx_needs_mapping_specification.md`
+- repository integration: `repository_integration_requirements.md`
 
 The async job payload and worker execution schema is covered by `async_job_schema.md`.

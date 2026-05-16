@@ -6,5 +6,6 @@ from aac_backend.models.impact import *  # noqa: F403
 from aac_backend.models.imports import *  # noqa: F403
 from aac_backend.models.jobs import *  # noqa: F403
 from aac_backend.models.projects import *  # noqa: F403
+from aac_backend.models.repository_integrations import *  # noqa: F403
 from aac_backend.models.standards import *  # noqa: F403
 from aac_backend.models.validation import *  # noqa: F403

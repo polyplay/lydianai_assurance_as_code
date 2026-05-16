@@ -386,12 +386,13 @@
       <nav class="rail" aria-label="Project workflow">
         <button class="active" data-stage-button="setup">1. Setup</button>
         <button data-stage-button="team">2. Team</button>
-        <button data-stage-button="requirements">3. Requirements</button>
-        <button data-stage-button="vmodel">4. V-model Artefacts</button>
-        <button data-stage-button="trace">5. Traceability</button>
-        <button data-stage-button="review">6. Review And Release</button>
-        <button data-stage-button="validate">7. Validation</button>
-        <button data-stage-button="baseline">8. Baseline</button>
+        <button data-stage-button="repository">3. Repository</button>
+        <button data-stage-button="requirements">4. Requirements</button>
+        <button data-stage-button="vmodel">5. V-model Artefacts</button>
+        <button data-stage-button="trace">6. Traceability</button>
+        <button data-stage-button="review">7. Review And Release</button>
+        <button data-stage-button="validate">8. Validation</button>
+        <button data-stage-button="baseline">9. Baseline</button>
       </nav>
     </aside>
 
@@ -565,6 +566,80 @@
           <h3>Project Members</h3>
           <button id="loadMembersButton">Load members</button>
           <div id="membersTable"></div>
+        </div>
+      </section>
+
+      <section id="stage-repository" class="stage">
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Repository Integration</h2>
+              <p class="hint">Admin connects the project to GitHub. Repository scans import code evidence, and approved baselines can publish an approval check or status back to the commit.</p>
+            </div>
+          </div>
+          <div class="row-3">
+            <label>
+              Owner
+              <input id="repoOwner" placeholder="organisation">
+            </label>
+            <label>
+              Repository
+              <input id="repoName" placeholder="software-system">
+            </label>
+            <label>
+              Default branch
+              <input id="repoDefaultBranch" value="main">
+            </label>
+          </div>
+          <label>
+            Authentication
+            <select id="repoAuthMode">
+              <option value="access_token">Access token</option>
+              <option value="github_app">GitHub App</option>
+            </select>
+          </label>
+          <div class="row">
+            <label>
+              GitHub App ID
+              <input id="repoGithubAppId" placeholder="123456">
+            </label>
+            <label>
+              Installation ID
+              <input id="repoGithubInstallationId" placeholder="987654">
+            </label>
+          </div>
+          <label class="compact-field">
+            Private key PEM
+            <textarea id="repoGithubPrivateKey" spellcheck="false" placeholder="-----BEGIN RSA PRIVATE KEY-----"></textarea>
+          </label>
+          <label>
+            Webhook secret
+            <input id="repoGithubWebhookSecret" type="password" placeholder="shared webhook secret">
+          </label>
+          <label>
+            Access token
+            <input id="repoGithubAccessToken" type="password" placeholder="GitHub token">
+          </label>
+          <div class="row-3">
+            <button id="createRepoConnectorButton">Create connector</button>
+            <button id="loadRepoConnectorsButton">Load connectors</button>
+            <button id="testRepoConnectorButton">Test selected connector</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Connected Repositories</h3>
+          <div class="row">
+            <label>
+              Connector
+              <select id="repoConnectorSelect"></select>
+            </label>
+            <button id="scanRepoConnectorButton">Scan selected repository</button>
+            <button id="repoStatusButton">Load repository status</button>
+          </div>
+          <p class="hint">The scanner reads `.aac/repo.yml` at the selected commit or branch and imports implementation, source reference, and build configuration artefacts.</p>
+          <div id="repoConnectorsTable"></div>
+          <div id="repoStatusPanel"></div>
         </div>
       </section>
 
@@ -770,8 +845,13 @@
             </label>
             <button id="releaseGateButton">Run release gate</button>
           </div>
+          <div class="row">
+            <button id="releaseBaselineButton">Release baseline and publish repo approval</button>
+            <button id="loadRepositoryApprovalsButton">Load repository approvals</button>
+          </div>
           <button id="loadBaselinesButton">Load baselines</button>
           <div id="baselinesTable"></div>
+          <div id="repositoryApprovalsTable"></div>
         </div>
       </section>
 
@@ -791,6 +871,7 @@
       users: [],
       config: null,
       profileEvaluation: null,
+      repoConnectors: [],
     };
 
     const profiles = {
@@ -823,6 +904,7 @@
       SoftwareUnitDesign: "SUD",
       SoftwareUnit: "UNIT",
       ImplementationItem: "IMPL",
+      SourceCodeReference: "SRC",
       BuildConfiguration: "BUILD",
       TestPlan: "TP",
       TestSpecification: "TS",
@@ -861,7 +943,7 @@
       {
         id: "unit-implementation",
         label: "Unit design and implementation",
-        types: ["SoftwareUnitDesign", "SoftwareUnit", "ImplementationItem", "BuildConfiguration"],
+        types: ["SoftwareUnitDesign", "SoftwareUnit", "ImplementationItem", "SourceCodeReference", "BuildConfiguration"],
       },
       {
         id: "verification",
@@ -891,8 +973,9 @@
       Safeguard: { safeguard_type: "runtime_monitor", allocated_component: "COMP_A" },
       SoftwareUnitDesign: { software_unit: "UNIT_001", design_description: "Design description" },
       SoftwareUnit: { parent_component: "COMP_A", responsibilities: ["Responsibility"] },
-      ImplementationItem: { repo_path: "src/module.py", language: "Python" },
-      BuildConfiguration: { build_id: "BUILD_001", compiler_toolchain: "python-3.12" },
+      ImplementationItem: { repo_path: "src/module.py", language: "Python", source_references: [{ reference_type: "source_file", location: "src/module.py" }] },
+      SourceCodeReference: { repo_url: "https://github.com/org/repo", repo_path: "src/module.py", commit_ref: "main", language: "Python" },
+      BuildConfiguration: { build_id: "BUILD_001", source_revision: "main", compiler_toolchain: "python-3.12" },
       TestSpecification: { objective: "Verify requirement", test_basis: ["REQ_SW_001"], verification_method: "test" },
       TestCase: { test_specification: "TS_001", expected_results: ["pass"], pass_fail_criteria: "Observed result matches expected result" },
       TestProcedure: { test_cases: ["TC_001"], test_environment: "ENV_001" },
@@ -1312,6 +1395,7 @@
       applyProjectAsilConstraints();
       const artefacts = await request("GET", `/api/v1/projects/${projectId}/artefacts`);
       renderArtefacts(artefacts.data || []);
+      await loadRepoConnectors();
       await loadMembers();
       renderProject(state.projects.find((project) => project.project_id === projectId));
       return { status: "refreshed", artefact_count: state.artefacts.length };
@@ -1339,7 +1423,7 @@
       byId("projectSelect").value = response.data.project_id;
       renderProject(response.data);
       await refreshProjectData();
-      setStage("team");
+      setStage("repository");
       return response;
     }));
 
@@ -1455,6 +1539,118 @@
         role: byId("existingUserRole").value,
       });
       await loadMembers();
+      return response;
+    }));
+
+    byId("createRepoConnectorButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const owner = byId("repoOwner").value.trim();
+      const repository = byId("repoName").value.trim();
+      const authMode = byId("repoAuthMode").value;
+      const payload = {
+        provider: "github",
+        auth_mode: authMode,
+        name: `${owner}/${repository}`,
+        owner,
+        repository,
+        default_branch: byId("repoDefaultBranch").value.trim() || "main",
+        mapping_policy: { mapping_file_path: ".aac/repo.yml" },
+        scan_policy: { auto_scan_on_push: true, auto_scan_on_pull_request: true },
+      };
+      if (authMode === "github_app") {
+        payload.github_app = {
+          app_id: byId("repoGithubAppId").value.trim(),
+          installation_id: byId("repoGithubInstallationId").value.trim(),
+          private_key_pem: byId("repoGithubPrivateKey").value,
+          webhook_secret: byId("repoGithubWebhookSecret").value,
+        };
+      } else {
+        payload.access_token = {
+          access_token: byId("repoGithubAccessToken").value,
+          webhook_secret: byId("repoGithubWebhookSecret").value || null,
+        };
+      }
+      const response = await request("POST", `/api/v1/projects/${projectId}/repo-connectors`, payload);
+      byId("repoGithubPrivateKey").value = "";
+      byId("repoGithubWebhookSecret").value = "";
+      byId("repoGithubAccessToken").value = "";
+      await loadRepoConnectors();
+      return response;
+    }));
+
+    byId("loadRepoConnectorsButton").addEventListener("click", () => run(loadRepoConnectors));
+
+    async function loadRepoConnectors() {
+      const projectId = selectedProjectId();
+      if (!projectId) {
+        return { data: [] };
+      }
+      const response = await request("GET", `/api/v1/projects/${projectId}/repo-connectors`);
+      state.repoConnectors = response.data || [];
+      const select = byId("repoConnectorSelect");
+      select.innerHTML = "";
+      for (const connector of state.repoConnectors) {
+        select.append(option(connector.repository_connector_id, `${connector.owner}/${connector.repository} | ${connector.status}`));
+      }
+      byId("repoConnectorsTable").innerHTML = table(
+        ["Repository", "Auth", "Branch", "Status", "Last scan", "Last revision"],
+        state.repoConnectors.map((connector) => [
+          `${connector.owner}/${connector.repository}`,
+          connector.auth_mode,
+          connector.default_branch,
+          connector.status,
+          connector.last_scan_run_id || "",
+          connector.last_revision_id || "",
+        ]),
+      );
+      return response;
+    }
+
+    byId("testRepoConnectorButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const connectorId = byId("repoConnectorSelect").value;
+      if (!connectorId) {
+        throw new Error("Select a repository connector first");
+      }
+      return request("POST", `/api/v1/projects/${projectId}/repo-connectors/${connectorId}/test`, {});
+    }));
+
+    byId("repoStatusButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const connectorId = byId("repoConnectorSelect").value;
+      if (!connectorId) {
+        throw new Error("Select a repository connector first");
+      }
+      const response = await request("GET", `/api/v1/projects/${projectId}/repo-connectors/${connectorId}/status`);
+      const data = response.data || {};
+      const commit = data.current_commit || {};
+      const checks = data.github_checks || [];
+      byId("repoStatusPanel").innerHTML = [
+        table(["Field", "Value"], [
+          ["Repository state", data.repository_state || ""],
+          ["Current ref", data.current_ref || ""],
+          ["Commit", commit.commit_sha || ""],
+          ["Message", commit.message || ""],
+        ]),
+        table(["Check", "Status", "Conclusion"], checks.map((check) => [
+          check.name || "",
+          check.status || "",
+          check.conclusion || "",
+        ])),
+      ].join("");
+      return response;
+    }));
+
+    byId("scanRepoConnectorButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const connectorId = byId("repoConnectorSelect").value;
+      if (!connectorId) {
+        throw new Error("Select a repository connector first");
+      }
+      const response = await request("POST", `/api/v1/projects/${projectId}/repo-connectors/${connectorId}/scan`, {
+        trigger: "manual",
+      });
+      await loadRepoConnectors();
       return response;
     }));
 
@@ -1599,6 +1795,35 @@
         baseline_id: byId("releaseGateBaselineId").value,
       });
     }));
+
+    byId("releaseBaselineButton").addEventListener("click", () => run(async () => {
+      const projectId = requireProject();
+      const baselineId = byId("releaseGateBaselineId").value;
+      const response = await request("POST", `/api/v1/projects/${projectId}/baselines/${baselineId}/release`, {});
+      await loadRepositoryApprovals();
+      return response;
+    }));
+
+    byId("loadRepositoryApprovalsButton").addEventListener("click", () => run(loadRepositoryApprovals));
+
+    async function loadRepositoryApprovals() {
+      const projectId = requireProject();
+      const baselineId = byId("releaseGateBaselineId").value;
+      if (!baselineId) {
+        throw new Error("Enter a baseline ID first");
+      }
+      const response = await request("GET", `/api/v1/projects/${projectId}/baselines/${baselineId}/repository-approvals`);
+      byId("repositoryApprovalsTable").innerHTML = table(
+        ["Commit", "Type", "Status", "Conclusion"],
+        (response.data || []).map((check) => [
+          check.commit_sha,
+          check.check_type,
+          check.status,
+          check.conclusion || "",
+        ]),
+      );
+      return response;
+    }
 
     byId("loadBaselinesButton").addEventListener("click", () => run(async () => {
       const projectId = requireProject();

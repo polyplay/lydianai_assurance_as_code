@@ -631,14 +631,22 @@ all(
 ```python
 db.count_active_artefacts(project_id, 'BuildConfiguration') > 0 and
 all(
-    bc.compiler_version is not None and
-    bc.build_flags is not None and
-    bc.target_architecture is not None
+    (
+        bc.repository_connector_id is not None and
+        (bc.source_revision is not None or bc.commit_sha is not None) and
+        bc.compiler_toolchain is not None
+    )
+    if bc.source_kind == 'repository'
+    else (
+        bc.compiler_version is not None and
+        bc.build_flags is not None and
+        bc.target_architecture is not None
+    )
     for bc in db.get_active_artefacts(project_id, 'BuildConfiguration')
 )
 ```
 
-**Fail condition**: No BuildConfiguration exists, or existing one lacks compiler version, build flags, or target architecture
+**Fail condition**: No BuildConfiguration exists, or an existing build configuration lacks required build identity. Repository-backed build configurations require connector and revision evidence plus compiler toolchain; manually-authored build configurations require compiler version, build flags, and target architecture.
 
 **Severity by profile**: ASIL_D: critical, ASIL_C: critical, ASIL_B: major, ASIL_A: major, QM: minor
 

@@ -175,7 +175,24 @@ A 409 Conflict response is returned when a pre-condition is not met.
 
 ---
 
-## 16. Cross-Cutting Authorization Rules
+## 16. Repository Integration Operations
+
+| Operation | Endpoint | Required Role | Pre-condition | Post-state | Audit Event |
+|-----------|----------|---------------|---------------|------------|-------------|
+| View repository connectors | GET /api/v1/projects/{id}/repo-connectors | User, Project Lead, Quality Engineer, or Admin | project exists | connectors returned without secrets | none |
+| Create repository connector | POST /api/v1/projects/{id}/repo-connectors | Admin | GitHub App or access-token config and secrets provided | connector created; secrets encrypted | repository_connector.created |
+| Update repository connector | PUT /api/v1/projects/{id}/repo-connectors/{connector_id} | Admin | connector exists | connector updated; optional secret rotation | repository_connector.updated |
+| Soft-delete repository connector | DELETE /api/v1/projects/{id}/repo-connectors/{connector_id} | Admin | connector exists | connector status deleted | repository_connector.deleted |
+| Test repository connector | POST /api/v1/projects/{id}/repo-connectors/{connector_id}/test | Admin | connector exists | connectivity result returned | none |
+| Read repository status | GET /api/v1/projects/{id}/repo-connectors/{connector_id}/status | User, Project Lead, Quality Engineer, or Admin | connector exists | repository metadata, commit, checks, and statuses returned | none |
+| Trigger repository scan | POST /api/v1/projects/{id}/repo-connectors/{connector_id}/scan | Admin or Project Lead | connector active | repository scan job enqueued | repository_scan.completed |
+| List repository approvals | GET /api/v1/projects/{id}/baselines/{baseline_id}/repository-approvals | User, Project Lead, Quality Engineer, or Admin | baseline exists | approval publication history returned | none |
+| Publish repository approval | POST /api/v1/projects/{id}/baselines/{baseline_id}/repository-approvals | Admin, Project Lead, or Quality Engineer | release gate passed | approval check or status sent to repository | repository_approval.published |
+| Receive GitHub webhook | POST /api/v1/integrations/github/webhook/{connector_id} | System | connector active | delivery recorded; scan job enqueued when event applies | repository_webhook.received |
+
+---
+
+## 17. Cross-Cutting Authorization Rules
 
 AAC-AUTH-FR-001
 All project-scoped operations require the caller to be a member of the target project with one of the explicitly permitted roles for the operation.

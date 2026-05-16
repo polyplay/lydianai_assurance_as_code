@@ -18,6 +18,14 @@ PostgreSQL, Redis, and ARQ background workers. It includes the backend foundatio
 
 The detailed requirements and architecture documents are kept in `docs/`.
 
+Operational and role-based documentation is kept in `documentation/`:
+
+- `documentation/backend_installer_guide.md`
+- `documentation/admin_manual.md`
+- `documentation/user_manual.md`
+
+Production backend installer assets are kept in `installer/backend/`.
+
 ## Prerequisites
 
 - Python 3.11 or newer for local development.
@@ -166,11 +174,15 @@ AAC_DATABASE_URL=postgresql+asyncpg://aac:aac@localhost:5432/aac
 AAC_REDIS_URL=redis://localhost:6379/0
 AAC_JWT_SECRET=change-me-change-me-change-me-change-me
 AAC_JWT_EXPIRY_HOURS=8
+AAC_SECRET_ENCRYPTION_KEY=
+AAC_GITHUB_API_BASE_URL=https://api.github.com
 AAC_ENVIRONMENT=development
 ```
 
 For real deployments, replace `AAC_JWT_SECRET` with a strong secret and use environment-specific
-database and Redis credentials.
+database and Redis credentials. Set `AAC_SECRET_ENCRYPTION_KEY` to a Fernet-compatible key, or to a
+strong passphrase that the backend derives into an encryption key, before storing repository connector
+secrets such as GitHub App private keys, GitHub access tokens, and webhook secrets.
 
 ## API Entry Points
 
@@ -180,6 +192,12 @@ The API is mounted under `/api/v1`. Important entry points include:
 - `POST /api/v1/auth/login`
 - `GET /api/v1/projects`
 - `POST /api/v1/projects`
+- `GET /api/v1/projects/{project_id}/repo-connectors`
+- `POST /api/v1/projects/{project_id}/repo-connectors`
+- `GET /api/v1/projects/{project_id}/repo-connectors/{connector_id}/status`
+- `POST /api/v1/projects/{project_id}/repo-connectors/{connector_id}/scan`
+- `POST /api/v1/projects/{project_id}/baselines/{baseline_id}/repository-approvals`
+- `POST /api/v1/integrations/github/webhook/{connector_id}`
 - `GET /api/v1/projects/{project_id}/artefacts`
 - `POST /api/v1/projects/{project_id}/imports/sphinx`
 - `POST /api/v1/projects/{project_id}/validation/run`

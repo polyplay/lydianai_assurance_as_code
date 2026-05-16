@@ -462,7 +462,127 @@ Primary key: `artefact_type`, `standards_reference_id`
 
 Primary key: `rule_id`, `standards_reference_id`
 
-## 13. Logical Graph Query Model
+## 13. Repository Integration Tables
+
+### connector_secrets
+
+- `connector_secret_id` PK
+- `project_id` FK
+- `secret_type`
+- `encrypted_payload`
+- `key_id`
+- `status`
+- `created_by`
+- `last_rotated_at`
+- `last_used_at`
+
+### repository_connectors
+
+- `repository_connector_id` PK
+- `project_id` FK
+- `provider`
+- `name`
+- `owner`
+- `repository`
+- `repository_url`
+- `default_branch`
+- `auth_mode`
+- `app_id`
+- `installation_id`
+- `access_token_secret_id` FK
+- `private_key_secret_id` FK
+- `webhook_secret_id` FK
+- `scan_policy_json`
+- `mapping_policy_json`
+- `status`
+- `last_scan_run_id`
+- `last_revision_id`
+- `created_by`
+
+Unique key: `project_id`, `provider`, `owner`, `repository`
+
+### repository_scan_runs
+
+- `repository_scan_run_id` PK
+- `repository_connector_id` FK
+- `project_id` FK
+- `job_id` FK
+- `trigger`
+- `state`
+- `requested_by`
+- `commit_sha`
+- `branch`
+- `pull_request_id`
+- `started_at`
+- `completed_at`
+- `summary_json`
+- `diagnostics_json`
+
+### repository_revisions
+
+- `repository_revision_id` PK
+- `repository_connector_id` FK
+- `project_id` FK
+- `scan_run_id`
+- `commit_sha`
+- `branch`
+- `tag`
+- `commit_timestamp`
+- `author_name`
+- `author_email`
+- `message`
+- `tree_sha`
+- `mapping_fingerprint`
+- `status`
+- `metadata_json`
+
+Unique key: `repository_connector_id`, `commit_sha`
+
+### repository_webhook_deliveries
+
+- `repository_webhook_delivery_id` PK
+- `repository_connector_id` FK
+- `project_id` FK
+- `delivery_id`
+- `event_type`
+- `action`
+- `signature_valid`
+- `state`
+- `payload_hash`
+- `received_at`
+- `processed_at`
+- `diagnostics_json`
+
+Unique key: `repository_connector_id`, `delivery_id`
+
+### repository_check_runs
+
+- `repository_check_run_id` PK
+- `repository_connector_id` FK
+- `project_id` FK
+- `validation_run_id` FK
+- `release_gate_result_id` FK
+- `baseline_id` FK
+- `commit_sha`
+- `github_check_run_id`
+- `check_type`
+- `status`
+- `conclusion`
+- `details_url`
+- `summary`
+- `requested_by`
+- `error_json`
+
+### baseline_repository_revisions
+
+- `baseline_id` FK
+- `repository_connector_id` FK
+- `repository_revision_id` FK
+- `commit_sha`
+
+Primary key: `baseline_id`, `repository_connector_id`
+
+## 14. Logical Graph Query Model
 
 Forward traversal uses:
 
@@ -484,6 +604,6 @@ WHERE project_id = :project_id
 
 Transitive traversal shall be implemented in the graph service using relationship indexes or recursive SQL where supported.
 
-## 14. Standards Review Gap
+## 15. Standards Review Gap
 
 The schema supports ISO 26262, Automotive SPICE PAM 4.0 CL3, ISO 29119, UNECE R155, and UNECE R156 evidence patterns at resource level. Clause-exact table coverage shall be validated later against licensed standards and project process definitions.

@@ -19,6 +19,7 @@ The following operations shall be eligible for asynchronous execution:
 - baseline creation
 - baseline comparison
 - impact analysis
+- repository scan
 - report generation
 - evidence bundle generation
 - release-gate evaluation

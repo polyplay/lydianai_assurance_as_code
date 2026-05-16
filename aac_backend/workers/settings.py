@@ -7,6 +7,7 @@ from aac_backend.workers.tasks import (
     impact_job,
     import_sphinx_job,
     release_gate_job,
+    repository_scan_job,
     validation_job,
 )
 
@@ -26,6 +27,13 @@ async def on_startup(ctx) -> None:
 
 
 class WorkerSettings:
-    functions = [import_sphinx_job, validation_job, baseline_job, impact_job, release_gate_job]
+    functions = [
+        import_sphinx_job,
+        validation_job,
+        baseline_job,
+        impact_job,
+        release_gate_job,
+        repository_scan_job,
+    ]
     on_startup = on_startup
     redis_settings = redis_settings()

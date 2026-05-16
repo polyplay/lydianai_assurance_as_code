@@ -7,6 +7,7 @@ from aac_backend.api import (
     imports,
     jobs,
     projects,
+    repositories,
     relationships,
     reports,
     traceability,
@@ -23,6 +24,7 @@ async def health() -> dict[str, str]:
 
 api_router.include_router(auth.router)
 api_router.include_router(projects.router)
+api_router.include_router(repositories.router)
 api_router.include_router(artefacts.router)
 api_router.include_router(relationships.router)
 api_router.include_router(imports.router)

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aac_backend.models.artefacts import Artefact, Relationship
 from aac_backend.models.impact import SuspectState
 from aac_backend.models.projects import AssuranceProfile, Project, ProjectConfiguration, TailoringDecision
+from aac_backend.models.repository_integrations import RepositoryConnector
 from aac_backend.models.validation import ValidationIssue, ValidationRule, ValidationRun
 from aac_backend.rules.catalog import RULE_CATALOG
 from aac_backend.services.assurance_configuration_service import (
@@ -103,6 +104,14 @@ async def run_validation(
             )
         )
     )
+    repository_connectors = list(
+        await session.scalars(
+            select(RepositoryConnector).where(
+                RepositoryConnector.project_id == project_id,
+                RepositoryConnector.status == "active",
+            )
+        )
+    )
     config = await session.scalar(
         select(ProjectConfiguration).where(ProjectConfiguration.project_id == project_id)
     )
@@ -118,6 +127,7 @@ async def run_validation(
         open_suspects=open_suspects,
         validation_policy=(config.validation_policy_json if config else {}),
         profile_payload=(profile.profile_payload_json if profile else {}),
+        repository_connectors=repository_connectors,
     )
 
     for rule_id, rule in RULE_CATALOG.items():
@@ -167,6 +177,7 @@ class ValidationContext:
         open_suspects: list[SuspectState],
         validation_policy: dict,
         profile_payload: dict,
+        repository_connectors: list[RepositoryConnector] | None = None,
     ) -> None:
         self.project_id = project_id
         self.mode = mode
@@ -174,9 +185,13 @@ class ValidationContext:
         self.relationships = relationships
         self.tailoring_decisions = tailoring_decisions
         self.open_suspects = open_suspects
+        self.repository_connectors = repository_connectors or []
         self.validation_policy = validation_policy or {}
         self.profile_payload = profile_payload or {}
         self.by_id = {artefact.artefact_id: artefact for artefact in artefacts}
+        self.repository_connector_ids = {
+            connector.repository_connector_id for connector in self.repository_connectors
+        }
         self.by_source_object_id = {artefact.source_object_id: artefact for artefact in artefacts}
         self.by_type: dict[str, list[Artefact]] = defaultdict(list)
         self.by_source: dict[tuple[str, str], list[Relationship]] = defaultdict(list)
@@ -1006,6 +1021,22 @@ def _rule_041(run: ValidationRun, context: ValidationContext) -> list[Validation
     issues = []
     for item in context.by_type.get("ImplementationItem", []):
         refs = context.payload_value(item, "source_references", []) or []
+        repository_connector_id = context.payload_value(item, "repository_connector_id")
+        if context.repository_connectors and (
+            not repository_connector_id
+            or repository_connector_id not in context.repository_connector_ids
+            or not context.payload_value(item, "commit_sha")
+            or not context.payload_value(item, "repo_path")
+        ):
+            issues.append(
+                _issue_for_artefact(
+                    run,
+                    "AAC-RULE-RULE-041",
+                    item,
+                    "ImplementationItem is not linked to a configured repository connector, commit, and path",
+                )
+            )
+            continue
         if not refs or any(
             ref.get("reference_type") not in {"source_file", "build_artifact", "configuration_file"}
             or not ref.get("location")
@@ -1019,6 +1050,22 @@ def _rule_041(run: ValidationRun, context: ValidationContext) -> list[Validation
                     "ImplementationItem source references are missing or invalid",
                 )
             )
+    for ref in context.by_type.get("SourceCodeReference", []):
+        repository_connector_id = context.payload_value(ref, "repository_connector_id")
+        if context.repository_connectors and (
+            not repository_connector_id
+            or repository_connector_id not in context.repository_connector_ids
+            or not context.payload_value(ref, "commit_sha")
+            or not context.payload_value(ref, "repo_path")
+        ):
+            issues.append(
+                _issue_for_artefact(
+                    run,
+                    "AAC-RULE-RULE-041",
+                    ref,
+                    "SourceCodeReference is not linked to a configured repository connector, commit, and path",
+                )
+            )
     return issues
 
 
@@ -1028,11 +1075,25 @@ def _rule_042(run: ValidationRun, context: ValidationContext) -> list[Validation
         return [_issue(run, "AAC-RULE-RULE-042", "BuildConfiguration is absent", [])]
     issues = []
     for build_config in build_configs:
-        missing = [
-            key
-            for key in ("compiler_version", "build_flags", "target_architecture")
-            if not context.payload_value(build_config, key)
-        ]
+        repository_connector_id = context.payload_value(build_config, "repository_connector_id")
+        if repository_connector_id or build_config.source_kind == "repository":
+            missing = []
+            if not repository_connector_id or repository_connector_id not in context.repository_connector_ids:
+                missing.append("repository_connector_id")
+            if not (
+                context.payload_value(build_config, "source_revision")
+                or context.payload_value(build_config, "commit_sha")
+            ):
+                missing.append("source_revision")
+            if not context.payload_value(build_config, "compiler_toolchain"):
+                missing.append("compiler_toolchain")
+        else:
+            required = ["compiler_version", "build_flags", "target_architecture"]
+            missing = [
+                key
+                for key in required
+                if not context.payload_value(build_config, key)
+            ]
         if missing:
             issues.append(
                 _issue_for_artefact(

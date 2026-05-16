@@ -22,6 +22,10 @@ from aac_backend.services.baseline_service import (
     run_release_gate,
 )
 from aac_backend.services.job_service import job_data, run_tracked_job
+from aac_backend.services.repository_integration_service import (
+    publish_release_approval_for_baseline,
+    repository_check_run_data,
+)
 
 router = APIRouter(tags=["baselines"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
@@ -242,16 +246,26 @@ async def cancel_baseline_endpoint(
 async def release_baseline_endpoint(
     project_id: str,
     baseline_id: str,
-    current: CurrentUser = Depends(project_role_dependency("admin", "quality_engineer")),
+    current: CurrentUser = Depends(project_role_dependency("admin", "quality_engineer", "project_lead")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     baseline = await _get_baseline_or_404(session, project_id, baseline_id)
     try:
         baseline = await release_baseline(session, baseline, current.user.user_id)
+        repository_checks = await publish_release_approval_for_baseline(
+            session,
+            baseline=baseline,
+            actor_user_id=current.user.user_id,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
-    return ApiEnvelope(data=_baseline_data(baseline))
+    return ApiEnvelope(
+        data={
+            **_baseline_data(baseline),
+            "repository_approvals": [repository_check_run_data(check) for check in repository_checks],
+        }
+    )
 
 
 @router.post("/projects/{project_id}/baselines/{baseline_id}/obsolete", response_model=ApiEnvelope)

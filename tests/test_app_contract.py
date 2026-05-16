@@ -66,6 +66,28 @@ def test_app_exposes_documented_mvp_endpoint_methods() -> None:
             "GET",
             "/api/v1/projects/{project_id}/baselines/{baseline_id}/release-gate/results/latest",
         ),
+        ("GET", "/api/v1/projects/{project_id}/repo-connectors"),
+        ("POST", "/api/v1/projects/{project_id}/repo-connectors"),
+        ("GET", "/api/v1/projects/{project_id}/repo-connectors/{connector_id}"),
+        ("PUT", "/api/v1/projects/{project_id}/repo-connectors/{connector_id}"),
+        ("DELETE", "/api/v1/projects/{project_id}/repo-connectors/{connector_id}"),
+        ("POST", "/api/v1/projects/{project_id}/repo-connectors/{connector_id}/test"),
+        ("GET", "/api/v1/projects/{project_id}/repo-connectors/{connector_id}/status"),
+        ("POST", "/api/v1/projects/{project_id}/repo-connectors/{connector_id}/scan"),
+        (
+            "GET",
+            "/api/v1/projects/{project_id}/repo-connectors/{connector_id}/scans/{scan_id}",
+        ),
+        (
+            "GET",
+            "/api/v1/projects/{project_id}/baselines/{baseline_id}/repository-approvals",
+        ),
+        (
+            "POST",
+            "/api/v1/projects/{project_id}/baselines/{baseline_id}/repository-approvals",
+        ),
+        ("GET", "/api/v1/projects/{project_id}/repo-checks/{check_id}"),
+        ("POST", "/api/v1/integrations/github/webhook/{connector_id}"),
         ("POST", "/api/v1/jobs/{job_id}/cancel"),
     }
     assert expected <= operations

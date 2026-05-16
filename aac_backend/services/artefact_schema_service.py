@@ -50,9 +50,9 @@ ResourceUsageConstraint:constraint_type,applies_to,limit,unit,verification_refs
 ArchitectureReviewRecord:reviewed_artefacts,reviewers,independence_level,result,findings,evidence_refs
 SoftwareUnit:parent_component,responsibilities,provided_interfaces,required_interfaces,allocated_requirements
 SoftwareUnitDesign:software_unit,design_description,inputs,outputs,internal_states,algorithms,error_handling,linked_requirements
-ImplementationItem:repo_path,language,file_type,implements_components,implements_interfaces,implements_safeguards,satisfies_requirements,implementation_constraints,review_status,commit_ref
-SourceCodeReference:repo_url,repo_path,commit_ref,line_ref,language,linked_implementation_items
-BuildConfiguration:build_id,source_revision,compiler_toolchain,build_options,dependencies,artifact_refs
+ImplementationItem:repository_connector_id,repo_url,repo_path,language,file_type,implements_components,implements_interfaces,implements_safeguards,satisfies_requirements,implementation_constraints,review_status,commit_ref,commit_sha,branch,source_references
+SourceCodeReference:repository_connector_id,repo_url,repo_path,commit_ref,commit_sha,branch,line_ref,line_range,language,linked_implementation_items,mapping_source
+BuildConfiguration:repository_connector_id,build_id,source_revision,commit_sha,branch,workflow,build_ref,compiler_toolchain,build_options,dependencies,artifact_refs
 CompilerToolchainConfiguration:toolchain_name,toolchain_version,compiler,compiler_version,configuration_options,tool_confidence_refs
 ImplementationReviewRecord:reviewed_items,reviewers,independence_level,result,findings,evidence_refs
 StaticAnalysisResult:tool,tool_version,scope,ruleset,execution_time,summary,open_findings,evidence_refs
@@ -128,6 +128,7 @@ DEFAULT_REQUIRED_FIELDS.update(
         "SoftwareUnit": ("parent_component", "responsibilities"),
         "SoftwareUnitDesign": ("software_unit", "design_description"),
         "ImplementationItem": ("repo_path", "language"),
+        "SourceCodeReference": ("repo_url", "repo_path", "commit_ref"),
         "BuildConfiguration": ("build_id", "compiler_toolchain"),
         "StaticAnalysisResult": ("tool", "summary"),
         "CodingGuidelineComplianceRecord": ("guideline", "compliance_status"),

@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${AAC_POSTGRES_DB:-aac}
+      POSTGRES_USER: ${AAC_POSTGRES_USER:-aac}
+      POSTGRES_PASSWORD: ${AAC_POSTGRES_PASSWORD}
+    ports:
+      - "${AAC_POSTGRES_PORT:-15432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AAC_POSTGRES_USER:-aac} -d ${AAC_POSTGRES_DB:-aac}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${AAC_REDIS_PORT:-16379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      AAC_DATABASE_URL: postgresql+asyncpg://${AAC_POSTGRES_USER:-aac}:${AAC_POSTGRES_PASSWORD}@postgres:5432/${AAC_POSTGRES_DB:-aac}
+      AAC_REDIS_URL: redis://redis:6379/0
+      AAC_JWT_SECRET: ${AAC_JWT_SECRET}
+      AAC_JWT_EXPIRY_HOURS: ${AAC_JWT_EXPIRY_HOURS:-8}
+      AAC_SECRET_ENCRYPTION_KEY: ${AAC_SECRET_ENCRYPTION_KEY}
+      AAC_GITHUB_API_BASE_URL: ${AAC_GITHUB_API_BASE_URL:-https://api.github.com}
+      AAC_ENVIRONMENT: ${AAC_ENVIRONMENT:-production}
+      AAC_UPLOAD_DIR: /app/var/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${AAC_API_PORT:-18000}:8000"
+    volumes:
+      - upload_data:/app/var/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["arq", "aac_backend.workers.settings.WorkerSettings"]
+    environment:
+      AAC_DATABASE_URL: postgresql+asyncpg://${AAC_POSTGRES_USER:-aac}:${AAC_POSTGRES_PASSWORD}@postgres:5432/${AAC_POSTGRES_DB:-aac}
+      AAC_REDIS_URL: redis://redis:6379/0
+      AAC_JWT_SECRET: ${AAC_JWT_SECRET}
+      AAC_JWT_EXPIRY_HOURS: ${AAC_JWT_EXPIRY_HOURS:-8}
+      AAC_SECRET_ENCRYPTION_KEY: ${AAC_SECRET_ENCRYPTION_KEY}
+      AAC_GITHUB_API_BASE_URL: ${AAC_GITHUB_API_BASE_URL:-https://api.github.com}
+      AAC_ENVIRONMENT: ${AAC_ENVIRONMENT:-production}
+      AAC_UPLOAD_DIR: /app/var/uploads
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - upload_data:/app/var/uploads
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${AAC_NGINX_PORT:-18080}:80"
+    volumes:
+      - ../../nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  upload_data:

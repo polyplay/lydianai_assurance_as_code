@@ -4,6 +4,7 @@ from aac_backend.schemas.domain import BaselineCreate, ImportStart, ReleaseGateR
 from aac_backend.services.baseline_service import create_baseline, run_release_gate
 from aac_backend.services.import_service import import_sphinx_needs
 from aac_backend.services.impact_service import analyze_impact
+from aac_backend.services.repository_integration_service import run_repository_scan
 from aac_backend.services.validation_service import run_validation
 
 
@@ -136,3 +137,46 @@ async def release_gate_job(ctx, job_id: str, project_id: str, payload: dict, act
                 "resource_id": result.release_gate_result_id,
             }
         return result.release_gate_result_id
+
+
+async def repository_scan_job(
+    ctx,
+    job_id: str,
+    project_id: str,
+    connector_id: str,
+    actor_user_id: str | None,
+    payload: dict,
+) -> str:
+    async with unit_of_work() as session:
+        from datetime import UTC, datetime
+
+        from aac_backend.models.jobs import Job
+
+        job = await session.get(Job, job_id)
+        if job:
+            job.state = "running"
+        try:
+            scan_run = await run_repository_scan(
+                session,
+                project_id=project_id,
+                connector_id=connector_id,
+                actor_user_id=actor_user_id,
+                payload=payload,
+                job=job,
+            )
+        except Exception as exc:
+            if job:
+                job.state = "failed"
+                job.completed_at = datetime.now(UTC)
+                job.error_json = {"error": type(exc).__name__, "message": str(exc)}
+                await session.commit()
+            raise
+        if job:
+            job.state = "completed"
+            job.progress_percent = 100
+            job.completed_at = datetime.now(UTC)
+            job.result_ref_json = {
+                "resource_type": "RepositoryScanRun",
+                "resource_id": scan_run.repository_scan_run_id,
+            }
+        return scan_run.repository_scan_run_id
