@@ -18,6 +18,13 @@ PostgreSQL, Redis, and ARQ background workers. It includes the backend foundatio
 
 The detailed requirements and architecture documents are kept in `docs/`.
 
+- [Version 1 Requirements Baseline](docs/requirements_baseline.md)
+- [Software Architecture](docs/software_architecture.md)
+
+All project changes are governed by [Project Change Rules](AGENTS.md). Changes
+must proceed through requirements, software architecture, and implementation
+gates in that order.
+
 Operational and role-based documentation is kept in `documentation/`:
 
 - `documentation/backend_installer_guide.md`
@@ -54,7 +61,7 @@ The Swagger UI is available at:
 http://127.0.0.1:8000/api/v1/docs
 ```
 
-The lightweight web console is available at:
+The role-aware web workspace is available at:
 
 ```text
 http://127.0.0.1:8000/app
@@ -157,12 +164,18 @@ make migrate       # run Alembic migrations
 make dev           # start the FastAPI development server
 make worker        # start the ARQ worker
 make test          # run pytest
+make test-web      # run JavaScript unit tests
+make test-web-e2e  # run Playwright workflow, responsive, and accessibility tests
+make test-web-integration # run Playwright against disposable PostgreSQL and Redis services
+make test-integration # run PostgreSQL fault/concurrency tests in a disposable container
 make lint          # run ruff
 make compile       # compile Python files
 make compose-up    # run the Docker Compose stack
 make compose-down  # stop the Docker Compose stack
 make smoke-test    # run the Docker/API end-to-end smoke test
 ```
+
+Install browser-test dependencies once with `make install-web`.
 
 ## Environment Variables
 
@@ -178,6 +191,16 @@ AAC_SECRET_ENCRYPTION_KEY=
 AAC_GITHUB_API_BASE_URL=https://api.github.com
 AAC_ENVIRONMENT=development
 ```
+
+Database integration tests require Docker by default:
+
+```bash
+make test-integration
+```
+
+To use an existing disposable PostgreSQL instance instead, set
+`AAC_TEST_DATABASE_URL`. Its user must be allowed to create and drop temporary
+test databases.
 
 For real deployments, replace `AAC_JWT_SECRET` with a strong secret and use environment-specific
 database and Redis credentials. Set `AAC_SECRET_ENCRYPTION_KEY` to a Fernet-compatible key, or to a

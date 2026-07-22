@@ -4,6 +4,11 @@
 
 This manual is for project users, project leads, and quality engineers who work with assurance evidence in LydianAI Assurance-as-Code.
 
+This manual derives from stakeholder needs `NEED-USER-001`, `NEED-QE-001`,
+`NEED-UI-001`, `NEED-UI-002`, `NEED-UI-003`, and `NEED-UI-005`
+and the controlled authorization, import, job, baseline, and release requirements
+listed in `verification/requirements_traceability.yaml`.
+
 ## Role Capabilities
 
 ### User
@@ -45,21 +50,47 @@ Your exact permissions depend on project role assignment.
 
 If you cannot see a project, ask an admin to confirm your role assignment.
 
-## Project Workflow
+## Project Workspace
 
-The web console is organized as workflow stages:
+After project selection, **Overview** displays active jobs, pending import
+decisions, validation blockers, suspect states, and release readiness. Data
+loads automatically; use the refresh control only when an immediate reload is
+needed.
 
-1. Setup
-2. Team
-3. Repository
-4. Requirements
-5. V-model Artefacts
-6. Traceability
-7. Review And Release
-8. Validation
-9. Baseline
+The navigation is organized by task:
 
-Some stages may be read-only depending on your role.
+- **Workspace**: Overview, My Work, and Jobs
+- **Evidence**: Artefacts and Relationships, Imports, and Traceability
+- **Assurance**: Validation, Impact and Suspects, and Release
+- **Management**: role-appropriate project administration
+
+Controls are shown from server-provided capabilities and resource actions. The
+server validates the role and current lifecycle state again when an action is
+submitted.
+
+## Understand Assurance Scope
+
+The project assurance scope controls which artefacts, relationships, and
+validation rules are expected. It is derived from:
+
+- ISO 26262 ASIL level
+- Automotive SPICE target capability and in-scope processes
+- UNECE R155 and R156 applicability
+- test scope and project visibility policy
+
+For Automotive SPICE, the project-level target capability is a default planning
+value. The effective expectation is the per-process capability target configured
+for each in-scope Automotive SPICE process. For example, a project may use CL2 as
+the default while one process is explicitly targeted at CL3.
+
+Validation issues and release-gate blockers use the effective project
+configuration. If the configured scope requires a process at CL3, the tool may
+require process definition/deployment evidence such as `ASPICEScopeDecision` and
+`ProcessComplianceRecord`. If a required artefact or process expectation is not
+applicable to the project, ask a project lead or administrator to record a
+documented tailoring decision with rationale and evidence. Do not work around the
+issue by deleting evidence, weakening traceability, or suppressing a validation
+issue without approval.
 
 ## Create Artefacts
 
@@ -79,10 +110,13 @@ Artefacts are canonical evidence records. Examples include:
 To create an artefact:
 
 1. Select the project.
-2. Choose the relevant workflow stage.
+2. Open **Artefacts and Relationships**.
 3. Select the artefact type.
-4. Fill required fields.
+4. Fill the guided canonical fields. Required fields are marked.
 5. Save the artefact.
+
+Use **Advanced JSON override** only when a guided field does not represent the
+required structured payload. The canonical schema remains authoritative.
 
 Each content change creates a new revision. Released artefacts have stricter change behavior and may trigger suspect propagation.
 
@@ -91,12 +125,18 @@ Each content change creates a new revision. Released artefacts have stricter cha
 When your project uses Sphinx-Needs:
 
 1. Export Sphinx-Needs JSON from the documentation build.
-2. Open the import workflow.
+2. Open **Imports**.
 3. Upload or submit the JSON export.
 4. Choose the version update mode:
    - automatic new version
    - ask user for import conflicts
 5. Review import diagnostics.
+
+Only the original import submitter, a quality engineer, or an administrator may
+submit import decisions. Revising a released artefact through import requires a
+quality engineer or administrator. Cancelling an import is limited to its
+requester or an administrator, and the cancellation result identifies any
+already committed batches.
 
 Imported content is not canonical until it is normalized, validated, and persisted by the backend.
 
@@ -137,7 +177,7 @@ Issue severity:
 
 Typical actions:
 
-1. Open the validation view.
+1. Open **Validation**.
 2. Review issue message, affected artefacts, and rule ID.
 3. Fix missing artefacts, fields, or relationships.
 4. Re-run validation.
@@ -161,14 +201,22 @@ Project leads create baselines after evidence is complete enough for review.
 
 The release gate evaluates whether a baseline can be released.
 
-Quality engineers normally:
+The **Release** workspace presents each available action separately. Quality
+engineers normally:
 
 1. Select the baseline.
 2. Run release gate.
 3. Review blocking issues and suspect states.
 4. Confirm all blocking issues are resolved.
-5. Release the approved baseline.
-6. Publish repository approval when configured.
+5. Have a project lead or administrator approve the current gate result.
+6. Have a quality engineer or administrator release the approved baseline.
+7. Publish repository approval when configured.
+
+Releasing a baseline does not publish repository approval automatically.
+
+A later blocking-relevant change makes a passed gate stale and invalidates an
+existing approval. The gate must pass again and the baseline must be re-approved
+before release.
 
 Release approval is published to the exact commit captured in the baseline, not to a moving branch name.
 
@@ -192,4 +240,3 @@ Use reports during reviews and release readiness meetings.
 - Add rationale for safety and cybersecurity decisions.
 - Resolve validation issues before baseline creation.
 - Do not suppress issues without documented approval.
-

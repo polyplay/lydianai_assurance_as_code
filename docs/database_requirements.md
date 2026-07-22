@@ -104,6 +104,14 @@ The back-end shall create a new artefact revision whenever a persisted artefact 
 AAC-DB-DR-032
 The database shall store revision number, changed-by identity, changed-at timestamp, change reason where available, and associated change event ID for each artefact revision.
 
+AAC-DB-DR-032A
+Every artefact and relationship revision after revision 1 shall store the
+immediate predecessor in `previous_revision_id`. Revision 1 shall store null.
+
+AAC-DB-DR-032B
+Every stored artefact revision shall record the canonical `schema_version`
+against which its payload was validated.
+
 AAC-DB-DR-033
 Historical artefact revisions shall not be overwritten by normal update operations.
 
@@ -225,7 +233,14 @@ AAC-DB-DR-091
 Audit events shall be stored for artefact creation, artefact update, artefact deletion, relationship changes, revision creation, baseline creation, test result import, validation execution, suspect propagation, and release-gate evaluation.
 
 AAC-DB-DR-092
-Each audit event shall store event type, actor type, actor ID, timestamp, affected artefacts, affected relationships, correlation ID where applicable, and event payload.
+Each audit event shall store event type, actor type, actor ID,
+`role_at_time_of_action`, `operation`, timestamp, affected artefacts, affected
+relationships, correlation ID where applicable, and event payload.
+
+AAC-DB-DR-092A
+The database shall store a transactional domain-event outbox with event ID,
+event type, payload, correlation and causation IDs, delivery state, attempt
+count, next-attempt time, and last error.
 
 AAC-DB-DR-093
 Audit events shall be append-only under normal operation.

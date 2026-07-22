@@ -90,10 +90,13 @@ The system shall derive rule enablement from these project configuration dimensi
 - `asil_level`: `QM`, `ASIL_A`, `ASIL_B`, `ASIL_C`, or `ASIL_D`
 - `aspice_model`: fixed to `ASPICE_PAM_4_0`
 - `aspice_default_capability_level`: `CL1`, `CL2`, or `CL3`
+- `aspice_scoped_processes`: configured in-scope Automotive SPICE PAM 4.0 process IDs
 - `aspice_process_overrides`: per-process `CL1`, `CL2`, or `CL3`
 - `r155_applicable`
 - `r156_applicable`
 - `test_scope`
+
+Changes to `aspice_scoped_processes` or derived process capability targets shall be treated as controlled tailoring inputs and shall require rationale, evidence reference, approver, approval timestamp, and audit history.
 
 AAC-RULE-FR-011
 Rules that are not applicable for the derived project configuration shall be marked disabled and shall not execute.

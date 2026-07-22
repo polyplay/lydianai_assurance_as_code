@@ -38,8 +38,13 @@ class ArtefactRevision(Base):
 
     artefact_revision_id: Mapped[str] = id_column("AREV")
     artefact_id: Mapped[str] = mapped_column(ForeignKey("artefacts.artefact_id"), index=True)
+    previous_revision_id: Mapped[str | None] = mapped_column(
+        ForeignKey("artefact_revisions.artefact_revision_id"),
+        nullable=True,
+    )
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.project_id"), index=True)
     revision_number: Mapped[int]
+    schema_version: Mapped[str] = mapped_column(String(40), default="1.0")
     payload_json: Mapped[dict] = mapped_column(JSON, default=dict)
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
     content_fingerprint: Mapped[str | None] = mapped_column(String(128), nullable=True)
@@ -71,6 +76,10 @@ class RelationshipRevision(Base):
 
     relationship_revision_id: Mapped[str] = id_column("RREV")
     relationship_id: Mapped[str] = mapped_column(ForeignKey("relationships.relationship_id"), index=True)
+    previous_revision_id: Mapped[str | None] = mapped_column(
+        ForeignKey("relationship_revisions.relationship_revision_id"),
+        nullable=True,
+    )
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.project_id"), index=True)
     revision_number: Mapped[int]
     payload_json: Mapped[dict] = mapped_column(JSON, default=dict)

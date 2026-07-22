@@ -19,6 +19,12 @@ class Job(Base):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     progress_percent: Mapped[int] = mapped_column(default=0)
+    cancellation_requested: Mapped[bool] = mapped_column(default=False)
+    correlation_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    causation_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    idempotency_key: Mapped[str | None] = mapped_column(String(240), nullable=True, unique=True)
+    committed_effects_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    last_committed_unit: Mapped[str | None] = mapped_column(String(240), nullable=True)
     result_ref_json: Mapped[dict] = mapped_column(JSON, default=dict)
     error_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 

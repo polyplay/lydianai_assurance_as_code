@@ -10,10 +10,12 @@ From the repository root:
 sudo installer/backend/install.sh \
   --admin-username admin \
   --admin-email admin@example.com \
-  --admin-password 'change-me'
+  --admin-password 'change-me' \
+  --tls-cert /etc/letsencrypt/live/aac.example.com/fullchain.pem \
+  --tls-key /etc/letsencrypt/live/aac.example.com/privkey.pem
 ```
 
-The default installation directory is `/opt/lydianai-aac`. The installer copies the application, creates `/opt/lydianai-aac/.env` with generated secrets, starts PostgreSQL, Redis, API, worker, and nginx, and installs a `lydianai-aac.service` systemd unit.
+The default installation directory is `/opt/lydianai-aac`. The installer requires a TLS certificate and key when starting services, creates generated application secrets, and exposes only nginx on ports 80 and 443. PostgreSQL, Redis, and the API remain internal to the Compose network.
 
 ## Manage
 

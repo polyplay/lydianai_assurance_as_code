@@ -24,6 +24,7 @@ from aac_backend.services.auth_service import (
     verify_password,
 )
 from aac_backend.services.user_service import create_user
+from aac_backend.services.event_service import record_event
 
 router = APIRouter(tags=["auth"])
 
@@ -73,7 +74,7 @@ async def create_user_endpoint(
 async def update_user(
     user_id: str,
     payload: dict,
-    _: CurrentUser = Depends(global_role_dependency("admin")),
+    current: CurrentUser = Depends(global_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     user = await session.get(User, user_id)
@@ -83,6 +84,12 @@ async def update_user(
     user.email = payload.get("email", user.email)
     user.global_roles_json = payload.get("roles", user.global_roles_json)
     user.status = payload.get("status", user.status)
+    await record_event(
+        session,
+        event_type="user.updated",
+        actor_user_id=current.user.user_id,
+        payload={"user_id": user_id, "updated_fields": sorted(payload)},
+    )
     await session.commit()
     return ApiEnvelope(data=UserRead.model_validate(user))
 
@@ -90,13 +97,19 @@ async def update_user(
 @router.put("/users/{user_id}/deactivate", response_model=ApiEnvelope)
 async def deactivate_user(
     user_id: str,
-    _: CurrentUser = Depends(global_role_dependency("admin")),
+    current: CurrentUser = Depends(global_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     user = await session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     user.status = "inactive"
+    await record_event(
+        session,
+        event_type="user.deactivated",
+        actor_user_id=current.user.user_id,
+        payload={"user_id": user_id},
+    )
     await session.commit()
     return ApiEnvelope(data=UserRead.model_validate(user))
 
@@ -105,7 +118,7 @@ async def deactivate_user(
 async def password_reset(
     user_id: str,
     payload: PasswordReset,
-    _: CurrentUser = Depends(global_role_dependency("admin")),
+    current: CurrentUser = Depends(global_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     user = await session.get(User, user_id)
@@ -113,6 +126,12 @@ async def password_reset(
         raise HTTPException(status_code=404, detail="User not found")
     user.password_hash = hash_password(payload.new_password)
     user.password_updated_at = datetime.now(UTC)
+    await record_event(
+        session,
+        event_type="user.password_reset",
+        actor_user_id=current.user.user_id,
+        payload={"user_id": user_id},
+    )
     await session.commit()
     return ApiEnvelope(data={"user_id": user.user_id, "password_updated": True})
 
@@ -128,5 +147,11 @@ async def password_change(
         raise HTTPException(status_code=403, detail="Current password is invalid")
     user.password_hash = hash_password(payload.new_password)
     user.password_updated_at = datetime.now(UTC)
+    await record_event(
+        session,
+        event_type="user.password_changed",
+        actor_user_id=current.user.user_id,
+        payload={"user_id": user.user_id},
+    )
     await session.commit()
     return ApiEnvelope(data={"user_id": user.user_id, "password_updated": True})

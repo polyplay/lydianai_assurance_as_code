@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "project_id": "PROJ_PERFORMANCE",
+  "path": "database",
+  "benchmarks": {
+    "get_single_artefact": {
+      "iterations": 100,
+      "p50_ms": 0.811,
+      "p95_ms": 0.939,
+      "max_ms": 37.588,
+      "target_ms": 100,
+      "status": "pass",
+      "blocking": false
+    },
+    "update_artefact": {
+      "iterations": 30,
+      "p50_ms": 5.247,
+      "p95_ms": 5.465,
+      "max_ms": 9.205,
+      "target_ms": 200,
+      "status": "pass",
+      "blocking": false
+    },
+    "direct_trace": {
+      "iterations": 50,
+      "p50_ms": 1.252,
+      "p95_ms": 1.457,
+      "max_ms": 3.634,
+      "target_ms": 500,
+      "status": "pass",
+      "blocking": false
+    },
+    "traceability_matrix": {
+      "iterations": 10,
+      "p50_ms": 10.89,
+      "p95_ms": 32.372,
+      "max_ms": 32.372,
+      "target_ms": 5000,
+      "status": "pass",
+      "blocking": false
+    },
+    "baseline_comparison": {
+      "iterations": 10,
+      "p50_ms": 51.823,
+      "p95_ms": 54.356,
+      "max_ms": 54.356,
+      "target_ms": 5000,
+      "status": "pass",
+      "blocking": false
+    }
+  }
+}

@@ -1,0 +1,36 @@
+version: 1
+generated_on: 2026-06-13
+change_class: D
+change_record: docs/implementation_completion_change_record.md
+requirements_inventory:
+  command: .venv/bin/python scripts/check_traceability.py
+  output: verification/generated/traceability-status.json
+test_suites:
+  - id: backend-unit
+    command: .venv/bin/pytest -q
+    result: 122 passed, 3 integration tests skipped
+  - id: web-unit
+    command: npm run test:web:unit
+    result: 6 passed
+  - id: web-browser
+    command: npm run test:web:e2e
+    result: 11 passed
+  - id: database-integration
+    command: bash scripts/run_db_integration_tests.sh
+    result: 3 passed
+  - id: deployed-web-integration
+    command: bash scripts/run_web_integration_tests.sh
+    result: 1 passed against disposable PostgreSQL and Redis
+deployment_evidence:
+  production_compose: installer/backend/docker-compose.backend.yml
+  tls_proxy: installer/backend/nginx.production.conf
+  backup: installer/backend/backup.sh
+  restore: installer/backend/restore.sh
+  backup_restore_test:
+    command: bash scripts/run_backup_restore_test.sh
+    result: passed
+performance_evidence:
+  seed: ops/seed_performance_dataset.py
+  benchmark: ops/run_performance_benchmarks.py
+  output: verification/generated/performance-results.json
+  result: all five measured P95 targets passed

@@ -4,6 +4,11 @@
 
 This manual is for system administrators and project administrators who configure LydianAI Assurance-as-Code for production use.
 
+This manual derives from stakeholder needs `NEED-OP-001`, `NEED-AUD-001`,
+`NEED-UI-004`, `NEED-UI-005`, and `NEED-DEV-UI-001`
+and the controlled event, audit, import recovery, and release requirements
+listed in `verification/requirements_traceability.yaml`.
+
 ## Admin Responsibilities
 
 Admins can:
@@ -26,8 +31,13 @@ Admins can:
 
 ## Create A Project
 
-1. Open the **Setup** stage.
-2. Enter project name, key, description, ASIL level, and process targets.
+If no project exists, the first administrator is taken directly to the
+first-project form after sign-in.
+
+To create another project:
+
+1. Open **Administration**.
+2. Enter project name, key, description, ASIL level, and ASPICE target capability.
 3. Create the project.
 4. Confirm the project appears in the project selector.
 
@@ -35,9 +45,10 @@ Use clear project keys. They are used in reports, audit trails, and traceability
 
 ## Configure Team Access
 
-1. Open the **Team** stage.
-2. Create or select users.
-3. Assign the minimum role needed:
+1. Open **Administration**.
+2. Create a global user account when needed.
+3. Select or enter the user under **Team access**.
+4. Assign the minimum role needed:
    - `user` for evidence authors and reviewers
    - `quality_engineer` for release-gate and release activities
    - `project_lead` for project workflow and baseline ownership
@@ -47,16 +58,36 @@ Review role assignments before release milestones.
 
 ## Configure Assurance Scope
 
-1. Open project configuration.
-2. Set ASIL, Automotive SPICE target, cybersecurity relevance, software-update relevance, and visibility policy.
-3. Evaluate the active profile.
-4. Confirm mandatory, conditional, optional, and not-applicable artefact classes.
+1. Open **Administration** and locate **Project defaults**.
+2. Set ASIL, Automotive SPICE target capability, cybersecurity relevance, software-update relevance, and visibility policy.
+3. Review **ASPICE process scope and expected capability**.
+4. Select the Automotive SPICE processes that are in scope for the project.
+5. Set the expected capability for each in-scope process when it differs from the project default.
+6. Evaluate the active profile.
+7. Confirm mandatory, conditional, optional, and not-applicable artefact classes.
+
+The project-level Automotive SPICE target capability is a planning/default value.
+It is not a consolidated project assessment rating. The effective evidence scope
+comes from the in-scope process list and each process capability target. If no
+per-process override exists, the process uses the project default.
+
+Changing the Automotive SPICE default capability, process scope, or process
+capability target is controlled tailoring. Before saving such a change, expand
+**ASPICE tailoring approval** and enter:
+
+- rationale for the process-scope or capability decision
+- at least one evidence reference, such as an assessment scope record, project
+  tailoring record, process tailoring plan, or management approval reference
+
+The saving administrator is recorded as the approver. The tool records approved
+tailoring decisions and audit events for the changed process scope and capability
+targets.
 
 Use tailoring decisions when a mandatory class is genuinely not applicable. Tailoring decisions must include rationale and evidence references.
 
 ## Repository Connector Setup
 
-Admins configure GitHub repository connectors in the **Repository** stage.
+Admins configure GitHub repository connectors in **Administration**.
 
 Supported authentication modes:
 
@@ -139,6 +170,12 @@ Use audit views and reports to review:
 
 Audit events are append-only under normal operation.
 
+Audit events and domain events are separate records. Audit entries identify the
+actor, role at the time of action, operation, request, and correlation context.
+Domain events are delivered from the PostgreSQL outbox with retry and
+idempotency records. Failed or dead-lettered delivery must be investigated; it
+must not be treated as a rollback of the originating state change.
+
 ## Security Practices
 
 - Use unique accounts, not shared admin credentials.
@@ -147,4 +184,3 @@ Audit events are append-only under normal operation.
 - Keep production `.env` files outside normal user access.
 - Back up the database before upgrades.
 - Verify backup restoration on a regular schedule.
-

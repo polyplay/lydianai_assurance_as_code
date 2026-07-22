@@ -69,10 +69,13 @@ AAC-CORE-FR-007A
 When a lower ASPICE capability target is selected, the system shall apply the configured process evidence and rule set for that target instead of the CL3 default.
 
 AAC-CORE-FR-007B
-The system shall support one project-level default ASPICE capability target and per-process capability overrides for scoped Automotive SPICE PAM 4.0 processes.
+The system shall support one project-level default ASPICE capability target and per-process capability overrides for scoped Automotive SPICE PAM 4.0 processes. The project-level target shall be treated as a planning/default value, and the derived per-process capability target map shall define the expected capability for each configured in-scope process.
 
 AAC-CORE-FR-007C
 The system shall derive front-end artefact visibility from the active project assurance configuration using the configured visibility policy. The MVP default visibility policy shall be `relevant_first`.
+
+AAC-CORE-FR-007D
+The system shall allow an administrator to tailor the configured in-scope Automotive SPICE PAM 4.0 processes and their expected capability levels. Each process-scope or process-capability tailoring change shall require a rationale, at least one evidence reference, approver identity, approval timestamp, and audit event.
 
 AAC-CORE-FR-008
 When an artefact is marked not applicable, the system shall require a rationale, approver, timestamp, and scope of applicability.
@@ -576,6 +579,35 @@ The API shall support reporting operations:
 - retrieve generated reports
 - retrieve report status
 - retrieve machine-readable report data
+
+AAC-REPORT-IR-001
+Version 1 report content shall be JSON and shall use this common envelope:
+
+```json
+{
+  "report_id": "string",
+  "report_type": "traceability_matrix|baseline_comparison|validation_summary",
+  "project_id": "string",
+  "generated_at": "ISO8601 timestamp",
+  "generated_by": "user_id",
+  "source_refs": {},
+  "summary": {},
+  "rows": []
+}
+```
+
+AAC-REPORT-IR-002
+A traceability matrix report row shall identify source and target artefact IDs,
+types, revision IDs, relationship type, and trace status.
+
+AAC-REPORT-IR-003
+A baseline comparison report row shall identify the artefact or relationship,
+its `added|removed|changed` classification, and both compared revision IDs where
+applicable.
+
+AAC-REPORT-IR-004
+A validation summary report shall group open issues by severity and include
+issue ID, rule ID, affected resource, blocking contexts, and status.
 
 AAC-API-IR-012
 The API shall support audit operations:

@@ -6,9 +6,11 @@ from aac_backend.api.dependencies import CurrentUser, project_role_dependency
 from aac_backend.database import get_session
 from aac_backend.models.impact import ImpactAnalysisRun, SuspectState
 from aac_backend.schemas.common import ApiEnvelope
+from aac_backend.services.auth_service import user_roles
 from aac_backend.services.impact_service import analyze_impact, clear_suspect_state
 from aac_backend.services.job_service import job_data, run_tracked_job
 from aac_backend.services.traceability_service import trace_artefact
+from aac_backend.services.presentation_policy import suspect_allowed_actions
 
 router = APIRouter(tags=["traceability"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
@@ -128,13 +130,14 @@ async def get_impact(
 @router.get("/projects/{project_id}/suspect-states", response_model=ApiEnvelope)
 async def list_suspect_states(
     project_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     suspects = list(
         await session.scalars(select(SuspectState).where(SuspectState.project_id == project_id))
     )
-    return ApiEnvelope(data=[_suspect_data(suspect) for suspect in suspects])
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=[_suspect_data(suspect, roles=roles) for suspect in suspects])
 
 
 @router.post("/projects/{project_id}/suspect-states/{suspect_id}/clear", response_model=ApiEnvelope)
@@ -157,7 +160,8 @@ async def clear_suspect(
         reason=payload.get("reason"),
     )
     await session.commit()
-    return ApiEnvelope(data=_suspect_data(suspect))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_suspect_data(suspect, roles=roles))
 
 
 def _impact_run_data(run: ImpactAnalysisRun) -> dict:
@@ -170,8 +174,8 @@ def _impact_run_data(run: ImpactAnalysisRun) -> dict:
     }
 
 
-def _suspect_data(suspect: SuspectState) -> dict:
-    return {
+def _suspect_data(suspect: SuspectState, *, roles: list[str] | None = None) -> dict:
+    data = {
         "suspect_state_id": suspect.suspect_state_id,
         "artefact_id": suspect.artefact_id,
         "trigger_artefact_id": suspect.trigger_artefact_id,
@@ -183,3 +187,6 @@ def _suspect_data(suspect: SuspectState) -> dict:
         "clearing_method": suspect.clearing_method,
         "clearing_evidence_refs": suspect.clearing_evidence_refs_json,
     }
+    if roles is not None:
+        data["allowed_actions"] = suspect_allowed_actions(suspect, roles=roles)
+    return data

@@ -134,6 +134,8 @@ Indexes:
 - `artefact_id` FK
 - `project_id` FK
 - `revision_number`
+- `previous_revision_id` FK nullable
+- `schema_version`
 - `payload_json`
 - `metadata_json`
 - `content_fingerprint`
@@ -175,6 +177,7 @@ Indexes:
 - `relationship_id` FK
 - `project_id` FK
 - `revision_number`
+- `previous_revision_id` FK nullable
 - `payload_json`
 - `changed_by` FK users nullable
 - `changed_at`
@@ -419,12 +422,30 @@ Unique: `baseline_id`, `evaluation_number`
 - `event_type`
 - `actor_user_id` FK nullable
 - `actor_type`
+- `role_at_time_of_action`
+- `operation`
 - `correlation_id`
 - `causation_id`
 - `affected_artefact_ids_json`
 - `affected_relationship_ids_json`
 - `payload_json`
 - `created_at`
+
+### domain_event_outbox
+
+- `event_id` PK
+- `event_type`
+- `project_id` FK nullable
+- `actor_id`
+- `correlation_id`
+- `causation_id`
+- `payload_json`
+- `delivery_state`
+- `attempt_count`
+- `next_attempt_at`
+- `last_error` nullable
+- `occurred_at`
+- `delivered_at` nullable
 
 ## 12.1 Standards Traceability Tables
 

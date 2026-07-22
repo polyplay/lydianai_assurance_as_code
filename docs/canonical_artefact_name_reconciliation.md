@@ -7,6 +7,8 @@ This document resolves blocker B10 identified in the implementation readiness as
 It defines the single canonical implementation name for every artefact type and maps alternative names used in standards references, Sphinx-Needs types, or exploratory documents to the canonical name.
 
 All implementation code, database tables, API endpoints, and schema definitions shall use the canonical names defined in this document.
+Field definitions and requiredness are controlled exclusively by
+`artefact_json_schemas.md`.
 
 ---
 
@@ -221,9 +223,13 @@ The `scope` field on `TestSpecification` and `TestResult` identifies which lifec
 
 ---
 
-## 5. New Artefacts Added By This Document
+## 5. New Artefact Name Decisions
 
-The following artefact types are introduced by this document to close gaps identified in the standards alignment assessment. They shall be added to `artefact_json_schemas.md` and `resource_model_and_api_requirements.md`.
+The following artefact types are introduced by this document to close gaps
+identified in the standards alignment assessment. The YAML blocks in this
+section are rationale and migration guidance, not normative field schemas.
+Normative fields, types, and requiredness shall be defined only in
+`artefact_json_schemas.md`.
 
 ### 5.1 SafetyCase
 
@@ -336,9 +342,12 @@ required_fields:
 
 ---
 
-## 6. Independent Review Field Addition
+## 6. Independent Review Schema Decision
 
-Per the ISO 26262 standards alignment gap, the following artefact types require an `independent_reviewer_id` field and `review_independence_evidence` field for ASIL D compliance. These fields shall be added to their respective schema definitions in `artefact_json_schemas.md`.
+Per the ISO 26262 standards alignment gap, the following artefact types require
+independent review semantics for ASIL D compliance. The canonical field
+definitions and conditional requiredness are those in
+`artefact_json_schemas.md`; this section records applicability only.
 
 | Artefact Type | Independence Requirement | ISO 26262 Clause |
 |---|---|---|
@@ -350,7 +359,9 @@ Per the ISO 26262 standards alignment gap, the following artefact types require 
 | `SoftwareUnitDesign` | Review per ASIL D | 26262-6-8 |
 | `ConfirmationMeasureRecord` | By definition requires independence evidence | 26262-2 |
 
-Fields to add:
+The canonical schema currently uses the following fields to realize this
+applicability. This example is non-normative; the definitions in
+`artefact_json_schemas.md` prevail:
 
 ```yaml
 # Added to all artefact types listed above:

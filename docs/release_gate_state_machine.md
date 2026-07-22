@@ -10,47 +10,43 @@ It supplements `baseline_state_machine.md` with the formal state machine for rel
 
 ## 2. Baseline Lifecycle Integration
 
-The release gate is a sub-process within the baseline lifecycle defined in `baseline_state_machine.md`. The complete integrated lifecycle is:
+The release gate is a sub-process within the baseline lifecycle defined in
+`baseline_state_machine.md`. The complete integrated lifecycle is:
 
+```text
+requested -> update_lock_acquired -> eligibility_check_running
+                                         |              |
+                                         |              +-> eligibility_failed
+                                         v
+                                  creating_snapshot
+                                         |
+                                         v
+                                      created <----------------------+
+                                         |                           |
+                                         v                           |
+                               release_gate_running                   |
+                                  |              |                    |
+                                  v              v                    |
+                         release_gate_failed  release_gate_passed     |
+                                  |              |                    |
+                                  +--------------+                    |
+                                         |                           |
+                                         v                           |
+                                      approved -- blocking event --> stale
+                                         |
+                                         v
+                                      released
+                                         |
+                                         v
+                                      obsolete
 ```
-requested
-    │
-    ▼
-update_lock_acquired
-    │
-    ▼
-eligibility_check_running ──────► eligibility_failed ──► (terminal; lock released)
-    │
-    ▼
-creating_snapshot
-    │
-    ▼
-created ◄──────────────────────────────────────────────────────────────────────────┐
-    │                                                                               │
-    ▼                                                                               │
-[Project role triggers] release_gate.evaluation_started                             │
-    │                                                                               │
-    ▼                                                                               │
-release_gate_running ──────────────► release_gate_failed ──► (baseline stays in    │
-    │                                                          created state;       │
-    ▼                                                          can re-trigger)      │
-release_gate_passed                                                                  │
-    │                                                                               │
-    ▼                                                                               │
-approved (by Project Lead or Admin)                                                 │
-    │                                                                               │
-    ▼                                                                               │
-released (by Quality Engineer)     ─────────────────────────────────────────────────┘
-                                                                (re-evaluation loops
-                                                                back to created)
-    │
-    ▼
-[obsolete — admin only; terminal]
-```
+
+`release_gate_failed` and `stale` re-enter `created` for re-evaluation.
+`released` is immutable; it never re-enters `created`.
 
 ---
 
-## 3. Release Gate States
+## 3. Baseline Release-Gate Status
 
 | State | Description |
 |-------|-------------|
@@ -61,7 +57,11 @@ released (by Quality Engineer)     ───────────────
 | `cancelled` | Evaluation cancelled by authorized user before completion |
 | `stale` | A previous pass/fail result is no longer current because new blocking-relevant issues were raised |
 
-The `ReleaseGateResult` record captures one evaluation run. A baseline may have multiple `ReleaseGateResult` records (one per evaluation run). The **current** gate result is the most recent one.
+The `ReleaseGateResult` record captures one immutable evaluation run with status
+`running`, `passed`, `failed`, or `cancelled`. A baseline may have multiple
+results. `stale` is a derived baseline `release_gate_status`, not a mutation of
+a historical result. The current result is the newest completed result only when
+no later blocking-relevant event or governing configuration change exists.
 
 ---
 
@@ -125,18 +125,21 @@ The `ReleaseGateResult` record captures one evaluation run. A baseline may have 
 2. Update `ReleaseGateResult.status = cancelled`
 3. Baseline `release_gate_status` reverts to previous state (`not_evaluated` if first run, or the status from the previous completed run)
 
-### 4.5 Transition: failed → running (Re-evaluation)
+### 4.5 Transition: failed/cancelled/stale → running (Re-evaluation)
 
-**Trigger**: Any project role calls the release-gate run endpoint again after a failed or stale evaluation
+**Trigger**: Any project role calls the release-gate run endpoint again after a failed, cancelled, or stale gate status
 
 **Pre-conditions**:
 - Baseline is in state `created`
-- Previous gate evaluation is in state `failed` or `cancelled`
+- Baseline gate status is `failed`, `cancelled`, or `stale`
 - One or more blocking issues have been resolved (not enforced as a pre-condition, but expected)
 
 **Action**: Same as `not_evaluated → running`
 
-**Policy**: Re-evaluation always creates a new `ReleaseGateResult` record. The baseline may accumulate multiple gate result records. The most recent is the authoritative current status.
+**Policy**: Re-evaluation always creates a new `ReleaseGateResult` record. The
+baseline may accumulate multiple gate result records. The newest completed
+result supplies the evaluation outcome; the separate currency check determines
+whether that outcome remains usable.
 
 ### 4.6 Transition: passed → approved
 
@@ -144,6 +147,7 @@ The `ReleaseGateResult` record captures one evaluation run. A baseline may have 
 
 **Pre-conditions**:
 - Baseline `release_gate_status = passed`
+- Latest completed result is current and `passed`
 - Authorized role: Project Lead, Admin
 
 **Action**:
@@ -157,6 +161,8 @@ The `ReleaseGateResult` record captures one evaluation run. A baseline may have 
 
 **Pre-conditions**:
 - Baseline `status = approved`
+- Latest release-gate result is current and `passed`
+- No blocking-relevant event or governing configuration change occurred after the evaluation cut-off
 - Authorized role: Quality Engineer, Admin
 
 **Action**:
@@ -168,13 +174,28 @@ The `ReleaseGateResult` record captures one evaluation run. A baseline may have 
 ### 4.8 Transition: any → re-evaluation required after new issues
 
 AAC-BASE-FR-040
-If new validation issues are raised against artefacts in a baseline that has already passed its release gate (but is not yet released), the Quality Engineer shall be notified and the `release_gate_status` shall be reset to `stale`.
+If a blocking-relevant event occurs for a baseline that has passed its release
+gate but is not released, the Quality Engineer shall be notified and
+`release_gate_status` shall be set to `stale`.
 
 AAC-BASE-FR-041
-A baseline with `release_gate_status = stale` shall require re-evaluation before it can be approved.
+A baseline with `release_gate_status = stale` shall require re-evaluation before
+it can be approved or released.
 
 AAC-BASE-FR-042
-The `stale` status is triggered by any `validation.issue_raised` event for an artefact in the baseline scope that has `severity = critical`.
+The `stale` status is triggered by any event that can change the gate outcome,
+including an issue whose severity blocks under the active profile, an open
+suspect, a mandatory artefact or traceability gap, a failed test condition, or a
+governing profile, rule, or tailoring change.
+
+AAC-BASE-FR-043
+If the baseline was already approved when it becomes stale, the approval shall
+be invalidated, its metadata retained in audit history, and the baseline state
+shall return to `created`.
+
+AAC-BASE-FR-044
+The release operation shall recheck gate currency and blocking relevance in the
+same transaction as the transition to `released`.
 
 ---
 
@@ -226,7 +247,7 @@ AAC-BASE-FR-052
   "triggered_by": "string (user_id)",
   "started_at": "ISO8601 timestamp",
   "completed_at": "ISO8601 timestamp or null",
-  "status": "running | passed | failed | cancelled | stale",
+  "status": "running | passed | failed | cancelled",
   "result": "pass | fail | null (if not yet completed)",
   "evaluated_rules_count": "integer",
   "passed_rules_count": "integer",

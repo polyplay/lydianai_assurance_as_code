@@ -148,7 +148,7 @@ In `ask_user` mode, when a conflict is detected, the import job shall transition
 AAC-IMPORT-FR-032
 The user decision for each conflict shall be one of:
 
-- `accept_new_version`: Create a new revision with the submitted content. The stale base is logged in the audit event.
+- `accept_new_revision`: Create a new revision with the submitted content. The stale base is logged in the audit event.
 - `reject_keep_current`: Discard the submitted content. The current stored revision remains active. The ImportRunItem shall record `rejected_by_user`.
 
 AAC-IMPORT-FR-033
@@ -222,7 +222,10 @@ AAC-IMPORT-FR-065
 Relationship imports shall be processed after all artefact imports complete (to ensure source and target artefacts exist before relationship creation).
 
 AAC-IMPORT-FR-066
-The `import.completed` domain event shall only be emitted after all batches, including relationship batches, have committed successfully.
+The `import.completed` domain event shall only be emitted after all processable
+batches, including relationship batches, have committed. The event payload
+shall identify whether the terminal state is `completed` or
+`completed_with_errors`.
 
 ---
 
@@ -233,7 +236,7 @@ After all artefact and relationship batches commit, the back-end shall:
 
 1. Update the `ImportRun` record with final counts (created / revised / unchanged / deleted / conflicts / errors)
 2. Update `ImportRun.status` to `completed`, `completed_with_errors`, or `waiting_for_user`
-3. Emit `import.completed` domain event (if not `waiting_for_user`)
+3. Emit `import.completed` domain event for `completed` or `completed_with_errors`
 4. The `import.completed` consumer enqueues a validation run (execution mode = `import`) for the project
 
 AAC-IMPORT-FR-071

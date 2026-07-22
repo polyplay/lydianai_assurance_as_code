@@ -21,6 +21,7 @@ from aac_backend.services.artefact_schema_service import (
     apply_schema_override,
     schema_for_artefact_type,
 )
+from aac_backend.services.event_service import record_event
 from aac_backend.services.project_service import (
     apply_assurance_configuration,
     archive_project,
@@ -37,10 +38,20 @@ router = APIRouter(tags=["projects"])
 
 @router.get("/projects", response_model=ApiEnvelope)
 async def list_projects(
-    _: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
-    projects = list(await session.scalars(select(Project).where(Project.status != "deleted")))
+    statement = select(Project).where(Project.status != "deleted")
+    if "admin" not in current.global_roles:
+        statement = (
+            statement.join(
+                ProjectMembership,
+                ProjectMembership.project_id == Project.project_id,
+            )
+            .where(ProjectMembership.user_id == current.user.user_id)
+            .distinct()
+        )
+    projects = list(await session.scalars(statement))
     return ApiEnvelope(data=[ProjectRead.model_validate(project) for project in projects])
 
 
@@ -61,7 +72,7 @@ async def create_project_endpoint(
 @router.get("/projects/{project_id}", response_model=ApiEnvelope)
 async def get_project(
     project_id: str,
-    _: CurrentUser = Depends(get_current_user),
+    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer", "user")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     project = await session.get(Project, project_id)
@@ -74,7 +85,7 @@ async def get_project(
 async def update_project(
     project_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
+    current: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     project = await session.get(Project, project_id)
@@ -84,6 +95,13 @@ async def update_project(
     project.description = payload.get("description", project.description)
     project.active_profile_id = payload.get("active_profile_id", project.active_profile_id)
     project.status = payload.get("status", project.status)
+    await record_event(
+        session,
+        event_type="project.updated",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"updated_fields": sorted(payload)},
+    )
     await session.commit()
     return ApiEnvelope(data=ProjectRead.model_validate(project))
 
@@ -130,6 +148,12 @@ async def delete_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     project.status = "deleted"
+    await record_event(
+        session,
+        event_type="project.deleted",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+    )
     await session.commit()
     return ApiEnvelope(data=ProjectRead.model_validate(project))
 
@@ -162,7 +186,7 @@ async def list_members(
 async def add_member(
     project_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
+    current: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     role = await session.scalar(select(Role).where(Role.role_name == payload["role"]))
@@ -176,6 +200,13 @@ async def add_member(
         created_at=datetime.now(UTC),
     )
     session.add(membership)
+    await record_event(
+        session,
+        event_type="membership.added",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"user_id": user.user_id, "role": role.role_name},
+    )
     await session.commit()
     return ApiEnvelope(data={"project_id": project_id, "user_id": user.user_id, "role": role.role_name})
 
@@ -184,7 +215,7 @@ async def add_member(
 async def remove_member(
     project_id: str,
     user_id: str,
-    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
+    current: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     memberships = list(
@@ -197,6 +228,13 @@ async def remove_member(
     )
     for membership in memberships:
         await session.delete(membership)
+    await record_event(
+        session,
+        event_type="membership.removed",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"user_id": user_id, "removed": len(memberships)},
+    )
     await session.commit()
     return ApiEnvelope(data={"project_id": project_id, "user_id": user_id, "removed": len(memberships)})
 
@@ -227,6 +265,10 @@ async def update_config(
     )
     if not config:
         raise HTTPException(status_code=404, detail="Project config not found")
+    previous_assurance_configuration = (config.validation_policy_json or {}).get(
+        "project_assurance_configuration",
+        {},
+    )
     config.version_update_mode = payload.get("version_update_mode", config.version_update_mode)
     config.sphinx_source_root = payload.get("sphinx_source_root", config.sphinx_source_root)
     config.baseline_policy_json = payload.get("baseline_policy", config.baseline_policy_json)
@@ -236,13 +278,27 @@ async def update_config(
         project = await session.get(Project, project_id)
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
-        await apply_assurance_configuration(
-            session,
-            project=project,
-            config=config,
-            raw_configuration=payload["assurance_configuration"],
-            actor_user_id=current.user.user_id,
-        )
+        try:
+            await apply_assurance_configuration(
+                session,
+                project=project,
+                config=config,
+                raw_configuration=payload["assurance_configuration"],
+                actor_user_id=current.user.user_id,
+                tailoring_rationale=payload.get("tailoring_rationale"),
+                tailoring_evidence_refs=payload.get("tailoring_evidence_refs"),
+                require_tailoring_approval=True,
+                previous_assurance_configuration=previous_assurance_configuration,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await record_event(
+        session,
+        event_type="project.assurance_configuration_updated",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"updated_fields": sorted(payload)},
+    )
     await session.commit()
     return ApiEnvelope(data=_config_data(config))
 
@@ -270,7 +326,7 @@ async def list_profiles(
 async def create_profile(
     project_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     source_profile_id = payload.get("inherits_from_profile_id") or payload.get("inherits_from")
@@ -289,6 +345,14 @@ async def create_profile(
         status="active",
     )
     session.add(profile)
+    await session.flush()
+    await record_event(
+        session,
+        event_type="profile.created",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"profile_id": profile.profile_id},
+    )
     await session.commit()
     return ApiEnvelope(data=_profile_data(profile))
 
@@ -309,7 +373,7 @@ async def update_profile(
     project_id: str,
     profile_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     profile = await _get_profile_or_404(session, project_id, profile_id)
@@ -319,6 +383,13 @@ async def update_profile(
     profile.classification = payload.get("classification", profile.classification)
     profile.profile_payload_json = payload.get("profile_payload", profile.profile_payload_json)
     profile.status = payload.get("status", profile.status)
+    await record_event(
+        session,
+        event_type="profile.updated",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"profile_id": profile.profile_id, "updated_fields": sorted(payload)},
+    )
     await session.commit()
     return ApiEnvelope(data=_profile_data(profile))
 
@@ -349,7 +420,7 @@ async def list_standards_references(
 async def create_standards_reference(
     project_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     _ = project_id
@@ -364,6 +435,14 @@ async def create_standards_reference(
         review_status=payload.get("review_status", "draft_public_reference"),
     )
     session.add(ref)
+    await session.flush()
+    await record_event(
+        session,
+        event_type="standards.reference_created",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"standards_reference_id": ref.standards_reference_id},
+    )
     await session.commit()
     return ApiEnvelope(data=_standards_reference_data(ref))
 
@@ -373,7 +452,7 @@ async def update_standards_reference(
     project_id: str,
     standards_reference_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     _ = project_id
@@ -392,6 +471,13 @@ async def update_standards_reference(
     ):
         if field in payload:
             setattr(ref, field, payload[field])
+    await record_event(
+        session,
+        event_type="standards.reference_updated",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"standards_reference_id": ref.standards_reference_id},
+    )
     await session.commit()
     return ApiEnvelope(data=_standards_reference_data(ref))
 
@@ -411,7 +497,7 @@ async def list_standards_mappings(
 async def upsert_standards_mapping(
     project_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     _ = project_id
@@ -433,6 +519,16 @@ async def upsert_standards_mapping(
     mapping.verification_method_expectation = payload.get(
         "verification_method_expectation",
         mapping.verification_method_expectation,
+    )
+    await record_event(
+        session,
+        event_type="standards.mapping_updated",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={
+            "artefact_type": artefact_type,
+            "standards_reference_id": standards_reference_id,
+        },
     )
     await session.commit()
     return ApiEnvelope(data=_standards_mapping_data(mapping))
@@ -468,7 +564,7 @@ async def tailor_schema(
     project_id: str,
     artefact_type: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     config = await _get_config_or_404(session, project_id)
@@ -476,6 +572,13 @@ async def tailor_schema(
         schema = apply_schema_override(config, artefact_type, payload)
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await record_event(
+        session,
+        event_type="schema.updated",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"artefact_type": artefact_type, "schema_version": schema["schema_version"]},
+    )
     await session.commit()
     return ApiEnvelope(data={"project_id": project_id, **schema})
 
@@ -501,6 +604,14 @@ async def create_tailoring_decision(
         status="draft",
     )
     session.add(decision)
+    await session.flush()
+    await record_event(
+        session,
+        event_type="tailoring.created",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"tailoring_decision_id": decision.tailoring_decision_id},
+    )
     await session.commit()
     return ApiEnvelope(data=_tailoring_data(decision))
 
@@ -535,6 +646,13 @@ async def approve_tailoring_decision(
     decision.status = "approved"
     decision.approved_by = current.user.user_id
     decision.approved_at = datetime.now(UTC)
+    await record_event(
+        session,
+        event_type="tailoring.approved",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"tailoring_decision_id": decision.tailoring_decision_id},
+    )
     await session.commit()
     return ApiEnvelope(data=_tailoring_data(decision))
 
@@ -546,13 +664,20 @@ async def approve_tailoring_decision(
 async def revoke_tailoring_decision(
     project_id: str,
     tailoring_decision_id: str,
-    _: CurrentUser = Depends(project_role_dependency("admin")),
+    current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     decision = await session.get(TailoringDecision, tailoring_decision_id)
     if not decision or decision.project_id != project_id:
         raise HTTPException(status_code=404, detail="Tailoring decision not found")
     decision.status = "obsolete"
+    await record_event(
+        session,
+        event_type="tailoring.revoked",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"tailoring_decision_id": decision.tailoring_decision_id},
+    )
     await session.commit()
     return ApiEnvelope(data=_tailoring_data(decision))
 
@@ -586,8 +711,11 @@ def _tailoring_data(decision: TailoringDecision) -> dict:
     return {
         "tailoring_decision_id": decision.tailoring_decision_id,
         "project_id": decision.project_id,
+        "scope_type": decision.scope_type,
+        "scope_id": decision.scope_id,
         "target_kind": decision.target_kind,
         "target_id": decision.target_id,
+        "previous_applicability": decision.previous_applicability,
         "tailored_applicability": decision.tailored_applicability,
         "status": decision.status,
         "rationale": decision.rationale,

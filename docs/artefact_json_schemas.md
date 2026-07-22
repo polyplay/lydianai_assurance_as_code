@@ -6,6 +6,11 @@ This document defines the MVP field-level JSON schemas for canonical artefact pa
 
 All API request and response bodies are JSON for MVP. The web app may render these fields visually, but the back-end contract remains JSON.
 
+This document is the sole normative authority for artefact payload fields,
+types, requiredness, and conditional requiredness. Name reconciliation and
+standards documents may define aliases and applicability, but shall not define a
+competing field schema.
+
 ## 2. Schema Principles
 
 AAC-SCHEMA-FR-001
@@ -166,10 +171,10 @@ Unknown fields shall be rejected in strict mode and preserved as raw import meta
   "payload": {
     "scope_type": "project|component|interface|requirement|baseline",
     "scope_id": "string",
-    "target_kind": "artefact_class|relationship_type|rule|field",
+    "target_kind": "artefact_class|relationship_type|rule|field|aspice_default_capability|aspice_process_scope|aspice_process_capability",
     "target_id": "string",
-    "previous_applicability": "mandatory|optional|conditional|disabled|not_applicable",
-    "tailored_applicability": "mandatory|optional|conditional|disabled|not_applicable",
+    "previous_applicability": "mandatory|optional|conditional|disabled|not_applicable|in_scope|out_of_scope|CL1|CL2|CL3",
+    "tailored_applicability": "mandatory|optional|conditional|disabled|not_applicable|in_scope|out_of_scope|CL1|CL2|CL3",
     "rationale": "string",
     "evidence_refs": ["string"],
     "requested_by": "string",
@@ -1369,6 +1374,8 @@ Unknown fields shall be rejected in strict mode and preserved as raw import meta
   "payload": {
     "artefact_id": "string",
     "revision_number": 1,
+    "previous_revision_id": "string|null",
+    "schema_version": "string",
     "payload_snapshot": {},
     "change_reason": "string",
     "changed_by": "string",
@@ -1385,6 +1392,7 @@ Unknown fields shall be rejected in strict mode and preserved as raw import meta
   "payload": {
     "relationship_id": "string",
     "revision_number": 1,
+    "previous_revision_id": "string|null",
     "payload_snapshot": {},
     "changed_by": "string",
     "changed_at": "datetime",
@@ -1418,7 +1426,8 @@ Unknown fields shall be rejected in strict mode and preserved as raw import meta
 {
   "payload": {
     "baseline_id": "string",
-    "status": "not_evaluated|running|passed|failed|cancelled|stale",
+    "evaluation_number": 1,
+    "status": "running|passed|failed|cancelled",
     "result": "pass|fail|null",
     "blocking_issues": ["string"],
     "warning_issues": ["string"],

@@ -9,9 +9,11 @@ from aac_backend.database import get_session
 from aac_backend.models.validation import ValidationIssue
 from aac_backend.rules.catalog import RULE_CATALOG
 from aac_backend.schemas.common import ApiEnvelope
+from aac_backend.services.auth_service import user_roles
 from aac_backend.services.event_service import record_event
 from aac_backend.services.job_service import job_data, run_tracked_job
 from aac_backend.services.validation_service import run_validation
+from aac_backend.services.presentation_policy import validation_issue_allowed_actions
 
 router = APIRouter(tags=["validation"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
@@ -52,18 +54,14 @@ async def validation_run(
 @router.get("/projects/{project_id}/validation/issues", response_model=ApiEnvelope)
 async def validation_issues(
     project_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     issues = list(
         await session.scalars(select(ValidationIssue).where(ValidationIssue.project_id == project_id))
     )
-    return ApiEnvelope(
-        data=[
-            _issue_data(issue)
-            for issue in issues
-        ]
-    )
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=[_issue_data(issue, roles=roles) for issue in issues])
 
 
 @router.get("/projects/{project_id}/validation/status", response_model=ApiEnvelope)
@@ -92,11 +90,12 @@ async def validation_status(
 async def get_issue(
     project_id: str,
     issue_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     issue = await _get_issue_or_404(session, project_id, issue_id)
-    return ApiEnvelope(data=_issue_data(issue))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_issue_data(issue, roles=roles))
 
 
 @router.post("/projects/{project_id}/validation/issues/{issue_id}/suppress", response_model=ApiEnvelope)
@@ -120,7 +119,8 @@ async def suppress_issue(
         payload={"issue_id": issue_id, "reason": issue.suppression_reason},
     )
     await session.commit()
-    return ApiEnvelope(data=_issue_data(issue))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_issue_data(issue, roles=roles))
 
 
 @router.post("/projects/{project_id}/validation/issues/{issue_id}/reopen", response_model=ApiEnvelope)
@@ -143,7 +143,8 @@ async def reopen_issue(
         payload={"issue_id": issue_id},
     )
     await session.commit()
-    return ApiEnvelope(data=_issue_data(issue))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_issue_data(issue, roles=roles))
 
 
 @router.get("/projects/{project_id}/rules", response_model=ApiEnvelope)
@@ -165,8 +166,8 @@ async def _get_issue_or_404(
     return issue
 
 
-def _issue_data(issue: ValidationIssue) -> dict:
-    return {
+def _issue_data(issue: ValidationIssue, *, roles: list[str] | None = None) -> dict:
+    data = {
         "validation_issue_id": issue.validation_issue_id,
         "rule_id": issue.rule_id,
         "severity": issue.severity,
@@ -177,3 +178,6 @@ def _issue_data(issue: ValidationIssue) -> dict:
         "blocking_contexts": issue.blocking_contexts_json,
         "remediation_hint": issue.remediation_hint,
     }
+    if roles is not None:
+        data["allowed_actions"] = validation_issue_allowed_actions(issue, roles=roles)
+    return data

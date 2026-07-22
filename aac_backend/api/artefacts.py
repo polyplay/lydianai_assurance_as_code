@@ -17,13 +17,16 @@ from aac_backend.schemas.domain import (
     ArtefactRead,
     ArtefactStatusTransition,
     ArtefactUpdate,
+    RevisionToken,
 )
+from aac_backend.services.auth_service import user_roles
 from aac_backend.services.artefact_service import (
     change_artefact_status,
     create_artefact,
     obsolete_artefact,
     update_artefact,
 )
+from aac_backend.services.presentation_policy import artefact_allowed_actions
 
 router = APIRouter(tags=["artefacts"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
@@ -32,11 +35,17 @@ PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
 @router.get("/projects/{project_id}/artefacts", response_model=ApiEnvelope)
 async def list_artefacts(
     project_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefacts = await ArtefactRepository(session).list_for_project(project_id)
-    return ApiEnvelope(data=[ArtefactRead.model_validate(artefact) for artefact in artefacts])
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(
+        data=[
+            _artefact_data(artefact, actor_user_id=current.user.user_id, roles=roles)
+            for artefact in artefacts
+        ]
+    )
 
 
 @router.post("/projects/{project_id}/artefacts", response_model=ApiEnvelope)
@@ -51,20 +60,26 @@ async def create_artefact_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.delete("/projects/{project_id}/artefacts/{artefact_id}", response_model=ApiEnvelope)
 async def delete_artefact(
     project_id: str,
     artefact_id: str,
+    payload: RevisionToken,
     current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    await obsolete_artefact(session, artefact, current.user.user_id)
+    await obsolete_artefact(
+        session,
+        artefact,
+        current.user.user_id,
+        base_revision_id=payload.base_revision_id,
+    )
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.post(
@@ -74,67 +89,102 @@ async def delete_artefact(
 async def submit_for_review(
     project_id: str,
     artefact_id: str,
+    payload: RevisionToken,
     current: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
     if artefact.owner_user_id != current.user.user_id:
         await project_role_dependency("admin", "quality_engineer")(project_id, current, session)
-    artefact = await _change_status_or_409(session, artefact, "under_review", current.user.user_id)
+    artefact = await _change_status_or_409(
+        session,
+        artefact,
+        "under_review",
+        current.user.user_id,
+        base_revision_id=payload.base_revision_id,
+    )
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.post("/projects/{project_id}/artefacts/{artefact_id}/mark-reviewed", response_model=ApiEnvelope)
 async def mark_reviewed(
     project_id: str,
     artefact_id: str,
+    payload: RevisionToken,
     current: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await _change_status_or_409(session, artefact, "reviewed", current.user.user_id)
+    artefact = await _change_status_or_409(
+        session,
+        artefact,
+        "reviewed",
+        current.user.user_id,
+        base_revision_id=payload.base_revision_id,
+    )
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.post("/projects/{project_id}/artefacts/{artefact_id}/reject", response_model=ApiEnvelope)
 async def reject_review(
     project_id: str,
     artefact_id: str,
+    payload: RevisionToken,
     current: CurrentUser = Depends(project_role_dependency("admin", "project_lead", "quality_engineer")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await _change_status_or_409(session, artefact, "draft", current.user.user_id)
+    artefact = await _change_status_or_409(
+        session,
+        artefact,
+        "draft",
+        current.user.user_id,
+        base_revision_id=payload.base_revision_id,
+    )
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.post("/projects/{project_id}/artefacts/{artefact_id}/approve", response_model=ApiEnvelope)
 async def approve_artefact(
     project_id: str,
     artefact_id: str,
+    payload: RevisionToken,
     current: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await _change_status_or_409(session, artefact, "approved", current.user.user_id)
+    artefact = await _change_status_or_409(
+        session,
+        artefact,
+        "approved",
+        current.user.user_id,
+        base_revision_id=payload.base_revision_id,
+    )
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.post("/projects/{project_id}/artefacts/{artefact_id}/release", response_model=ApiEnvelope)
 async def release_artefact(
     project_id: str,
     artefact_id: str,
+    payload: RevisionToken,
     current: CurrentUser = Depends(project_role_dependency("admin", "quality_engineer")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
-    artefact = await _change_status_or_409(session, artefact, "released", current.user.user_id)
+    artefact = await _change_status_or_409(
+        session,
+        artefact,
+        "released",
+        current.user.user_id,
+        base_revision_id=payload.base_revision_id,
+    )
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.post("/projects/{project_id}/artefacts/{artefact_id}/status", response_model=ApiEnvelope)
@@ -152,25 +202,32 @@ async def status_transition(
         payload.status,
         current.user.user_id,
         reason=payload.reason,
+        base_revision_id=payload.base_revision_id,
     )
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.get("/projects/{project_id}/artefacts/{artefact_id}/status", response_model=ApiEnvelope)
 async def get_artefact_status(
     project_id: str,
     artefact_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await _get_artefact_or_404(session, project_id, artefact_id)
+    roles = await user_roles(session, current.user.user_id, project_id)
     return ApiEnvelope(
         data={
             "artefact_id": artefact.artefact_id,
             "status": artefact.status,
             "current_revision_id": artefact.current_revision_id,
             "current_fingerprint": artefact.current_fingerprint,
+            "allowed_actions": artefact_allowed_actions(
+                artefact,
+                actor_user_id=current.user.user_id,
+                roles=roles,
+            ),
         }
     )
 
@@ -247,9 +304,12 @@ def _revision_data(revision: ArtefactRevision) -> dict:
         "artefact_revision_id": revision.artefact_revision_id,
         "artefact_id": revision.artefact_id,
         "revision_number": revision.revision_number,
+        "previous_revision_id": revision.previous_revision_id,
+        "schema_version": revision.schema_version,
         "payload": revision.payload_json,
         "metadata": revision.metadata_json,
         "content_fingerprint": revision.content_fingerprint,
+        "audit_event_id": revision.audit_event_id,
         "changed_at": revision.changed_at,
     }
 
@@ -258,13 +318,13 @@ def _revision_data(revision: ArtefactRevision) -> dict:
 async def get_artefact(
     project_id: str,
     artefact_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     artefact = await session.get(Artefact, artefact_id)
     if not artefact or artefact.project_id != project_id:
         raise HTTPException(status_code=404, detail="Artefact not found")
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 @router.put("/projects/{project_id}/artefacts/{artefact_id}", response_model=ApiEnvelope)
@@ -290,7 +350,7 @@ async def update_artefact_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
-    return ApiEnvelope(data=ArtefactRead.model_validate(artefact))
+    return ApiEnvelope(data=await _artefact_data_for_current(session, current, artefact))
 
 
 async def _change_status_or_409(
@@ -299,6 +359,7 @@ async def _change_status_or_409(
     new_status: str,
     actor_user_id: str,
     reason: str | None = None,
+    base_revision_id: str | None = None,
 ) -> Artefact:
     try:
         return await change_artefact_status(
@@ -307,6 +368,35 @@ async def _change_status_or_409(
             new_status=new_status,
             actor_user_id=actor_user_id,
             reason=reason,
+            base_revision_id=base_revision_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+async def _artefact_data_for_current(
+    session: AsyncSession,
+    current: CurrentUser,
+    artefact: Artefact,
+) -> dict:
+    roles = await user_roles(session, current.user.user_id, artefact.project_id)
+    return _artefact_data(
+        artefact,
+        actor_user_id=current.user.user_id,
+        roles=roles,
+    )
+
+
+def _artefact_data(
+    artefact: Artefact,
+    *,
+    actor_user_id: str,
+    roles: list[str],
+) -> dict:
+    data = ArtefactRead.model_validate(artefact).model_dump()
+    data["allowed_actions"] = artefact_allowed_actions(
+        artefact,
+        actor_user_id=actor_user_id,
+        roles=roles,
+    )
+    return data

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from math import ceil
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +24,7 @@ from aac_backend.services.artefact_service import (
     update_artefact,
 )
 from aac_backend.services.event_service import record_event
-from aac_backend.services.validation_service import run_validation
+from aac_backend.services.request_context import current_correlation_id
 
 
 TYPE_FIELD = "type"
@@ -116,32 +117,158 @@ LINK_TO_RELATIONSHIP = {
 }
 
 
-async def import_sphinx_needs(
+async def create_import_run(
     session: AsyncSession,
     project_id: str,
     data: ImportStart,
     actor_user_id: str,
+    *,
+    correlation_id: str | None = None,
+    batch_size: int = 100,
 ) -> ImportRun:
     import_run = ImportRun(
         project_id=project_id,
         source_root=data.source_root,
-        state="parsed",
+        state="created",
         version_update_mode=data.version_update_mode or "ask_user",
         submitted_by=actor_user_id,
         submitted_at=datetime.now(UTC),
+        source_payload_json=data.model_dump(),
+        batch_size=batch_size,
+        total_batches=ceil(len(data.sphinx_needs) / batch_size) if data.sphinx_needs else 0,
+        last_committed_batch_index=-1,
+        cancellation_requested=False,
+        committed_effects_json={"exists": False, "last_committed_unit": None},
+        correlation_id=correlation_id or current_correlation_id(),
         summary_json={},
         diagnostics_json=[],
     )
     session.add(import_run)
     await session.flush()
+    await record_event(
+        session,
+        event_type="import.started",
+        project_id=project_id,
+        actor_user_id=actor_user_id,
+        payload={
+            "import_run_id": import_run.import_run_id,
+            "submitted_item_count": len(data.sphinx_needs),
+        },
+    )
+    return import_run
+
+
+async def process_import_run(
+    session: AsyncSession,
+    import_run: ImportRun,
+    actor_user_id: str,
+    *,
+    actor_roles: set[str] | None = None,
+    job: Job | None = None,
+) -> ImportRun:
+    if import_run.state in {
+        "completed",
+        "completed_with_errors",
+        "completed_no_changes_applied",
+        "failed",
+        "cancelled",
+    }:
+        return import_run
+    data = ImportStart(**import_run.source_payload_json)
+    return await import_sphinx_needs(
+        session,
+        import_run.project_id,
+        data,
+        actor_user_id,
+        actor_roles=actor_roles,
+        import_run=import_run,
+        job=job,
+    )
+
+
+async def import_sphinx_needs(
+    session: AsyncSession,
+    project_id: str,
+    data: ImportStart,
+    actor_user_id: str,
+    actor_roles: set[str] | None = None,
+    import_run: ImportRun | None = None,
+    job: Job | None = None,
+) -> ImportRun:
+    if import_run is None:
+        import_run = await create_import_run(
+            session,
+            project_id,
+            data,
+            actor_user_id,
+        )
+        await session.commit()
+    import_run.state = "parsed"
+    import_run.source_payload_json = data.model_dump()
+    import_run.total_batches = (
+        ceil(len(data.sphinx_needs) / import_run.batch_size)
+        if data.sphinx_needs
+        else 0
+    )
 
     repo = ArtefactRepository(session)
-    created = changed = unchanged = waiting = errors = deleted = type_mismatches = conflicts = 0
+    existing_summary = import_run.summary_json or {}
+    created = int(existing_summary.get("created", 0))
+    changed = int(existing_summary.get("changed", 0))
+    unchanged = int(existing_summary.get("unchanged", 0))
+    waiting = int(existing_summary.get("waiting_for_user", 0))
+    errors = int(existing_summary.get("errors", 0))
+    deleted = int(existing_summary.get("deleted", 0))
+    type_mismatches = int(existing_summary.get("type_mismatches", 0))
+    conflicts = int(existing_summary.get("conflicts", 0))
     seen_source_keys: set[tuple[str, str]] = set()
     imported_documents: set[str] = set()
     raw_entries: list[dict] = []
 
     for raw_need in data.sphinx_needs:
+        source_object_id = raw_need.get(ID_FIELD)
+        if source_object_id is None:
+            continue
+        source_document = str(raw_need.get("source_document") or raw_need.get("docname") or "")
+        seen_source_keys.add((source_document, str(source_object_id)))
+        imported_documents.add(source_document)
+        raw_entries.append(
+            {
+                "raw_need": raw_need,
+                "source_object_id": str(source_object_id),
+                "source_document": source_document,
+            }
+        )
+
+    start_index = (import_run.last_committed_batch_index + 1) * import_run.batch_size
+
+    async def checkpoint(item_index: int) -> None:
+        await _commit_batch_if_boundary(
+            session,
+            import_run,
+            job,
+            item_index,
+            len(data.sphinx_needs),
+            _import_summary(
+                created,
+                changed,
+                unchanged,
+                waiting,
+                errors,
+                deleted,
+                type_mismatches,
+                conflicts,
+                0,
+            ),
+        )
+
+    for item_index, raw_need in enumerate(data.sphinx_needs):
+        if item_index < start_index:
+            continue
+        if item_index % import_run.batch_size == 0:
+            await _refresh_cancellation_state(session, import_run, job)
+            if import_run.cancellation_requested or (job and job.cancellation_requested):
+                return await _cancel_import_at_boundary(session, import_run, job, actor_user_id)
         try:
             source_object_id = str(raw_need[ID_FIELD])
             artefact_type = _canonical_artefact_type(raw_need)
@@ -153,17 +280,9 @@ async def import_sphinx_needs(
         except Exception as exc:
             errors += 1
             import_run.diagnostics_json.append({"level": "error", "message": str(exc), "raw": raw_need})
+            await checkpoint(item_index)
             continue
 
-        seen_source_keys.add((source_document, source_object_id))
-        imported_documents.add(source_document)
-        raw_entries.append(
-            {
-                "raw_need": raw_need,
-                "source_object_id": source_object_id,
-                "source_document": source_document,
-            }
-        )
         existing = await repo.by_source_identity(project_id, source_document, source_object_id)
         proposed_fingerprint = fingerprint(payload)
         if existing is None:
@@ -196,6 +315,7 @@ async def import_sphinx_needs(
                         "message": str(exc),
                     }
                 )
+                await checkpoint(item_index)
                 continue
             created += 1
             session.add(
@@ -210,6 +330,7 @@ async def import_sphinx_needs(
                     payload,
                 )
             )
+            await checkpoint(item_index)
             continue
 
         if existing.artefact_type != artefact_type:
@@ -238,6 +359,7 @@ async def import_sphinx_needs(
                     "imported_type": artefact_type,
                 }
             )
+            await checkpoint(item_index)
             continue
 
         if base_revision_id and existing.current_revision_id != base_revision_id:
@@ -255,6 +377,20 @@ async def import_sphinx_needs(
             item.previous_fingerprint = existing.current_fingerprint
             item.current_revision_id = existing.current_revision_id
             if import_run.version_update_mode == "automatic_new_version":
+                if existing.status == "released" and not _can_revise_released(actor_roles):
+                    errors += 1
+                    item.decision_status = "rejected"
+                    session.add(item)
+                    import_run.diagnostics_json.append(
+                        {
+                            "level": "error",
+                            "classification": "authorization_denied",
+                            "source_object_id": source_object_id,
+                            "message": "Quality Engineer or Admin required to revise released artefact",
+                        }
+                    )
+                    await checkpoint(item_index)
+                    continue
                 try:
                     await update_artefact(
                         session,
@@ -263,6 +399,7 @@ async def import_sphinx_needs(
                             title=title,
                             description=description,
                             payload=payload,
+                            base_revision_id=existing.current_revision_id,
                             change_reason="sphinx import stale base accepted automatically",
                         ),
                         actor_user_id,
@@ -280,6 +417,7 @@ async def import_sphinx_needs(
                             "message": str(exc),
                         }
                     )
+                    await checkpoint(item_index)
                     continue
                 item.new_revision_id = existing.current_revision_id
                 item.decision_status = "automatic"
@@ -299,6 +437,7 @@ async def import_sphinx_needs(
                     "current_revision_id": existing.current_revision_id,
                 }
             )
+            await checkpoint(item_index)
             continue
 
         if existing.current_fingerprint == proposed_fingerprint:
@@ -315,6 +454,7 @@ async def import_sphinx_needs(
                     payload,
                 )
             )
+            await checkpoint(item_index)
             continue
 
         item = _item(
@@ -330,11 +470,31 @@ async def import_sphinx_needs(
         item.previous_fingerprint = existing.current_fingerprint
         item.current_revision_id = existing.current_revision_id
         if import_run.version_update_mode == "automatic_new_version":
+            if existing.status == "released" and not _can_revise_released(actor_roles):
+                errors += 1
+                item.decision_status = "rejected"
+                session.add(item)
+                import_run.diagnostics_json.append(
+                    {
+                        "level": "error",
+                        "classification": "authorization_denied",
+                        "source_object_id": source_object_id,
+                        "message": "Quality Engineer or Admin required to revise released artefact",
+                    }
+                )
+                await checkpoint(item_index)
+                continue
             try:
                 await update_artefact(
                     session,
                     existing,
-                    ArtefactUpdate(title=title, description=description, payload=payload, change_reason="sphinx import"),
+                    ArtefactUpdate(
+                        title=title,
+                        description=description,
+                        payload=payload,
+                        base_revision_id=existing.current_revision_id,
+                        change_reason="sphinx import",
+                    ),
                     actor_user_id,
                 )
             except ValueError as exc:
@@ -350,6 +510,7 @@ async def import_sphinx_needs(
                         "message": str(exc),
                     }
                 )
+                await checkpoint(item_index)
                 continue
             item.new_revision_id = existing.current_revision_id
             item.decision_status = "automatic"
@@ -359,6 +520,11 @@ async def import_sphinx_needs(
             import_run.state = "waiting_for_user"
             waiting += 1
         session.add(item)
+        await checkpoint(item_index)
+
+    await _refresh_cancellation_state(session, import_run, job)
+    if import_run.cancellation_requested or (job and job.cancellation_requested):
+        return await _cancel_import_at_boundary(session, import_run, job, actor_user_id)
 
     if imported_documents:
         existing_sphinx_artefacts = list(
@@ -406,11 +572,68 @@ async def import_sphinx_needs(
         final_state = "waiting_for_user"
     elif errors or type_mismatches:
         final_state = "completed_with_errors"
+    elif not any((created, changed, deleted, relationships_created)):
+        final_state = "completed_no_changes_applied"
     else:
         final_state = "completed"
     import_run.state = final_state
     import_run.completed_at = None if waiting else datetime.now(UTC)
-    import_run.summary_json = {
+    import_run.diagnostics_json = list(import_run.diagnostics_json)
+    import_run.summary_json = _import_summary(
+        created,
+        changed,
+        unchanged,
+        waiting,
+        errors,
+        deleted,
+        type_mismatches,
+        conflicts,
+        relationships_created,
+    )
+    effects_exist = bool(created or changed or deleted or relationships_created)
+    import_run.committed_effects_json = {
+        "exists": effects_exist,
+        "last_committed_unit": (
+            f"batch:{import_run.last_committed_batch_index}"
+            if import_run.last_committed_batch_index >= 0
+            else None
+        ),
+    }
+    if job is not None:
+        job.committed_effects_json = import_run.committed_effects_json
+        job.last_committed_unit = import_run.committed_effects_json["last_committed_unit"]
+    await record_event(
+        session,
+        event_type="import.completed" if final_state.startswith("completed") else "import.waiting_for_user",
+        project_id=project_id,
+        actor_user_id=actor_user_id,
+        payload={
+            "import_run_id": import_run.import_run_id,
+            "state": final_state,
+            **import_run.summary_json,
+        },
+        idempotency_key=(
+            f"import:{import_run.import_run_id}:completed"
+            if final_state.startswith("completed")
+            else None
+        ),
+    )
+    await session.commit()
+    return import_run
+
+
+def _import_summary(
+    created: int,
+    changed: int,
+    unchanged: int,
+    waiting: int,
+    errors: int,
+    deleted: int,
+    type_mismatches: int,
+    conflicts: int,
+    relationships_created: int,
+) -> dict:
+    return {
         "created": created,
         "changed": changed,
         "unchanged": unchanged,
@@ -421,40 +644,180 @@ async def import_sphinx_needs(
         "conflicts": conflicts,
         "relationships_created": relationships_created,
     }
-    if final_state.startswith("completed"):
-        validation_job = Job(
-            project_id=project_id,
-            job_type="validation_run",
-            state="running",
-            submitted_by=actor_user_id,
-            submitted_at=datetime.now(UTC),
-            started_at=datetime.now(UTC),
+
+
+async def _commit_batch_if_boundary(
+    session: AsyncSession,
+    import_run: ImportRun,
+    job: Job | None,
+    item_index: int,
+    item_count: int,
+    summary: dict,
+) -> None:
+    if item_count == 0:
+        return
+    at_boundary = (
+        (item_index + 1) % import_run.batch_size == 0
+        or item_index + 1 == item_count
+    )
+    if not at_boundary:
+        return
+    batch_index = item_index // import_run.batch_size
+    import_run.last_committed_batch_index = batch_index
+    import_run.summary_json = summary
+    import_run.diagnostics_json = list(import_run.diagnostics_json)
+    effects_exist = bool(
+        summary["created"]
+        or summary["changed"]
+        or summary["deleted"]
+        or summary["relationships_created"]
+    )
+    import_run.committed_effects_json = {
+        "exists": effects_exist,
+        "last_committed_unit": f"batch:{batch_index}",
+    }
+    if job is not None:
+        job.progress_percent = min(
+            int(((item_index + 1) / max(item_count, 1)) * 90),
+            90,
         )
-        session.add(validation_job)
-        await session.flush()
-        validation_run = await run_validation(
-            session,
-            project_id,
-            actor_user_id,
-            scope={"type": "project", "trigger": "sphinx_import", "import_run_id": import_run.import_run_id},
+        job.committed_effects_json = import_run.committed_effects_json
+        job.last_committed_unit = f"batch:{batch_index}"
+    await session.flush()
+    await session.commit()
+
+
+async def _refresh_cancellation_state(
+    session: AsyncSession,
+    import_run: ImportRun,
+    job: Job | None,
+) -> None:
+    refresh = getattr(session, "refresh", None)
+    if refresh is None:
+        return
+    await refresh(import_run, attribute_names=["cancellation_requested"])
+    if job is not None:
+        await refresh(job, attribute_names=["cancellation_requested"])
+
+
+async def _cancel_import_at_boundary(
+    session: AsyncSession,
+    import_run: ImportRun,
+    job: Job | None,
+    actor_user_id: str,
+) -> ImportRun:
+    import_run.state = "cancelled"
+    import_run.completed_at = datetime.now(UTC)
+    if job is not None:
+        job.state = "cancelled"
+        job.completed_at = import_run.completed_at
+        job.committed_effects_json = import_run.committed_effects_json
+        job.last_committed_unit = import_run.committed_effects_json.get(
+            "last_committed_unit"
         )
-        validation_job.state = "completed"
-        validation_job.completed_at = datetime.now(UTC)
-        validation_job.progress_percent = 100
-        validation_job.result_ref_json = {
-            "resource_type": "ValidationRun",
-            "resource_id": validation_run.validation_run_id,
-        }
-        import_run.summary_json["validation_job_id"] = validation_job.job_id
-        import_run.summary_json["validation_run_id"] = validation_run.validation_run_id
     await record_event(
         session,
-        event_type="import.completed" if final_state.startswith("completed") else "import.waiting_for_user",
-        project_id=project_id,
+        event_type="import.cancelled",
+        project_id=import_run.project_id,
         actor_user_id=actor_user_id,
-        payload=import_run.summary_json,
+        payload={
+            "import_run_id": import_run.import_run_id,
+            "committed_effects": import_run.committed_effects_json,
+            "last_committed_batch_index": import_run.last_committed_batch_index,
+        },
+        idempotency_key=f"import:{import_run.import_run_id}:cancelled",
     )
+    await session.commit()
     return import_run
+
+
+async def mark_import_failed(
+    session: AsyncSession,
+    *,
+    import_run_id: str,
+    job_id: str | None,
+    actor_user_id: str,
+    error: Exception,
+) -> tuple[ImportRun | None, Job | None]:
+    await session.rollback()
+    import_run = await session.get(ImportRun, import_run_id)
+    job = await session.get(Job, job_id) if job_id else None
+    now = datetime.now(UTC)
+    error_payload = {"error": type(error).__name__, "message": str(error)}
+    if import_run is not None:
+        import_run.state = "failed"
+        import_run.completed_at = now
+        import_run.diagnostics_json = [
+            *(import_run.diagnostics_json or []),
+            {"level": "error", **error_payload},
+        ]
+    if job is not None:
+        job.state = "failed"
+        job.completed_at = now
+        job.error_json = error_payload
+    if import_run is not None:
+        await record_event(
+            session,
+            event_type="import.failed",
+            project_id=import_run.project_id,
+            actor_user_id=actor_user_id,
+            payload={
+                "import_run_id": import_run.import_run_id,
+                "error": error_payload,
+                "committed_effects": import_run.committed_effects_json,
+            },
+            idempotency_key=f"import:{import_run.import_run_id}:failed",
+        )
+    await session.commit()
+    return import_run, job
+
+
+async def mark_import_interrupted(
+    session: AsyncSession,
+    *,
+    import_run_id: str,
+    job_id: str | None,
+    actor_user_id: str,
+    error: Exception,
+    attempt: int,
+) -> tuple[ImportRun | None, Job | None]:
+    await session.rollback()
+    import_run = await session.get(ImportRun, import_run_id)
+    job = await session.get(Job, job_id) if job_id else None
+    error_payload = {
+        "error": type(error).__name__,
+        "message": str(error),
+        "attempt": attempt,
+        "retryable": True,
+    }
+    if import_run is not None:
+        import_run.state = "parsed"
+        import_run.completed_at = None
+        import_run.diagnostics_json = [
+            *(import_run.diagnostics_json or []),
+            {"level": "warning", **error_payload},
+        ]
+    if job is not None:
+        job.state = "queued"
+        job.completed_at = None
+        job.error_json = error_payload
+    if import_run is not None:
+        await record_event(
+            session,
+            event_type="import.interrupted",
+            project_id=import_run.project_id,
+            actor_user_id=actor_user_id,
+            payload={
+                "import_run_id": import_run.import_run_id,
+                "attempt": attempt,
+                "error": error_payload,
+                "last_committed_batch_index": import_run.last_committed_batch_index,
+                "committed_effects": import_run.committed_effects_json,
+            },
+            idempotency_key=f"import:{import_run.import_run_id}:interrupted:{attempt}",
+        )
+    await session.commit()
+    return import_run, job
 
 
 def _canonical_artefact_type(raw_need: dict) -> str:
@@ -631,24 +994,28 @@ async def _soft_delete_active_relationships_for_artefact(
     for relationship in relationships:
         relationship.status = "obsolete"
         relationship.deleted_at = datetime.now(UTC)
-        revision = RelationshipRevision(
-            relationship_id=relationship.relationship_id,
-            project_id=artefact.project_id,
-            revision_number=await repo.next_revision_number(relationship.relationship_id),
-            payload_json={**relationship.payload_json, "status": "obsolete"},
-            changed_by=actor_user_id,
-            changed_at=datetime.now(UTC),
-        )
-        session.add(revision)
-        await session.flush()
-        relationship.current_revision_id = revision.relationship_revision_id
-        await record_event(
+        previous_revision_id = relationship.current_revision_id
+        audit = await record_event(
             session,
             event_type="relationship.deleted",
             project_id=artefact.project_id,
             actor_user_id=actor_user_id,
             affected_relationship_ids=[relationship.relationship_id],
         )
+        await session.flush()
+        revision = RelationshipRevision(
+            relationship_id=relationship.relationship_id,
+            previous_revision_id=previous_revision_id,
+            project_id=artefact.project_id,
+            revision_number=await repo.next_revision_number(relationship.relationship_id),
+            payload_json={**relationship.payload_json, "status": "obsolete"},
+            changed_by=actor_user_id,
+            changed_at=datetime.now(UTC),
+            audit_event_id=audit.audit_event_id,
+        )
+        session.add(revision)
+        await session.flush()
+        relationship.current_revision_id = revision.relationship_revision_id
 
 
 def _item(
@@ -679,6 +1046,7 @@ async def apply_import_decisions(
     import_run: ImportRun,
     decisions: list[dict],
     actor_user_id: str,
+    actor_roles: set[str] | None = None,
 ) -> ImportRun:
     item_by_id = {
         item.import_run_item_id: item
@@ -694,57 +1062,46 @@ async def apply_import_decisions(
         if decision["decision"] == "accept_new_revision":
             artefact = await session.get(Artefact, item.artefact_id)
             if artefact is not None:
+                if artefact.status == "released" and not _can_revise_released(actor_roles):
+                    raise PermissionError(
+                        "Quality Engineer or Admin required to revise released artefact"
+                    )
                 await update_artefact(
                     session,
                     artefact,
-                    ArtefactUpdate(payload=item.proposed_payload_json, change_reason="import decision"),
+                    ArtefactUpdate(
+                        payload=item.proposed_payload_json,
+                        base_revision_id=artefact.current_revision_id,
+                        change_reason="import decision",
+                    ),
                     actor_user_id,
                 )
                 item.new_revision_id = artefact.current_revision_id
                 item.decision_status = "accepted"
                 accepted += 1
-        else:
+        elif decision["decision"] == "reject_keep_current":
             item.decision_status = "rejected"
             rejected += 1
+        else:
+            raise ValueError(f"Unsupported import decision: {decision['decision']}")
         item.decision_by = actor_user_id
         item.decision_at = datetime.now(UTC)
 
     pending = [item for item in item_by_id.values() if item.decision_status == "pending"]
     if not pending:
-        import_run.state = "completed"
+        if int((import_run.summary_json or {}).get("errors", 0)) > 0:
+            import_run.state = "completed_with_errors"
+        elif accepted:
+            import_run.state = "completed"
+        else:
+            import_run.state = "completed_no_changes_applied"
         import_run.completed_at = datetime.now(UTC)
-        validation_job = Job(
-            project_id=import_run.project_id,
-            job_type="validation_run",
-            state="running",
-            submitted_by=actor_user_id,
-            submitted_at=datetime.now(UTC),
-            started_at=datetime.now(UTC),
-        )
-        session.add(validation_job)
-        await session.flush()
-        validation_run = await run_validation(
-            session,
-            import_run.project_id,
-            actor_user_id,
-            scope={"type": "project", "trigger": "sphinx_import", "import_run_id": import_run.import_run_id},
-        )
-        validation_job.state = "completed"
-        validation_job.completed_at = datetime.now(UTC)
-        validation_job.progress_percent = 100
-        validation_job.result_ref_json = {
-            "resource_type": "ValidationRun",
-            "resource_id": validation_run.validation_run_id,
-        }
     import_run.summary_json = {
         **import_run.summary_json,
         "accepted_decisions": accepted,
         "rejected_decisions": rejected,
         "pending_decisions": len(pending),
     }
-    if not pending:
-        import_run.summary_json["validation_job_id"] = validation_job.job_id
-        import_run.summary_json["validation_run_id"] = validation_run.validation_run_id
     await record_event(
         session,
         event_type="import.decision_submitted",
@@ -752,4 +1109,21 @@ async def apply_import_decisions(
         actor_user_id=actor_user_id,
         payload=import_run.summary_json,
     )
+    if not pending:
+        await record_event(
+            session,
+            event_type="import.completed",
+            project_id=import_run.project_id,
+            actor_user_id=actor_user_id,
+            payload={
+                "import_run_id": import_run.import_run_id,
+                "state": import_run.state,
+                **import_run.summary_json,
+            },
+            idempotency_key=f"import:{import_run.import_run_id}:completed",
+        )
     return import_run
+
+
+def _can_revise_released(actor_roles: set[str] | None) -> bool:
+    return bool({"admin", "quality_engineer"}.intersection(actor_roles or set()))

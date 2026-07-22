@@ -231,7 +231,7 @@ def test_release_approval_requires_repository_revision_snapshot() -> None:
         baseline_id="BASE_1",
         project_id="PROJ_1",
         name="Baseline 1",
-        state="approved",
+        state="released",
         created_by="USER_1",
     )
     gate = ReleaseGateResult(

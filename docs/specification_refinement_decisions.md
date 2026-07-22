@@ -219,13 +219,13 @@ The following areas previously required further specification. All are now resol
 | import conflict semantics | **RESOLVED** | `import_conflict_and_change_detection.md` |
 | version/revision policy | **RESOLVED** | `import_conflict_and_change_detection.md` + `import_and_versioning_state_machines.md` |
 | authorization model for MVP | **RESOLVED** | `authorization_matrix.md` |
-| report and dashboard data contracts | PARTIAL — report types defined; payload schemas deferred post-MVP | `resource_model_and_api_requirements.md` |
+| report and dashboard data contracts | **RESOLVED** — version 1 JSON reports and API-projected dashboard defined | `requirements_baseline.md` + `resource_model_and_api_requirements.md` |
 | release-gate state model | **RESOLVED** | `release_gate_state_machine.md` |
 | migration and backup procedures | **RESOLVED** | `backend_architecture_and_technology_decisions.md` §4.3 |
 
-**Remaining post-MVP items:**
-- Detailed report payload schemas (JSON/CSV/HTML/PDF structure per report type)
-- Dashboard data model and refresh semantics
+**Explicit post-v1 items:**
+- CSV, HTML, and PDF report formats beyond the version 1 JSON contracts
+- Configurable dashboard layouts beyond the version 1 API-projected operational dashboard
 - External message broker integration (Kafka/RabbitMQ for post-MVP scale)
 - GDPR/data retention policy
 
@@ -262,6 +262,12 @@ A Quality Engineer shall be able to release artefacts.
 
 DEC-AUTHZ-009
 Artefact deletion shall mean soft deletion by transition to obsolete or equivalent deleted lifecycle state. Physical deletion shall not be used for normal artefact deletion.
+
+DEC-AUTHZ-010
+Only a Quality Engineer or Admin shall revise a released artefact.
+
+DEC-AUTHZ-011
+A Project Lead or Admin shall approve a baseline. A Quality Engineer or Admin shall release an approved baseline.
 
 DEC-AUTHN-001
 The MVP shall use username and password authentication.

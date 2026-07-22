@@ -13,7 +13,10 @@ from aac_backend.repositories.domain import (
     has_project_update_lock,
 )
 from aac_backend.schemas.domain import ArtefactCreate, ArtefactUpdate, RelationshipCreate
-from aac_backend.services.artefact_schema_service import validate_artefact_payload
+from aac_backend.services.artefact_schema_service import (
+    schema_for_artefact_type,
+    validate_artefact_payload,
+)
 from aac_backend.services.event_service import record_event
 from aac_backend.services.impact_service import propagate_suspects
 from aac_backend.services.validation_service import relationship_type_allowed_for_types
@@ -80,27 +83,31 @@ async def create_artefact(
     )
     session.add(artefact)
     await session.flush()
-    revision = ArtefactRevision(
-        artefact_id=artefact.artefact_id,
-        project_id=project_id,
-        revision_number=1,
-        payload_json=data.payload,
-        metadata_json={"title": data.title, "status": data.status},
-        content_fingerprint=current_fingerprint,
-        change_reason="create",
-        changed_by=actor_user_id,
-        changed_at=datetime.now(UTC),
-    )
-    session.add(revision)
-    await session.flush()
-    artefact.current_revision_id = revision.artefact_revision_id
-    await record_event(
+    audit = await record_event(
         session,
         event_type="artefact.created",
         project_id=project_id,
         actor_user_id=actor_user_id,
         affected_artefact_ids=[artefact.artefact_id],
     )
+    await session.flush()
+    revision = ArtefactRevision(
+        artefact_id=artefact.artefact_id,
+        previous_revision_id=None,
+        project_id=project_id,
+        revision_number=1,
+        schema_version=schema_for_artefact_type(data.artefact_type, config).schema_version,
+        payload_json=data.payload,
+        metadata_json={"title": data.title, "status": data.status},
+        content_fingerprint=current_fingerprint,
+        change_reason="create",
+        changed_by=actor_user_id,
+        changed_at=datetime.now(UTC),
+        audit_event_id=audit.audit_event_id,
+    )
+    session.add(revision)
+    await session.flush()
+    artefact.current_revision_id = revision.artefact_revision_id
     return artefact
 
 
@@ -111,12 +118,13 @@ async def update_artefact(
     actor_user_id: str,
 ) -> Artefact:
     await ensure_project_writable(session, artefact.project_id)
+    artefact = await _lock_artefact(session, artefact)
     previous_status = artefact.status
     if artefact.status == "obsolete":
         raise ValueError("obsolete artefacts cannot be updated")
     if data.status is not None and data.status != artefact.status:
         raise ValueError("Use lifecycle transition endpoints to change artefact status")
-    if data.base_revision_id and data.base_revision_id != artefact.current_revision_id:
+    if data.base_revision_id != artefact.current_revision_id:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Stale artefact revision")
 
     payload = data.payload if data.payload is not None else artefact.payload_json
@@ -135,28 +143,34 @@ async def update_artefact(
     artefact.current_fingerprint = fingerprint(payload)
     artefact.updated_at = datetime.now(UTC)
 
+    previous_revision_id = artefact.current_revision_id
+    audit = await record_event(
+        session,
+        event_type="artefact.revised",
+        project_id=artefact.project_id,
+        actor_user_id=actor_user_id,
+        affected_artefact_ids=[artefact.artefact_id],
+        payload={"previous_revision_id": previous_revision_id},
+    )
+    await session.flush()
     repo = ArtefactRepository(session)
     revision = ArtefactRevision(
         artefact_id=artefact.artefact_id,
+        previous_revision_id=previous_revision_id,
         project_id=artefact.project_id,
         revision_number=await repo.next_revision_number(artefact.artefact_id),
+        schema_version=schema_for_artefact_type(artefact.artefact_type, config).schema_version,
         payload_json=payload,
         metadata_json={"title": artefact.title, "status": artefact.status},
         content_fingerprint=artefact.current_fingerprint,
         change_reason=data.change_reason,
         changed_by=actor_user_id,
         changed_at=datetime.now(UTC),
+        audit_event_id=audit.audit_event_id,
     )
     session.add(revision)
     await session.flush()
     artefact.current_revision_id = revision.artefact_revision_id
-    await record_event(
-        session,
-        event_type="artefact.revised",
-        project_id=artefact.project_id,
-        actor_user_id=actor_user_id,
-        affected_artefact_ids=[artefact.artefact_id],
-    )
     if previous_status == "released":
         await propagate_suspects(
             session,
@@ -177,15 +191,20 @@ async def change_artefact_status(
     actor_user_id: str,
     event_type: str = "artefact.status_changed",
     reason: str | None = None,
+    base_revision_id: str | None = None,
 ) -> Artefact:
     await ensure_project_writable(session, artefact.project_id)
     if artefact.status == "obsolete" and new_status != "obsolete":
         raise ValueError("obsolete artefacts cannot transition")
     if new_status != artefact.status and new_status not in ALLOWED_STATUS_TRANSITIONS.get(artefact.status, set()):
         raise ValueError(f"transition {artefact.status} -> {new_status} is not permitted")
+    artefact = await _lock_artefact(session, artefact)
+    if base_revision_id is not None and base_revision_id != artefact.current_revision_id:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Stale artefact revision")
+    previous_revision_id = artefact.current_revision_id
     artefact.status = new_status
     artefact.updated_at = datetime.now(UTC)
-    await record_event(
+    audit = await record_event(
         session,
         event_type=event_type,
         project_id=artefact.project_id,
@@ -193,6 +212,29 @@ async def change_artefact_status(
         affected_artefact_ids=[artefact.artefact_id],
         payload={"status": new_status, "reason": reason} if reason else {"status": new_status},
     )
+    await session.flush()
+    config = await _project_config(session, artefact.project_id)
+    revision = ArtefactRevision(
+        artefact_id=artefact.artefact_id,
+        previous_revision_id=previous_revision_id,
+        project_id=artefact.project_id,
+        revision_number=await ArtefactRepository(session).next_revision_number(
+            artefact.artefact_id
+        ),
+        schema_version=schema_for_artefact_type(
+            artefact.artefact_type, config
+        ).schema_version,
+        payload_json=artefact.payload_json,
+        metadata_json={"title": artefact.title, "status": artefact.status},
+        content_fingerprint=artefact.current_fingerprint,
+        change_reason=reason or f"status transition to {new_status}",
+        changed_by=actor_user_id,
+        changed_at=datetime.now(UTC),
+        audit_event_id=audit.audit_event_id,
+    )
+    session.add(revision)
+    await session.flush()
+    artefact.current_revision_id = revision.artefact_revision_id
     return artefact
 
 
@@ -200,19 +242,47 @@ async def obsolete_artefact(
     session: AsyncSession,
     artefact: Artefact,
     actor_user_id: str,
+    base_revision_id: str | None = None,
 ) -> Artefact:
     await ensure_project_writable(session, artefact.project_id)
+    artefact = await _lock_artefact(session, artefact)
+    if base_revision_id is not None and base_revision_id != artefact.current_revision_id:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Stale artefact revision")
     previous_status = artefact.status
+    previous_revision_id = artefact.current_revision_id
     artefact.status = "obsolete"
     artefact.deleted_at = datetime.now(UTC)
     artefact.updated_at = datetime.now(UTC)
-    await record_event(
+    audit = await record_event(
         session,
         event_type="artefact.deleted",
         project_id=artefact.project_id,
         actor_user_id=actor_user_id,
         affected_artefact_ids=[artefact.artefact_id],
     )
+    await session.flush()
+    config = await _project_config(session, artefact.project_id)
+    revision = ArtefactRevision(
+        artefact_id=artefact.artefact_id,
+        previous_revision_id=previous_revision_id,
+        project_id=artefact.project_id,
+        revision_number=await ArtefactRepository(session).next_revision_number(
+            artefact.artefact_id
+        ),
+        schema_version=schema_for_artefact_type(
+            artefact.artefact_type, config
+        ).schema_version,
+        payload_json=artefact.payload_json,
+        metadata_json={"title": artefact.title, "status": artefact.status},
+        content_fingerprint=artefact.current_fingerprint,
+        change_reason="obsolete",
+        changed_by=actor_user_id,
+        changed_at=datetime.now(UTC),
+        audit_event_id=audit.audit_event_id,
+    )
+    session.add(revision)
+    await session.flush()
+    artefact.current_revision_id = revision.artefact_revision_id
     if previous_status == "released":
         await propagate_suspects(
             session,
@@ -252,25 +322,37 @@ async def create_relationship(
     )
     session.add(relationship)
     await session.flush()
-    revision = RelationshipRevision(
-        relationship_id=relationship.relationship_id,
-        project_id=project_id,
-        revision_number=1,
-        payload_json=data.payload,
-        changed_by=actor_user_id,
-        changed_at=datetime.now(UTC),
-    )
-    session.add(revision)
-    await session.flush()
-    relationship.current_revision_id = revision.relationship_revision_id
-    await record_event(
+    audit = await record_event(
         session,
         event_type="relationship.created",
         project_id=project_id,
         actor_user_id=actor_user_id,
         affected_relationship_ids=[relationship.relationship_id],
     )
+    await session.flush()
+    revision = RelationshipRevision(
+        relationship_id=relationship.relationship_id,
+        previous_revision_id=None,
+        project_id=project_id,
+        revision_number=1,
+        payload_json=data.payload,
+        changed_by=actor_user_id,
+        changed_at=datetime.now(UTC),
+        audit_event_id=audit.audit_event_id,
+    )
+    session.add(revision)
+    await session.flush()
+    relationship.current_revision_id = revision.relationship_revision_id
     return relationship
+
+
+async def _lock_artefact(session: AsyncSession, artefact: Artefact) -> Artefact:
+    locked = await session.scalar(
+        select(Artefact)
+        .where(Artefact.artefact_id == artefact.artefact_id)
+        .with_for_update()
+    )
+    return locked or artefact
 
 
 async def _project_config(session: AsyncSession, project_id: str) -> ProjectConfiguration | None:

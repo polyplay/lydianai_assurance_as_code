@@ -9,11 +9,18 @@ from aac_backend.database import get_session
 from aac_backend.models.artefacts import Artefact, Relationship, RelationshipRevision
 from aac_backend.repositories.domain import RelationshipRepository
 from aac_backend.schemas.common import ApiEnvelope
-from aac_backend.schemas.domain import RelationshipCreate, RelationshipRead
+from aac_backend.schemas.domain import (
+    RelationshipCreate,
+    RelationshipRead,
+    RelationshipUpdate,
+    RevisionToken,
+)
+from aac_backend.services.auth_service import user_roles
 from aac_backend.services.artefact_service import create_relationship, ensure_project_writable
 from aac_backend.services.event_service import record_event
 from aac_backend.services.impact_service import propagate_suspects
 from aac_backend.services.validation_service import relationship_type_allowed_for_types, run_validation
+from aac_backend.services.presentation_policy import relationship_allowed_actions
 
 router = APIRouter(tags=["relationships"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
@@ -22,11 +29,12 @@ PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
 @router.get("/projects/{project_id}/relationships", response_model=ApiEnvelope)
 async def list_relationships(
     project_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     relationships = await RelationshipRepository(session).list_for_project(project_id)
-    return ApiEnvelope(data=[RelationshipRead.model_validate(item) for item in relationships])
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=[_relationship_data(item, roles=roles) for item in relationships])
 
 
 @router.post("/projects/{project_id}/relationships", response_model=ApiEnvelope)
@@ -41,33 +49,38 @@ async def create_relationship_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
-    return ApiEnvelope(data=RelationshipRead.model_validate(relationship))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_relationship_data(relationship, roles=roles))
 
 
 @router.get("/projects/{project_id}/relationships/{relationship_id}", response_model=ApiEnvelope)
 async def get_relationship(
     project_id: str,
     relationship_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     relationship = await session.get(Relationship, relationship_id)
     if not relationship or relationship.project_id != project_id:
         raise HTTPException(status_code=404, detail="Relationship not found")
-    return ApiEnvelope(data=RelationshipRead.model_validate(relationship))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_relationship_data(relationship, roles=roles))
 
 
 @router.put("/projects/{project_id}/relationships/{relationship_id}", response_model=ApiEnvelope)
 async def update_relationship(
     project_id: str,
     relationship_id: str,
-    payload: dict,
+    payload: RelationshipUpdate,
     current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     relationship = await _get_relationship_or_404(session, project_id, relationship_id)
     await ensure_project_writable(session, project_id)
-    next_type = payload.get("relationship_type", relationship.relationship_type)
+    relationship = await _lock_relationship(session, relationship)
+    if payload.base_revision_id != relationship.current_revision_id:
+        raise HTTPException(status_code=409, detail="Stale relationship revision")
+    next_type = payload.relationship_type or relationship.relationship_type
     if next_type != relationship.relationship_type:
         source = await session.get(Artefact, relationship.source_artefact_id)
         target = await session.get(Artefact, relationship.target_artefact_id)
@@ -82,61 +95,76 @@ async def update_relationship(
                 detail="relationship type is not permitted for the source and target artefact types",
             )
     relationship.relationship_type = next_type
-    relationship.payload_json = payload.get("payload", relationship.payload_json)
+    if payload.payload is not None:
+        relationship.payload_json = payload.payload
     relationship.updated_at = datetime.now(UTC)
-    repo = RelationshipRepository(session)
-    revision = RelationshipRevision(
-        relationship_id=relationship.relationship_id,
-        project_id=project_id,
-        revision_number=await repo.next_revision_number(relationship.relationship_id),
-        payload_json=relationship.payload_json,
-        changed_by=current.user.user_id,
-        changed_at=datetime.now(UTC),
-    )
-    session.add(revision)
-    await session.flush()
-    relationship.current_revision_id = revision.relationship_revision_id
-    await record_event(
+    previous_revision_id = relationship.current_revision_id
+    audit = await record_event(
         session,
         event_type="relationship.revised",
         project_id=project_id,
         actor_user_id=current.user.user_id,
         affected_relationship_ids=[relationship.relationship_id],
+        payload={"previous_revision_id": previous_revision_id},
     )
+    await session.flush()
+    repo = RelationshipRepository(session)
+    revision = RelationshipRevision(
+        relationship_id=relationship.relationship_id,
+        previous_revision_id=previous_revision_id,
+        project_id=project_id,
+        revision_number=await repo.next_revision_number(relationship.relationship_id),
+        payload_json=relationship.payload_json,
+        changed_by=current.user.user_id,
+        changed_at=datetime.now(UTC),
+        audit_event_id=audit.audit_event_id,
+    )
+    session.add(revision)
+    await session.flush()
+    relationship.current_revision_id = revision.relationship_revision_id
     await session.commit()
-    return ApiEnvelope(data=RelationshipRead.model_validate(relationship))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_relationship_data(relationship, roles=roles))
 
 
 @router.delete("/projects/{project_id}/relationships/{relationship_id}", response_model=ApiEnvelope)
 async def delete_relationship(
     project_id: str,
     relationship_id: str,
+    payload: RevisionToken,
     current: CurrentUser = Depends(project_role_dependency("admin")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     relationship = await _get_relationship_or_404(session, project_id, relationship_id)
     await ensure_project_writable(session, project_id)
+    relationship = await _lock_relationship(session, relationship)
+    if payload.base_revision_id != relationship.current_revision_id:
+        raise HTTPException(status_code=409, detail="Stale relationship revision")
+    previous_revision_id = relationship.current_revision_id
     relationship.status = "obsolete"
     relationship.deleted_at = datetime.now(UTC)
-    repo = RelationshipRepository(session)
-    revision = RelationshipRevision(
-        relationship_id=relationship.relationship_id,
-        project_id=project_id,
-        revision_number=await repo.next_revision_number(relationship.relationship_id),
-        payload_json={**relationship.payload_json, "status": "obsolete"},
-        changed_by=current.user.user_id,
-        changed_at=datetime.now(UTC),
-    )
-    session.add(revision)
-    await session.flush()
-    relationship.current_revision_id = revision.relationship_revision_id
-    await record_event(
+    audit = await record_event(
         session,
         event_type="relationship.deleted",
         project_id=project_id,
         actor_user_id=current.user.user_id,
         affected_relationship_ids=[relationship.relationship_id],
     )
+    await session.flush()
+    repo = RelationshipRepository(session)
+    revision = RelationshipRevision(
+        relationship_id=relationship.relationship_id,
+        previous_revision_id=previous_revision_id,
+        project_id=project_id,
+        revision_number=await repo.next_revision_number(relationship.relationship_id),
+        payload_json={**relationship.payload_json, "status": "obsolete"},
+        changed_by=current.user.user_id,
+        changed_at=datetime.now(UTC),
+        audit_event_id=audit.audit_event_id,
+    )
+    session.add(revision)
+    await session.flush()
+    relationship.current_revision_id = revision.relationship_revision_id
     await propagate_suspects(
         session,
         project_id=project_id,
@@ -152,7 +180,8 @@ async def delete_relationship(
         scope={"type": "project", "trigger": "relationship.deleted", "relationship_id": relationship_id},
     )
     await session.commit()
-    return ApiEnvelope(data=RelationshipRead.model_validate(relationship))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_relationship_data(relationship, roles=roles))
 
 
 @router.get(
@@ -182,7 +211,9 @@ async def list_relationship_revisions(
                 "relationship_revision_id": revision.relationship_revision_id,
                 "relationship_id": revision.relationship_id,
                 "revision_number": revision.revision_number,
+                "previous_revision_id": revision.previous_revision_id,
                 "payload": revision.payload_json,
+                "audit_event_id": revision.audit_event_id,
                 "changed_at": revision.changed_at,
             }
             for revision in revisions
@@ -229,3 +260,21 @@ async def _get_relationship_or_404(
     if not relationship or relationship.project_id != project_id:
         raise HTTPException(status_code=404, detail="Relationship not found")
     return relationship
+
+
+async def _lock_relationship(
+    session: AsyncSession,
+    relationship: Relationship,
+) -> Relationship:
+    locked = await session.scalar(
+        select(Relationship)
+        .where(Relationship.relationship_id == relationship.relationship_id)
+        .with_for_update()
+    )
+    return locked or relationship
+
+
+def _relationship_data(relationship: Relationship, *, roles: list[str]) -> dict:
+    data = RelationshipRead.model_validate(relationship).model_dump()
+    data["allowed_actions"] = relationship_allowed_actions(relationship, roles=roles)
+    return data

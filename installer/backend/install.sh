@@ -7,6 +7,8 @@ ADMIN_EMAIL=""
 ADMIN_PASSWORD=""
 INSTALL_SYSTEMD=1
 START_STACK=1
+TLS_CERT=""
+TLS_KEY=""
 
 usage() {
   cat <<'USAGE'
@@ -19,6 +21,8 @@ Options:
   --admin-username NAME    Create an initial admin user.
   --admin-email EMAIL      Email for the initial admin user.
   --admin-password PASS    Password for the initial admin user.
+  --tls-cert PATH          PEM certificate chain for HTTPS.
+  --tls-key PATH           PEM private key for HTTPS.
   --no-systemd             Do not install the systemd unit.
   --no-start               Copy files and create .env, but do not start services.
   -h, --help               Show this help.
@@ -49,6 +53,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --admin-password)
       ADMIN_PASSWORD="$2"
+      shift 2
+      ;;
+    --tls-cert)
+      TLS_CERT="$2"
+      shift 2
+      ;;
+    --tls-key)
+      TLS_KEY="$2"
       shift 2
       ;;
     --no-systemd)
@@ -103,6 +115,17 @@ ENV_FILE="$INSTALL_DIR/.env"
 
 mkdir -p "$INSTALL_DIR"
 
+if [[ "$START_STACK" -eq 1 ]]; then
+  if [[ -z "$TLS_CERT" || -z "$TLS_KEY" ]]; then
+    echo "--tls-cert and --tls-key are required when starting the production stack" >&2
+    exit 2
+  fi
+  if [[ ! -f "$TLS_CERT" || ! -f "$TLS_KEY" ]]; then
+    echo "TLS certificate or key file does not exist" >&2
+    exit 2
+  fi
+fi
+
 echo "Copying application files to $INSTALL_DIR"
 tar \
   --exclude='.git' \
@@ -128,6 +151,12 @@ if [[ ! -f "$ENV_FILE" ]]; then
   echo "Created $ENV_FILE"
 else
   echo "Keeping existing $ENV_FILE"
+fi
+
+if [[ -n "$TLS_CERT" && -n "$TLS_KEY" ]]; then
+  install -d -m 700 "$INSTALL_DIR/installer/backend/tls"
+  install -m 644 "$TLS_CERT" "$INSTALL_DIR/installer/backend/tls/fullchain.pem"
+  install -m 600 "$TLS_KEY" "$INSTALL_DIR/installer/backend/tls/privkey.pem"
 fi
 
 if [[ "$INSTALL_SYSTEMD" -eq 1 ]]; then
@@ -164,8 +193,7 @@ if [[ "$START_STACK" -eq 1 ]]; then
   fi
 fi
 
-API_PORT="$(grep '^AAC_API_PORT=' "$ENV_FILE" | cut -d= -f2)"
-NGINX_PORT="$(grep '^AAC_NGINX_PORT=' "$ENV_FILE" | cut -d= -f2)"
+HTTPS_PORT="$(grep '^AAC_HTTPS_PORT=' "$ENV_FILE" | cut -d= -f2)"
 
 cat <<EOF
 
@@ -175,9 +203,8 @@ Application directory: $INSTALL_DIR
 Environment file:      $ENV_FILE
 Compose file:          $COMPOSE_FILE
 
-Web console:           http://127.0.0.1:${API_PORT:-18000}/app
-API docs:              http://127.0.0.1:${API_PORT:-18000}/api/v1/docs
-Nginx proxy:           http://127.0.0.1:${NGINX_PORT:-18080}
+Web console:           https://127.0.0.1:${HTTPS_PORT:-443}/app
+API docs:              https://127.0.0.1:${HTTPS_PORT:-443}/api/v1/docs
 
 Manage manually:
   docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
@@ -187,4 +214,3 @@ Manage with systemd, if installed:
   systemctl status lydianai-aac
   systemctl restart lydianai-aac
 EOF
-

@@ -400,7 +400,7 @@ Conflict handling:
 | REPO-ACC-007 | Scan fails when `.aac/repo.yml` references a missing repository path. |
 | REPO-ACC-008 | Baseline creation snapshots the latest repository revision for every active connector. |
 | REPO-ACC-009 | Release is blocked unless the latest release gate result for the baseline passed. |
-| REPO-ACC-010 | Project lead or quality engineer can release a baseline and publish repository approval from the tool. |
+| REPO-ACC-010 | Quality Engineer or Admin can release an approved baseline; Project Lead, Quality Engineer, or Admin can publish repository approval only after release. |
 | REPO-ACC-011 | GitHub App deployments publish `AAC Release Approval` as a check run. |
 | REPO-ACC-012 | Access-token deployments publish `AAC Release Approval` as a commit status fallback when check runs are unavailable. |
 | REPO-ACC-013 | Approval is published to the exact baseline commit SHA, not to a mutable branch name. |

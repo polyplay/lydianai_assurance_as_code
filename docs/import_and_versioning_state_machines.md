@@ -43,6 +43,7 @@ An import run shall use these states:
 - `persisted`
 - `validation_running`
 - `completed`
+- `completed_with_errors`
 - `completed_no_changes_applied`
 - `failed`
 - `cancelled`
@@ -102,6 +103,10 @@ completed_no_changes_applied
 
 AAC-IMPORT-DR-014
 Parse or normalization failures shall transition to `failed`.
+
+AAC-IMPORT-DR-015
+An import with non-fatal item errors after all processable batches complete
+shall transition to `completed_with_errors`.
 
 ## 5. Version Conflict States
 
@@ -173,11 +178,11 @@ An import run status response shall include:
 
 ## 8. Audit Requirements
 
-AAC-IMPORT-FR-001
+AAC-IMPORT-FR-090
 Each import run shall create an audit event.
 
-AAC-IMPORT-FR-002
+AAC-IMPORT-FR-091
 Each created revision shall reference the import run that caused it.
 
-AAC-IMPORT-FR-003
+AAC-IMPORT-FR-092
 Rejected updates shall be auditable without modifying canonical artefact state.

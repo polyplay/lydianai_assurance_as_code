@@ -12,6 +12,7 @@ from aac_backend.api import (
     reports,
     traceability,
     validation,
+    workspace,
 )
 
 api_router = APIRouter()
@@ -33,3 +34,4 @@ api_router.include_router(traceability.router)
 api_router.include_router(baselines.router)
 api_router.include_router(reports.router)
 api_router.include_router(jobs.router)
+api_router.include_router(workspace.router)

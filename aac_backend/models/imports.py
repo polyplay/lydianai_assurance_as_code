@@ -19,6 +19,13 @@ class ImportRun(Base):
     submitted_by: Mapped[str | None] = mapped_column(ForeignKey("users.user_id"), nullable=True)
     submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    source_payload_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    batch_size: Mapped[int] = mapped_column(default=100)
+    total_batches: Mapped[int] = mapped_column(default=0)
+    last_committed_batch_index: Mapped[int] = mapped_column(default=-1)
+    cancellation_requested: Mapped[bool] = mapped_column(default=False)
+    committed_effects_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    correlation_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
     summary_json: Mapped[dict] = mapped_column(JSON, default=dict)
     diagnostics_json: Mapped[list] = mapped_column(JSON, default=list)
 

@@ -26,6 +26,14 @@ Admin may mark a baseline obsolete.
 AAC-BASE-FR-005
 Project Lead may create baselines for projects assigned to them.
 
+AAC-BASE-FR-006
+Project Lead or Admin may approve a created baseline only after a current
+release-gate pass.
+
+AAC-BASE-FR-007
+Quality Engineer or Admin may release an approved baseline only while the latest
+release-gate pass remains current.
+
 ## 3. Project Scope
 
 AAC-BASE-FR-010
@@ -99,6 +107,10 @@ A created baseline may transition to `approved`.
 
 AAC-BASE-DR-013
 An approved baseline may transition to `released`.
+
+AAC-BASE-DR-013A
+If an approved baseline's release-gate result becomes stale, approval shall be
+invalidated and the baseline shall transition back to `created`.
 
 AAC-BASE-DR-014
 Admin may transition a baseline to `obsolete`.

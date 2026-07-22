@@ -6,6 +6,7 @@ from aac_backend.services.assurance_configuration_service import (
     derive_validation_policy,
     normalize_assurance_configuration,
 )
+from aac_backend.services.project_service import aspice_tailoring_changes
 
 
 def test_asil_b_cl2_has_smaller_mandatory_set_than_asil_d_cl3() -> None:
@@ -102,3 +103,94 @@ def test_legacy_profile_id_defaults_select_reasonable_aspice_target() -> None:
     assert asil_b["asil_level"] == "ASIL_B"
     assert asil_b["aspice_default_capability_level"] == 2
     assert asil_d["aspice_default_capability_level"] == 3
+
+
+def test_process_capability_targets_derive_from_default_and_overrides() -> None:
+    config = normalize_assurance_configuration(
+        {
+            "asil_level": "ASIL_C",
+            "aspice_default_capability_level": 2,
+            "aspice_scoped_processes": ["SWE.1", "SWE.2"],
+            "aspice_process_overrides": {"SWE.2": 3},
+        }
+    )
+
+    assert config["aspice_process_capability_targets"] == {"SWE.1": 2, "SWE.2": 3}
+
+
+def test_aspice_tailoring_changes_capture_scope_default_and_process_targets() -> None:
+    previous = normalize_assurance_configuration(
+        {
+            "asil_level": "ASIL_C",
+            "aspice_default_capability_level": 2,
+            "aspice_scoped_processes": ["SWE.1", "SWE.2"],
+        }
+    )
+    updated = normalize_assurance_configuration(
+        {
+            "asil_level": "ASIL_C",
+            "aspice_default_capability_level": 3,
+            "aspice_scoped_processes": ["SWE.2", "SWE.3"],
+            "aspice_process_overrides": {"SWE.2": 2},
+        }
+    )
+
+    assert aspice_tailoring_changes(previous, updated) == [
+        {
+            "target_kind": "aspice_default_capability",
+            "target_id": "ASPICE_DEFAULT_CAPABILITY",
+            "previous": "CL2",
+            "current": "CL3",
+        },
+        {
+            "target_kind": "aspice_process_scope",
+            "target_id": "SWE.3",
+            "previous": "out_of_scope",
+            "current": "in_scope",
+        },
+        {
+            "target_kind": "aspice_process_capability",
+            "target_id": "SWE.3",
+            "previous": "not_applicable",
+            "current": "CL3",
+        },
+        {
+            "target_kind": "aspice_process_scope",
+            "target_id": "SWE.1",
+            "previous": "in_scope",
+            "current": "out_of_scope",
+        },
+        {
+            "target_kind": "aspice_process_capability",
+            "target_id": "SWE.1",
+            "previous": "CL2",
+            "current": "not_applicable",
+        },
+    ]
+
+
+def test_aspice_tailoring_changes_capture_override_target_change() -> None:
+    previous = normalize_assurance_configuration(
+        {
+            "asil_level": "ASIL_C",
+            "aspice_default_capability_level": 2,
+            "aspice_scoped_processes": ["SWE.1"],
+        }
+    )
+    updated = normalize_assurance_configuration(
+        {
+            "asil_level": "ASIL_C",
+            "aspice_default_capability_level": 2,
+            "aspice_scoped_processes": ["SWE.1"],
+            "aspice_process_overrides": {"SWE.1": 3},
+        }
+    )
+
+    assert aspice_tailoring_changes(previous, updated) == [
+        {
+            "target_kind": "aspice_process_capability",
+            "target_id": "SWE.1",
+            "previous": "CL2",
+            "current": "CL3",
+        }
+    ]

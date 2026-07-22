@@ -1,5 +1,6 @@
 import hashlib
 import re
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -12,11 +13,16 @@ from aac_backend.config import get_settings
 from aac_backend.database import get_session
 from aac_backend.models.artefacts import Relationship
 from aac_backend.models.audit import AuditEvent, EvidenceReference, GeneratedReport
-from aac_backend.models.baselines import BaselineArtefactRevision, BaselineRelationshipRevision
+from aac_backend.models.baselines import (
+    Baseline,
+    BaselineArtefactRevision,
+    BaselineRelationshipRevision,
+)
 from aac_backend.models.impact import TestResultRecord
 from aac_backend.models.validation import ValidationIssue
 from aac_backend.schemas.common import ApiEnvelope
 from aac_backend.services.job_service import job_data, run_tracked_job
+from aac_backend.services.event_service import record_event
 
 router = APIRouter(tags=["reports"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
@@ -27,7 +33,7 @@ REQUIREMENT_UPLOAD_EXTENSIONS = {".pdf", ".doc", ".docx"}
 async def import_test_results(
     project_id: str,
     payload: dict,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     imported = []
@@ -45,6 +51,17 @@ async def import_test_results(
         )
         session.add(record)
         imported.append(record)
+    await session.flush()
+    await record_event(
+        session,
+        event_type="test_result.imported",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={
+            "imported_count": len(imported),
+            "test_result_ids": [item.test_result_record_id for item in imported],
+        },
+    )
     await session.commit()
     return ApiEnvelope(data={"imported_count": len(imported), "test_result_ids": [r.test_result_record_id for r in imported]})
 
@@ -78,6 +95,14 @@ async def create_evidence(
         created_at=datetime.now(UTC),
     )
     session.add(evidence)
+    await session.flush()
+    await record_event(
+        session,
+        event_type="evidence.created",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"evidence_id": evidence.evidence_id, "evidence_type": evidence.evidence_type},
+    )
     await session.commit()
     return ApiEnvelope(data={"evidence_id": evidence.evidence_id})
 
@@ -95,13 +120,32 @@ async def upload_evidence(
     if evidence_type == "requirement_source_document" and extension not in REQUIREMENT_UPLOAD_EXTENSIONS:
         raise HTTPException(status_code=409, detail="Requirement uploads must be PDF, DOC, or DOCX")
 
-    content = await file.read()
-    checksum = hashlib.sha256(content).hexdigest()
     project_dir = Path(get_settings().upload_dir) / project_id
     project_dir.mkdir(parents=True, exist_ok=True)
+    max_bytes = get_settings().max_evidence_bytes
+    size_bytes = 0
+    digest = hashlib.sha256()
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=project_dir, delete=False) as temporary:
+            temporary_path = Path(temporary.name)
+            while chunk := await file.read(1024 * 1024):
+                size_bytes += len(chunk)
+                if size_bytes > max_bytes:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Evidence upload exceeds {max_bytes} bytes",
+                    )
+                digest.update(chunk)
+                temporary.write(chunk)
+        checksum = digest.hexdigest()
+    except Exception:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+        raise
     stored_name = f"{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}_{checksum[:12]}_{filename}"
     stored_path = project_dir / stored_name
-    stored_path.write_bytes(content)
+    temporary_path.replace(stored_path)
 
     evidence = EvidenceReference(
         project_id=project_id,
@@ -111,12 +155,20 @@ async def upload_evidence(
         metadata_json={
             "original_filename": file.filename,
             "content_type": file.content_type,
-            "size_bytes": len(content),
+            "size_bytes": size_bytes,
         },
         created_by=current.user.user_id,
         created_at=datetime.now(UTC),
     )
     session.add(evidence)
+    await session.flush()
+    await record_event(
+        session,
+        event_type="evidence.uploaded",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"evidence_id": evidence.evidence_id, "size_bytes": size_bytes},
+    )
     await session.commit()
     return ApiEnvelope(
         data={
@@ -171,6 +223,13 @@ async def generate_report(
         )
         session.add(report)
         await session.flush()
+        await record_event(
+            session,
+            event_type="report.generated",
+            project_id=project_id,
+            actor_user_id=current.user.user_id,
+            payload={"report_id": report.report_id, "report_type": report.report_type},
+        )
         job.result_ref_json = {"resource_type": "GeneratedReport", "resource_id": report.report_id}
         return report
 
@@ -220,13 +279,20 @@ async def get_report(
 async def delete_report(
     project_id: str,
     report_id: str,
-    _: CurrentUser = Depends(project_role_dependency("admin", "quality_engineer")),
+    current: CurrentUser = Depends(project_role_dependency("admin", "quality_engineer")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     report = await session.get(GeneratedReport, report_id)
     if not report or report.project_id != project_id:
         raise HTTPException(status_code=404, detail="Report not found")
     report.state = "obsolete"
+    await record_event(
+        session,
+        event_type="report.obsoleted",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"report_id": report.report_id},
+    )
     await session.commit()
     return ApiEnvelope(data=_report_data(report))
 
@@ -299,6 +365,17 @@ async def _build_report_payload(session: AsyncSession, project_id: str, payload:
     if report_type == "baseline_comparison":
         left_id = payload["left_baseline_id"]
         right_id = payload["right_baseline_id"]
+        if left_id == right_id:
+            raise HTTPException(status_code=409, detail="Comparison baselines must be different")
+        left = await session.get(Baseline, left_id)
+        right = await session.get(Baseline, right_id)
+        if (
+            left is None
+            or right is None
+            or left.project_id != project_id
+            or right.project_id != project_id
+        ):
+            raise HTTPException(status_code=404, detail="Comparison baseline not found")
         return {
             "report_type": report_type,
             "left_baseline_id": left_id,

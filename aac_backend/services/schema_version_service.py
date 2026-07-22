@@ -2,7 +2,7 @@ from alembic.runtime.migration import MigrationContext
 
 from aac_backend.database import engine
 
-EXPECTED_SCHEMA_REVISION = "0004_repo_approval_contract"
+EXPECTED_SCHEMA_REVISION = "0006_revision_integrity"
 
 
 async def assert_database_schema_current() -> None:

@@ -80,6 +80,10 @@ A job shall conform to this logical schema:
   "decision_requests": [],
   "locks": [],
   "messages": [],
+  "committed_effects": {
+    "exists": false,
+    "last_committed_unit": null
+  },
   "error": null
 }
 ```
@@ -156,6 +160,16 @@ POST /api/v1/jobs/{job_id}/cancel
 
 AAC-JOB-IR-004
 Only the original requester or Admin shall cancel a cancellable job.
+
+AAC-JOB-IR-005
+Only the original requester or Admin shall retrieve an individual job by job ID.
+A project member may list jobs for a project, but input, decision, and error
+detail shall be redacted unless the caller is the original requester or Admin.
+
+AAC-JOB-IR-006
+Cancellation shall be cooperative at transaction boundaries. A cancelled job
+shall report whether committed effects exist and identify the last committed
+unit of work.
 
 ## 8. Audit Requirements
 

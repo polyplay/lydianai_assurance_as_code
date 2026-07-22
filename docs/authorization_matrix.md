@@ -23,6 +23,11 @@ All roles can be assigned project-scope (membership) or globally (Admin only is 
 
 There is no general role hierarchy between Project Lead and Quality Engineer. Admin has global administrative privileges. Project Lead and Quality Engineer have distinct controlled responsibilities.
 
+Global roles are read only from the user account's global-role assignment.
+Project memberships from other projects shall not be included in global roles
+and shall not authorize access to the selected project. Effective project roles
+are the union of true global roles and memberships for that project only.
+
 ---
 
 ## 3. Authorization Convention
@@ -71,7 +76,7 @@ A 409 Conflict response is returned when a pre-condition is not met.
 |-----------|----------|---------------|---------------|------------|-------------|
 | Create artefact (direct) | POST /api/v1/projects/{id}/artefacts | User, Project Lead, Quality Engineer, or Admin | source_object_id unique in project | artefact created (draft), revision created | artefact.created |
 | Update artefact fields | PUT /api/v1/projects/{id}/artefacts/{art_id} | User, Project Lead, Quality Engineer, or Admin | artefact exists; not in released or obsolete state; no baseline lock active | new revision created or fields updated | artefact.revised |
-| Update released artefact | PUT /api/v1/projects/{id}/artefacts/{art_id} | User, Project Lead, Quality Engineer, or Admin | artefact exists; status=released | new revision created; suspect propagation triggered | artefact.revised |
+| Update released artefact | PUT /api/v1/projects/{id}/artefacts/{art_id} | Quality Engineer or Admin | artefact exists; status=released; no baseline lock active | new revision created; impact analysis and suspect propagation triggered | artefact.revised |
 
 ### 6.2 Lifecycle Status Transitions
 
@@ -102,7 +107,7 @@ A 409 Conflict response is returned when a pre-condition is not met.
 | Operation | Endpoint | Required Role | Pre-condition | Post-state | Audit Event |
 |-----------|----------|---------------|---------------|------------|-------------|
 | Submit Sphinx import | POST /api/v1/projects/{id}/imports/sphinx | User, Project Lead, Quality Engineer, or Admin | project exists; no active import job for same source document | import job enqueued | import.started |
-| Submit import decision (ask_user mode) | POST /api/v1/projects/{id}/imports/{import_id}/decisions | User (original submitter) or Quality Engineer | import job in waiting_for_user state; decision_id valid | decision recorded; job resumes | import.decision_submitted |
+| Submit import decision (ask_user mode) | POST /api/v1/projects/{id}/imports/{import_id}/decisions | Original submitter, Quality Engineer, or Admin | import job in waiting_for_user state; decision_id valid; actor authorized for resulting artefact operation | decision recorded; job resumes | import.decision_submitted |
 | Cancel import | POST /api/v1/projects/{id}/imports/{import_id}/cancel | User (own) or Admin | import job in queued or running state | job cancelled | import.cancelled |
 
 ---
@@ -134,8 +139,8 @@ A 409 Conflict response is returned when a pre-condition is not met.
 | Request baseline creation | POST /api/v1/projects/{id}/baselines | Project Lead or Admin | no baseline creation job currently running for project | baseline job enqueued; update lock acquired | baseline.creation_requested |
 | Cancel baseline creation | POST /api/v1/projects/{id}/baselines/{bid}/cancel | Project Lead or Admin | baseline in requested or creating_snapshot state | baseline cancelled; lock released | baseline.cancelled |
 | Trigger release gate evaluation | POST /api/v1/projects/{id}/release-gate/run | User, Project Lead, Quality Engineer, or Admin | no gate evaluation currently running for requested scope | gate evaluation job enqueued | release_gate.evaluation_started |
-| Approve baseline | POST /api/v1/projects/{id}/baselines/{bid}/approve | Project Lead or Admin | baseline in created state; latest gate result = passed | baseline approved | baseline.approved |
-| Release baseline | POST /api/v1/projects/{id}/baselines/{bid}/release | Quality Engineer or Admin | baseline in approved state | baseline released | baseline.released |
+| Approve baseline | POST /api/v1/projects/{id}/baselines/{bid}/approve | Project Lead or Admin | baseline in created state; latest gate result is current and passed | baseline approved | baseline.approved |
+| Release baseline | POST /api/v1/projects/{id}/baselines/{bid}/release | Quality Engineer or Admin | baseline in approved state; latest gate result is still current and passed | baseline released | baseline.released |
 | Mark baseline obsolete | POST /api/v1/projects/{id}/baselines/{bid}/obsolete | Admin | baseline exists; not in released state | baseline obsolete | baseline.obsoleted |
 
 ---
@@ -172,6 +177,7 @@ A 409 Conflict response is returned when a pre-condition is not met.
 | Operation | Endpoint | Required Role | Pre-condition | Post-state | Audit Event |
 |-----------|----------|---------------|---------------|------------|-------------|
 | Tailor artefact schema (disable fields) | PUT /api/v1/projects/{id}/schemas/{artefact_type} | Admin | schema exists; fields to disable are not mandatory canonical fields | schema configuration updated | schema.tailored |
+| Tailor ASPICE process scope/capability | PUT /api/v1/projects/{id}/config | Admin | ASPICE process scope/capability changes include rationale and evidence_refs | assurance configuration updated; approved tailoring decisions recorded | project.aspice_tailoring_updated, tailoring.approved |
 
 ---
 
@@ -187,7 +193,7 @@ A 409 Conflict response is returned when a pre-condition is not met.
 | Read repository status | GET /api/v1/projects/{id}/repo-connectors/{connector_id}/status | User, Project Lead, Quality Engineer, or Admin | connector exists | repository metadata, commit, checks, and statuses returned | none |
 | Trigger repository scan | POST /api/v1/projects/{id}/repo-connectors/{connector_id}/scan | Admin or Project Lead | connector active | repository scan job enqueued | repository_scan.completed |
 | List repository approvals | GET /api/v1/projects/{id}/baselines/{baseline_id}/repository-approvals | User, Project Lead, Quality Engineer, or Admin | baseline exists | approval publication history returned | none |
-| Publish repository approval | POST /api/v1/projects/{id}/baselines/{baseline_id}/repository-approvals | Admin, Project Lead, or Quality Engineer | release gate passed | approval check or status sent to repository | repository_approval.published |
+| Publish repository approval | POST /api/v1/projects/{id}/baselines/{baseline_id}/repository-approvals | Admin, Project Lead, or Quality Engineer | baseline released; target commit equals baseline snapshot | approval check or status sent to repository | repository_approval.published |
 | Receive GitHub webhook | POST /api/v1/integrations/github/webhook/{connector_id} | System | connector active | delivery recorded; scan job enqueued when event applies | repository_webhook.received |
 
 ---
@@ -201,13 +207,18 @@ AAC-AUTH-FR-002
 Admin role is global and does not require project membership for project-scoped operations.
 
 AAC-AUTH-FR-003
-Read operations (GET) are available to any project member regardless of role. Read operations do not require elevated role.
+Read operations (GET) are available to any project member unless a more specific
+operation rule restricts sensitive detail. Individual job status is restricted
+to the original requester or Admin; project job listings may be read by project
+members with sensitive detail redacted.
 
 AAC-AUTH-FR-004
 All role-sensitive write operations shall be logged as AuditEvents with actor_id, role_at_time_of_action, operation, and timestamp.
 
 AAC-AUTH-FR-005
-A User may create a new revision of a released artefact through normal update/import workflows. Updating a released artefact shall trigger impact analysis and suspect propagation.
+Only a Quality Engineer or Admin may create a new revision of a released
+artefact through update or import workflows. Updating a released artefact shall
+trigger impact analysis and suspect propagation.
 
 AAC-AUTH-FR-006
 Baseline creation acquires a project-scoped update lock (per `baseline_state_machine.md`). During the lock, all artefact and relationship write operations for the project shall return 423 Locked with `retry_after` hint.
@@ -217,3 +228,12 @@ The baseline update lock shall be released when baseline creation completes (suc
 
 AAC-AUTH-FR-008
 Read operations (GET, traceability queries, impact analysis reads) shall not be blocked by the baseline update lock.
+
+AAC-AUTH-FR-009
+Only the original requester or Admin may read an individual job by job ID or
+cancel that job.
+
+AAC-AUTH-FR-020
+Import processing shall preserve the initiating actor and enforce authorization
+for every resulting create, revise, lifecycle, and delete operation. Automatic
+mode shall not bypass released-artefact authorization.

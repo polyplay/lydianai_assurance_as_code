@@ -1,0 +1,267 @@
+version: 1
+change_record: docs/blocker_remediation_change_record.md
+requirements:
+  AAC-AUTH-FR-011:
+    need: NEED-QE-001
+    level: SRS
+    type: security
+    architecture: [F-AUTH-01, F-BASE-02, F-BASE-03]
+    interfaces: [IMembershipReader, IAuditWriter]
+    acceptance: [ACC-AUTH-008]
+    code: [aac_backend/api/baselines.py, aac_backend/services/baseline_service.py]
+    tests: [tests/test_blocker_authorization.py]
+  AAC-AUTH-FR-012:
+    need: NEED-USER-001
+    level: SRS
+    type: security
+    architecture: [F-AUTH-01, F-JOB-01, F-JOB-02]
+    interfaces: [IJobRepository, IJobCancellation]
+    acceptance: [ACC-JOB-006]
+    code: [aac_backend/api/jobs.py]
+    tests: [tests/test_blocker_authorization.py]
+  AAC-AUTH-FR-013:
+    need: NEED-USER-001
+    level: SRS
+    type: security
+    architecture: [F-AUTH-01, F-IMP-04, F-IMP-06]
+    interfaces: [IImportRunRepository, IAuditWriter]
+    acceptance: [ACC-AUTH-009]
+    code: [aac_backend/api/imports.py, aac_backend/services/import_service.py]
+    tests: [tests/test_blocker_authorization.py, tests/test_import_recovery.py]
+  AAC-AUTH-FR-014:
+    need: NEED-QE-001
+    level: SRS
+    type: security
+    architecture: [F-AUTH-01, F-REPO-02]
+    interfaces: [IBaselineReader, IRepositoryConnector]
+    acceptance: [ACC-AUTH-010]
+    code: [aac_backend/api/repositories.py, aac_backend/services/repository_integration_service.py]
+    tests: [tests/test_repository_integration.py]
+  AAC-AUTH-FR-015:
+    need: NEED-AUD-001
+    level: SRS
+    type: security
+    architecture: [F-AUTH-01]
+    interfaces: [IAuditWriter]
+    acceptance: [ACC-AUTH-006, ACC-DATA-006]
+    code:
+      - aac_backend/main.py
+      - aac_backend/services/request_context.py
+      - aac_backend/services/event_service.py
+    tests: [tests/test_event_outbox.py]
+  AAC-AUTH-FR-016:
+    need: NEED-AUD-001
+    level: SRS
+    type: security
+    architecture: [F-AUTH-01, F-IMP-05]
+    interfaces: [IArtefactCommands]
+    acceptance: [ACC-AUTH-011]
+    code: [aac_backend/workers/tasks.py, aac_backend/services/import_service.py]
+    tests: [tests/test_import_recovery.py]
+  AAC-IMPORT-FR-080:
+    need: NEED-USER-001
+    level: SRS
+    type: interface
+    architecture: [F-IMP-04]
+    interfaces: [IImportRunRepository]
+    acceptance: [ACC-IMP-013]
+    code: [aac_backend/schemas/domain.py, aac_backend/api/imports.py]
+    tests: [tests/test_import_recovery.py]
+  AAC-IMPORT-FR-081:
+    need: NEED-USER-001
+    level: SRS
+    type: functional
+    architecture: [F-IMP-03, F-IMP-04]
+    interfaces: [IImportRunRepository]
+    acceptance: [ACC-IMP-004, ACC-IMP-005, ACC-IMP-006]
+    code: [aac_backend/services/import_service.py]
+    tests: [tests/test_import_recovery.py]
+  AAC-IMPORT-FR-082:
+    need: NEED-OP-001
+    level: SRS
+    type: functional
+    architecture: [F-IMP-06]
+    interfaces: [IImportRunRepository]
+    acceptance: [ACC-IMP-012]
+    code: [aac_backend/services/import_service.py]
+    tests: [tests/test_import_recovery.py]
+  AAC-IMPORT-FR-083:
+    need: NEED-OP-001
+    level: SRS
+    type: constraint
+    architecture: [F-IMP-05]
+    interfaces: [IImportRunRepository, IUnitOfWork]
+    acceptance: [ACC-IMP-010]
+    code: [aac_backend/services/import_service.py]
+    tests:
+      - tests/test_import_recovery.py
+      - tests/integration/test_database_recovery.py
+  AAC-IMPORT-FR-084:
+    need: NEED-OP-001
+    level: SRS
+    type: functional
+    architecture: [F-IMP-06, F-JOB-02]
+    interfaces: [IJobCancellation, IImportRunRepository]
+    acceptance: [ACC-IMP-014, ACC-JOB-004]
+    code: [aac_backend/api/imports.py, aac_backend/workers/tasks.py]
+    tests: [tests/test_import_recovery.py]
+  AAC-IMPORT-FR-085:
+    need: NEED-OP-001
+    level: SRS
+    type: constraint
+    architecture: [F-IMP-06, F-EVT-02, F-VAL-01]
+    interfaces: [IEventOutbox, IEventConsumerRegistry]
+    acceptance: [ACC-IMP-011, ACC-EVENT-003]
+    code: [aac_backend/services/event_dispatcher.py]
+    tests: [tests/test_event_outbox.py]
+  AAC-BASE-FR-060:
+    need: NEED-QE-001
+    level: SRS
+    type: functional
+    architecture: [F-GATE-01, F-GATE-02]
+    interfaces: [IGateResultRepository, IEventOutbox]
+    acceptance: [ACC-BASE-012]
+    code: [aac_backend/services/baseline_service.py]
+    tests: [tests/test_release_gate_currency.py]
+  AAC-BASE-FR-061:
+    need: NEED-QE-001
+    level: SRS
+    type: constraint
+    architecture: [F-GATE-02]
+    interfaces: [IEventConsumerRegistry]
+    acceptance: [ACC-BASE-012, ACC-BASE-013]
+    code: [aac_backend/services/gate_currency_service.py]
+    tests: [tests/test_release_gate_currency.py]
+  AAC-BASE-FR-062:
+    need: NEED-QE-001
+    level: SRS
+    type: functional
+    architecture: [F-GATE-02]
+    interfaces: [IBaselineRepository, IAuditWriter]
+    acceptance: [ACC-BASE-013]
+    code: [aac_backend/services/gate_currency_service.py]
+    tests: [tests/test_release_gate_currency.py]
+  AAC-BASE-FR-063:
+    need: NEED-QE-001
+    level: SRS
+    type: functional
+    architecture: [F-GATE-01, F-BASE-02]
+    interfaces: [IGateResultRepository]
+    acceptance: [ACC-BASE-014]
+    code: [aac_backend/services/baseline_service.py]
+    tests: [tests/test_release_gate_currency.py]
+  AAC-BASE-FR-064:
+    need: NEED-QE-001
+    level: SRS
+    type: security
+    architecture: [F-BASE-03]
+    interfaces: [IBaselineRepository, IGateResultRepository, IEventOutbox]
+    acceptance: [ACC-BASE-015]
+    code:
+      - aac_backend/services/baseline_service.py
+      - aac_backend/services/event_service.py
+      - aac_backend/services/event_policy.py
+    tests:
+      - tests/test_release_gate_currency.py
+      - tests/integration/test_database_recovery.py
+  AAC-BASE-FR-065:
+    need: NEED-QE-001
+    level: SRS
+    type: constraint
+    architecture: [F-GATE-01, F-GATE-02]
+    interfaces: [IRuleCatalog]
+    acceptance: [ACC-BASE-012]
+    code: [aac_backend/services/gate_currency_service.py]
+    tests: [tests/test_release_gate_currency.py]
+  AAC-EVENT-AR-010:
+    need: NEED-OP-001
+    level: SRS
+    type: constraint
+    architecture: [F-EVT-01, F-EVT-02]
+    interfaces: [IEventOutbox, IUnitOfWork]
+    acceptance: [ACC-EVENT-001]
+    code: [aac_backend/services/event_service.py, aac_backend/services/event_dispatcher.py]
+    tests:
+      - tests/test_event_outbox.py
+      - tests/integration/test_database_recovery.py
+  AAC-EVENT-AR-011:
+    need: NEED-OP-001
+    level: SRS
+    type: constraint
+    architecture: [F-EVT-02]
+    interfaces: [IEventOutbox, IEventConsumerRegistry]
+    acceptance: [ACC-EVENT-002, ACC-EVENT-003]
+    code: [aac_backend/services/event_dispatcher.py]
+    tests: [tests/test_event_outbox.py]
+  AAC-EVENT-AR-012:
+    need: NEED-OP-001
+    level: SRS
+    type: constraint
+    architecture: [F-EVT-01, F-EVT-02]
+    interfaces: [IEventOutbox]
+    acceptance: [ACC-EVENT-004]
+    code: [aac_backend/models/events.py, aac_backend/workers/settings.py]
+    tests: [tests/test_event_outbox.py]
+  AAC-UI-FR-004:
+    need: NEED-UI-001
+    level: SRS
+    type: functional
+    architecture: [F-WEB-01, F-WORKSPACE-01]
+    interfaces: [IWorkspaceProjection]
+    acceptance: [ACC-UI-005]
+    code: [web/js/features/overview.js, aac_backend/api/workspace.py]
+    tests: [tests/test_workspace_api.py, tests/web/workspace.spec.js, tests/web-real/workspace.spec.js]
+  AAC-UI-FR-005:
+    need: NEED-UI-004
+    level: SRS
+    type: interface
+    architecture: [F-WEB-01]
+    interfaces: [ISchemaRegistry]
+    acceptance: [ACC-UI-006, ACC-SCHEMA-001]
+    code: [aac_backend/services/artefact_schema_service.py, web/js/components/schema-form.js]
+    tests: [tests/test_workspace_api.py, tests/web/evidence.spec.js, tests/web-real/workspace.spec.js]
+  AAC-UI-FR-006:
+    need: NEED-UI-002
+    level: SRS
+    type: security
+    architecture: [F-WORKSPACE-01, F-WEB-01, F-AUTH-01]
+    interfaces: [IWorkspaceProjection, IMembershipReader]
+    acceptance: [ACC-UI-004, ACC-UI-005, ACC-UI-010]
+    code: [aac_backend/services/workspace_service.py, web/js/api/client.js]
+    tests: [tests/test_workspace_api.py, tests/web/authorization.spec.js]
+  AAC-UI-FR-007:
+    need: NEED-UI-005
+    level: SyRS
+    type: constraint
+    architecture: [F-WEB-01]
+    interfaces: []
+    acceptance: [ACC-UI-007]
+    code: [web/index.html, web/styles/app.css, web/js/components/ui.js]
+    tests: [tests/web/accessibility.spec.js]
+  AAC-UI-FR-008:
+    need: NEED-UI-001
+    level: SRS
+    type: functional
+    architecture: [F-WEB-01, F-JOB-01, F-JOB-02]
+    interfaces: [IJobRepository, IJobCancellation]
+    acceptance: [ACC-UI-008]
+    code: [web/js/api/client.js, web/js/features/jobs.js]
+    tests: [tests/web/errors.spec.js, tests/web/jobs.spec.js, tests/web-real/workspace.spec.js]
+  AAC-UI-FR-009:
+    need: NEED-UI-005
+    level: SyRS
+    type: constraint
+    architecture: [F-WEB-01]
+    interfaces: []
+    acceptance: [ACC-UI-009]
+    code: [web/styles/app.css]
+    tests: [tests/web/responsive.spec.js]
+  AAC-UI-FR-010:
+    need: NEED-DEV-UI-001
+    level: SRS
+    type: constraint
+    architecture: [F-WEB-01]
+    interfaces: []
+    acceptance: [ACC-UI-010]
+    code: [web/js/app.js, web/js/api/client.js, web/js/features]
+    tests: [tests/test_web_architecture.py]

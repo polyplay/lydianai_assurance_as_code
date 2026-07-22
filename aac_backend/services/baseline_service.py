@@ -22,7 +22,8 @@ from aac_backend.models.repository_integrations import (
 from aac_backend.models.validation import ValidationIssue
 from aac_backend.rules.catalog import RULE_CATALOG
 from aac_backend.schemas.domain import BaselineCreate
-from aac_backend.services.event_service import record_event
+from aac_backend.services.event_service import latest_event_sequence, record_event
+from aac_backend.services.gate_currency_service import later_blocking_event, latest_gate_result
 from aac_backend.services.impact_service import open_suspects_for_project
 from aac_backend.services.validation_service import run_validation
 
@@ -168,6 +169,8 @@ async def run_release_gate(
     baseline: Baseline,
     actor_user_id: str,
 ) -> ReleaseGateResult:
+    if baseline.state != "created":
+        raise ValueError("release gate requires a baseline in created state")
     existing_count = await session.scalar(
         select(ReleaseGateResult.evaluation_number).where(
             ReleaseGateResult.baseline_id == baseline.baseline_id
@@ -222,6 +225,8 @@ async def run_release_gate(
     validation_policy = await _validation_policy_for_project(session, project_id)
     evaluated_rules_count = _rule_count_for_mode("release_gate", validation_policy)
     blocking_rule_count = len({issue["rule_id"] for issue in blocking})
+    await session.flush()
+    evaluation_cutoff_sequence = await latest_event_sequence(session, project_id)
     result = ReleaseGateResult(
         project_id=project_id,
         baseline_id=baseline.baseline_id,
@@ -235,9 +240,11 @@ async def run_release_gate(
         passed_rules_count=max(evaluated_rules_count - blocking_rule_count, 0),
         blocking_issues_json=blocking,
         open_suspect_states_json=suspect_blocks,
+        evaluation_cutoff_sequence=evaluation_cutoff_sequence,
     )
     session.add(result)
     baseline.release_gate_status = result.status
+    baseline.gate_stale_event_sequence = None
     await record_event(
         session,
         event_type="release_gate.completed",
@@ -359,6 +366,18 @@ async def approve_baseline(
         raise ValueError("baseline must be created before approval")
     if baseline.release_gate_status != "passed":
         raise ValueError("baseline release gate must pass before approval")
+    result = await latest_gate_result(session, baseline.baseline_id)
+    if result is None or result.status != "passed" or result.result != "pass":
+        raise ValueError("baseline latest release gate must be passed")
+    later_event = await later_blocking_event(
+        session,
+        project_id=baseline.project_id,
+        cutoff_sequence=result.evaluation_cutoff_sequence,
+    )
+    if later_event is not None:
+        baseline.release_gate_status = "stale"
+        baseline.gate_stale_event_sequence = later_event.event_sequence
+        raise ValueError("baseline release gate is stale")
     baseline.state = "approved"
     baseline.approved_by = actor_user_id
     baseline.approved_at = datetime.now(UTC)
@@ -377,8 +396,34 @@ async def release_baseline(
     baseline: Baseline,
     actor_user_id: str,
 ) -> Baseline:
+    locked = await session.scalar(
+        select(Baseline)
+        .where(Baseline.baseline_id == baseline.baseline_id)
+        .with_for_update()
+    )
+    if locked is None:
+        raise ValueError("baseline not found")
+    baseline = locked
     if baseline.state != "approved":
         raise ValueError("baseline must be approved before release")
+    result = await latest_gate_result(session, baseline.baseline_id)
+    if (
+        baseline.release_gate_status != "passed"
+        or result is None
+        or result.status != "passed"
+        or result.result != "pass"
+    ):
+        raise ValueError("baseline latest release gate must be current and passed")
+    later_event = await later_blocking_event(
+        session,
+        project_id=baseline.project_id,
+        cutoff_sequence=result.evaluation_cutoff_sequence,
+    )
+    if later_event is not None:
+        baseline.release_gate_status = "stale"
+        baseline.gate_stale_event_sequence = later_event.event_sequence
+        baseline.state = "created"
+        raise ValueError("baseline release gate became stale before release")
     baseline.state = "released"
     baseline.released_by = actor_user_id
     baseline.released_at = datetime.now(UTC)

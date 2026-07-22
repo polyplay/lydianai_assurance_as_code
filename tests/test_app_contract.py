@@ -9,6 +9,7 @@ def test_app_exposes_core_routes() -> None:
     assert "/api/v1/projects" in paths
     assert "/api/v1/projects/{project_id}/artefacts" in paths
     assert "/api/v1/projects/{project_id}/imports/sphinx" in paths
+    assert "/api/v1/projects/{project_id}/workspace" in paths
     assert "/api/v1/projects/{project_id}/validation/run" in paths
     assert "/api/v1/projects/{project_id}/release-gate/run" in paths
     assert "/app" in paths
@@ -26,6 +27,7 @@ def test_app_exposes_documented_mvp_endpoint_methods() -> None:
         ("POST", "/api/v1/users/{user_id}/password-reset"),
         ("POST", "/api/v1/users/me/password"),
         ("GET", "/api/v1/projects/{project_id}/schemas"),
+        ("GET", "/api/v1/projects/{project_id}/workspace"),
         ("GET", "/api/v1/projects/{project_id}/schemas/{artefact_type}"),
         ("PUT", "/api/v1/projects/{project_id}/schemas/{artefact_type}"),
         ("PUT", "/api/v1/projects/{project_id}"),

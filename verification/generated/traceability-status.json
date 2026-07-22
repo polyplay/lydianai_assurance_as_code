@@ -1,0 +1,6776 @@
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "AAC-API-IR-001",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md",
+        "docs/specification_refinement_decisions.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-002",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-003",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-004",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-005",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-006",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-007",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-008",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-009",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-010",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-011",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-012",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-013",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-020",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-021",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-022",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-023",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-024",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-025",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-026",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-027",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-030",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-031",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-032",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-033",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-034",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-035",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-040",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-041",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-042",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-043",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-044",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-045",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-046",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-050",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-051",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-052",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-053",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-054",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-055",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-056",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-057",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-058",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-059",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-100",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-101",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-102",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-103",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-104",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-105",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-106",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-107",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-108",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-110",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-111",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-112",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-113",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-114",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-115",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-116",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-117",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-118",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-120",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-121",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-122",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-123",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-130",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-131",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-150",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-151",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-152",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-160",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-161",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-162",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-API-IR-260",
+      "status": "missing",
+      "sources": [
+        "docs/api_endpoint_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-ARCH-001",
+      "status": "missing",
+      "sources": [
+        "docs/software_architecture.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-ARCH-002",
+      "status": "missing",
+      "sources": [
+        "docs/software_architecture.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-ARCH-003",
+      "status": "missing",
+      "sources": [
+        "docs/software_architecture.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-ARCH-004",
+      "status": "missing",
+      "sources": [
+        "docs/software_architecture.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-ARCH-005",
+      "status": "missing",
+      "sources": [
+        "docs/software_architecture.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-ARCH-006",
+      "status": "missing",
+      "sources": [
+        "docs/software_architecture.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUDIT-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-006",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-007",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-008",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-009",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-AUTH-FR-011",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-AUTH-FR-011"
+    },
+    {
+      "id": "AAC-AUTH-FR-012",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-AUTH-FR-012"
+    },
+    {
+      "id": "AAC-AUTH-FR-013",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-AUTH-FR-013"
+    },
+    {
+      "id": "AAC-AUTH-FR-014",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-AUTH-FR-014"
+    },
+    {
+      "id": "AAC-AUTH-FR-015",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-AUTH-FR-015"
+    },
+    {
+      "id": "AAC-AUTH-FR-016",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-AUTH-FR-016"
+    },
+    {
+      "id": "AAC-AUTH-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/authorization_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-010",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-011",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-012",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-013",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-013A",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-014",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-015",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-DR-020",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-006",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-007",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-022",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-023",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-030",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-031",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-032",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-033",
+      "status": "missing",
+      "sources": [
+        "docs/baseline_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-040",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-041",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-042",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-043",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-044",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-050",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-051",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-052",
+      "status": "missing",
+      "sources": [
+        "docs/release_gate_state_machine.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-BASE-FR-060",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-BASE-FR-060"
+    },
+    {
+      "id": "AAC-BASE-FR-061",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-BASE-FR-061"
+    },
+    {
+      "id": "AAC-BASE-FR-062",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-BASE-FR-062"
+    },
+    {
+      "id": "AAC-BASE-FR-063",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-BASE-FR-063"
+    },
+    {
+      "id": "AAC-BASE-FR-064",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-BASE-FR-064"
+    },
+    {
+      "id": "AAC-BASE-FR-065",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-BASE-FR-065"
+    },
+    {
+      "id": "AAC-CORE-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-001A",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-006",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-007",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-007A",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-007B",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-007C",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-008",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-009",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-022",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-CORE-FR-023",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md",
+        "docs/specification_refinement_decisions.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-002",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-003",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-004",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-005",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-006",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-007",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-010",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-011",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-012",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-013",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-014",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-015",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-016",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-020",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-021",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-022",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-023",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-024",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-025",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-026",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-027",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-028",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-029",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-030",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-031",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-032",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-033",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-034",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-035",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-036",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-037",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-040",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-041",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-042",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-043",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-044",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-045",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-050",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-051",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-052",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-053",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-054",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-055",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-056",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-057",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-060",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-061",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-062",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-063",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-064",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-065",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-066",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-067",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-068",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-069",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-070",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-071",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-072",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-073",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-074",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-075",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-076",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-077",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-078",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-079",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-080",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-081",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-082",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-083",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-084",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-085",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-090",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-091",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-092",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-093",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-100",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-101",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-102",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-103",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-104",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-105",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-110",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-111",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-112",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-113",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-114",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-120",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-121",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-122",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DATA-DR-123",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md",
+        "docs/specification_refinement_decisions.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-002",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-003",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-004",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-005",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-010",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-011",
+      "status": "missing",
+      "sources": [
+        "docs/backend_architecture_and_technology_decisions.md",
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-012",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-013",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-014",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-020",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-021",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-022",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-023",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-024",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-025",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-026",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-027",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-028",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-030",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-031",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-032",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-032A",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-032B",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-033",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-034",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-035",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-036",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-040",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-041",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-042",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-043",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-044",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-045",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-046",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-047",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-050",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-051",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-052",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-053",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-054",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-055",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-056",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-060",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-061",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-062",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-063",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-064",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-070",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-071",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-072",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-073",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-080",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-081",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-082",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-083",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-084",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-085",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-090",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-091",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-092",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-092A",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-093",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-094",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-100",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-101",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-102",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-103",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-104",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-105",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-110",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-111",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-112",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-113",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-120",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-121",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-122",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-123",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-130",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-131",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-132",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-133",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-134",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-135",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-140",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-141",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-142",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-143",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-150",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-151",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-152",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-153",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-DB-DR-154",
+      "status": "missing",
+      "sources": [
+        "docs/database_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-001",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-002",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-003",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-004",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-005",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-006",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-007",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-008",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-AR-010",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-EVENT-AR-010"
+    },
+    {
+      "id": "AAC-EVENT-AR-011",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-EVENT-AR-011"
+    },
+    {
+      "id": "AAC-EVENT-AR-012",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-EVENT-AR-012"
+    },
+    {
+      "id": "AAC-EVENT-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-DR-002",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-DR-003",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-DR-004",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-EVENT-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-AR-001",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-AR-002",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-006",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-007",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-008",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-009",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-014",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-015",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-016",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-017",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-018",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GOV-FR-019",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-GRAPH-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/specification_refinement_decisions.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-025",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-026",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-030",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-031",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-032",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-033",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-040",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-041",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-042",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-043",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-050",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-051",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-055",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-060",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-061",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-062",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-070",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-071",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-072",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPACT-FR-073",
+      "status": "missing",
+      "sources": [
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-DR-010",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-DR-011",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-DR-012",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-DR-013",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-DR-014",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-DR-015",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-014",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-022",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-030",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-031",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-032",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-033",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-040",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-041",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-042",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-043",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-044",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-045",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-050",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-051",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-052",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-053",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-060",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-061",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-062",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-063",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-064",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-065",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-066",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-070",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-071",
+      "status": "missing",
+      "sources": [
+        "docs/import_conflict_and_change_detection.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-080",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-IMPORT-FR-080"
+    },
+    {
+      "id": "AAC-IMPORT-FR-081",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-IMPORT-FR-081"
+    },
+    {
+      "id": "AAC-IMPORT-FR-082",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-IMPORT-FR-082"
+    },
+    {
+      "id": "AAC-IMPORT-FR-083",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-IMPORT-FR-083"
+    },
+    {
+      "id": "AAC-IMPORT-FR-084",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-IMPORT-FR-084"
+    },
+    {
+      "id": "AAC-IMPORT-FR-085",
+      "status": "verified",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-IMPORT-FR-085"
+    },
+    {
+      "id": "AAC-IMPORT-FR-090",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-091",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-FR-092",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-IMPORT-IR-001",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-DR-002",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-DR-003",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-DR-010",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-DR-020",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-014",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-030",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-FR-031",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-IR-001",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-IR-002",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-IR-003",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-IR-004",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-IR-005",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-JOB-IR-006",
+      "status": "missing",
+      "sources": [
+        "docs/async_job_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-OPS-NFR-001",
+      "status": "missing",
+      "sources": [
+        "docs/specification_refinement_decisions.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-002",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-003",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-004",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-005",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-006",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-010",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-011",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-012",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-020",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-021",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-022",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-023",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-024",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-DR-030",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-006",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-007",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-008",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-009",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-022",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-023",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-024",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-025",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-030",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-031",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-032",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-033",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-034",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-040",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-041",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-042",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-043",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-044",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-FR-045",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-PROFILE-IR-001",
+      "status": "missing",
+      "sources": [
+        "docs/asil_profile_configuration_schema.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-REPORT-IR-001",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-REPORT-IR-002",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-REPORT-IR-003",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-REPORT-IR-004",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-REV-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-REV-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/blocker_remediation_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-FR-014",
+      "status": "missing",
+      "sources": [
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-001",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md",
+        "docs/specification_refinement_decisions.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-002",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-003",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-004",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-005",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-006",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-010",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-011",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-012",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-013",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-014",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-020",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-021",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-022",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-023",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-024",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-025",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-026",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-027",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-030",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-031",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-032",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-033",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-034",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-040",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-041",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-042",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-043",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-044",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-050",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-051",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-052",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-053",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-054",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-055",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-060",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-061",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-062",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-063",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-070",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-071",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-080",
+      "status": "missing",
+      "sources": [
+        "docs/domain_event_model.md",
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-081",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md",
+        "docs/suspect_propagation_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-090",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-RULE-RULE-091",
+      "status": "missing",
+      "sources": [
+        "docs/rule_semantics_specification.md",
+        "docs/rule_to_resource_applicability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/artefact_json_schemas.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/artefact_json_schemas.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/artefact_json_schemas.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/artefact_json_schemas.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/artefact_json_schemas.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-006",
+      "status": "missing",
+      "sources": [
+        "docs/artefact_json_schemas.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCHEMA-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCOPE-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCOPE-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCOPE-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCOPE-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SCOPE-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SEC-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SEC-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SEC-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-006",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-014",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SNEEDS-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/sphinx_needs_mapping_specification.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-DR-001",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-005",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-014",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-020",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-021",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-STD-FR-022",
+      "status": "missing",
+      "sources": [
+        "docs/standards_traceability_matrix.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SYS-DEC-001",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SYS-DEC-002",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SYS-DEC-003",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SYS-DEC-004",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SYS-DEC-005",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SYS-DEC-006",
+      "status": "missing",
+      "sources": [
+        "docs/resource_model_and_api_requirements.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-SYS-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/specification_refinement_decisions.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-UI-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/gui_redesign_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-UI-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-UI-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-UI-FR-004",
+      "status": "verified",
+      "sources": [
+        "docs/gui_redesign_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-UI-FR-004"
+    },
+    {
+      "id": "AAC-UI-FR-005",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-UI-FR-005"
+    },
+    {
+      "id": "AAC-UI-FR-006",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-UI-FR-006"
+    },
+    {
+      "id": "AAC-UI-FR-007",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-UI-FR-007"
+    },
+    {
+      "id": "AAC-UI-FR-008",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-UI-FR-008"
+    },
+    {
+      "id": "AAC-UI-FR-009",
+      "status": "verified",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-UI-FR-009"
+    },
+    {
+      "id": "AAC-UI-FR-010",
+      "status": "verified",
+      "sources": [
+        "docs/gui_redesign_change_record.md",
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": "AAC-UI-FR-010"
+    },
+    {
+      "id": "AAC-VER-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VER-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VER-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/requirements_baseline.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-DR-010",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-001",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-002",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-003",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-004",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-010",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-011",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-012",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-013",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-014",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-015",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    },
+    {
+      "id": "AAC-VERSION-FR-016",
+      "status": "missing",
+      "sources": [
+        "docs/import_and_versioning_state_machines.md"
+      ],
+      "trace_entry": null
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ACC-API-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-API-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-API-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-API-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-API-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-API-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-API-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-ART-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-ART-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-ART-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-ART-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-ART-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-ART-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-AUTH-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-AUTH-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-AUTH-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-AUTH-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-AUTH-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-AUTH-006",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_event_outbox.py"
+      ]
+    },
+    {
+      "id": "ACC-AUTH-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-AUTH-008",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_blocker_authorization.py"
+      ]
+    },
+    {
+      "id": "ACC-AUTH-009",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_blocker_authorization.py",
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-AUTH-010",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_repository_integration.py"
+      ]
+    },
+    {
+      "id": "ACC-AUTH-011",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-BASE-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-008",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-009",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-010",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-011",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-BASE-012",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_release_gate_currency.py"
+      ]
+    },
+    {
+      "id": "ACC-BASE-013",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_release_gate_currency.py"
+      ]
+    },
+    {
+      "id": "ACC-BASE-014",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_release_gate_currency.py"
+      ]
+    },
+    {
+      "id": "ACC-BASE-015",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/integration/test_database_recovery.py",
+        "tests/test_release_gate_currency.py"
+      ]
+    },
+    {
+      "id": "ACC-DATA-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-DATA-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-DATA-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-DATA-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-DATA-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-DATA-006",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_event_outbox.py"
+      ]
+    },
+    {
+      "id": "ACC-DEPLOY-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-DEPLOY-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-DEPLOY-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-EVENT-001",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/integration/test_database_recovery.py",
+        "tests/test_event_outbox.py"
+      ]
+    },
+    {
+      "id": "ACC-EVENT-002",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_event_outbox.py"
+      ]
+    },
+    {
+      "id": "ACC-EVENT-003",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_event_outbox.py"
+      ]
+    },
+    {
+      "id": "ACC-EVENT-004",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_event_outbox.py"
+      ]
+    },
+    {
+      "id": "ACC-GOV-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-008",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-009",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-010",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-011",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-012",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-013",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-014",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-GOV-015",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-IMP-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-IMP-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-IMP-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-IMP-004",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-IMP-005",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-IMP-006",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-IMP-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-IMP-008",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-IMP-009",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-IMP-010",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/integration/test_database_recovery.py",
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-IMP-011",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_event_outbox.py"
+      ]
+    },
+    {
+      "id": "ACC-IMP-012",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-IMP-013",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-IMP-014",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-JOB-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-JOB-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-JOB-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-JOB-004",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_import_recovery.py"
+      ]
+    },
+    {
+      "id": "ACC-JOB-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-JOB-006",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_blocker_authorization.py"
+      ]
+    },
+    {
+      "id": "ACC-PERF-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PERF-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PERF-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PERF-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PROJ-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PROJ-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PROJ-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PROJ-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PROJ-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PROJ-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-PROJ-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REL-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REL-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REL-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REL-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REL-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REL-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REP-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REP-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-REP-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-008",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-009",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-RULE-010",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SCHEMA-001",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_workspace_api.py",
+        "tests/web-real/workspace.spec.js",
+        "tests/web/evidence.spec.js"
+      ]
+    },
+    {
+      "id": "ACC-SCHEMA-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SCHEMA-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SEC-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SEC-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SEC-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SEC-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SEC-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SEC-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SEC-007",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SUSP-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SUSP-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SUSP-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SUSP-004",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SUSP-005",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-SUSP-006",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-UI-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-UI-002",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-UI-003",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ACC-UI-004",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_workspace_api.py",
+        "tests/web/authorization.spec.js"
+      ]
+    },
+    {
+      "id": "ACC-UI-005",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_workspace_api.py",
+        "tests/web-real/workspace.spec.js",
+        "tests/web/authorization.spec.js",
+        "tests/web/workspace.spec.js"
+      ]
+    },
+    {
+      "id": "ACC-UI-006",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_workspace_api.py",
+        "tests/web-real/workspace.spec.js",
+        "tests/web/evidence.spec.js"
+      ]
+    },
+    {
+      "id": "ACC-UI-007",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/web/accessibility.spec.js"
+      ]
+    },
+    {
+      "id": "ACC-UI-008",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/web-real/workspace.spec.js",
+        "tests/web/errors.spec.js",
+        "tests/web/jobs.spec.js"
+      ]
+    },
+    {
+      "id": "ACC-UI-009",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/web/responsive.spec.js"
+      ]
+    },
+    {
+      "id": "ACC-UI-010",
+      "status": "verified",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md"
+      ],
+      "evidence": [
+        "tests/test_web_architecture.py",
+        "tests/test_workspace_api.py",
+        "tests/web/authorization.spec.js"
+      ]
+    },
+    {
+      "id": "REPO-ACC-001",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md",
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-002",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-003",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-004",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-005",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-006",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-007",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-008",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-009",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-010",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-011",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-012",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-013",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-014",
+      "status": "missing",
+      "sources": [
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REPO-ACC-015",
+      "status": "missing",
+      "sources": [
+        "docs/mvp_acceptance_criteria.md",
+        "docs/repository_integration_contract.md"
+      ],
+      "evidence": []
+    }
+  ],
+  "summary": {
+    "requirements": {
+      "implemented": 0,
+      "missing": 639,
+      "verified": 28,
+      "waived": 0
+    },
+    "acceptance_criteria": {
+      "implemented": 0,
+      "missing": 126,
+      "verified": 32,
+      "waived": 0
+    },
+    "trace_entries": 28,
+    "errors": 0
+  },
+  "errors": []
+}

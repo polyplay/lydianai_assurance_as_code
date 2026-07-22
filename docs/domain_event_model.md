@@ -13,10 +13,14 @@ It defines the canonical domain events emitted by the Assurance-as-Code platform
 ### 2.1 Event Bus Model
 
 AAC-EVENT-AR-001
-The MVP domain event bus shall be internal-only, implemented as an in-process synchronous publish-subscribe dispatcher within the back-end application process.
+The MVP domain event bus shall be internal-only. Domain events shall be stored in
+a PostgreSQL transactional outbox and delivered by an in-process dispatcher to
+registered consumers.
 
 AAC-EVENT-AR-002
-Event publication shall occur immediately after the database transaction that caused the event is committed. Events shall not be published if the originating transaction is rolled back.
+The state change and its outbox record shall be committed in the same database
+transaction. Dispatch shall occur after commit. An event shall not be visible to
+consumers if the originating transaction rolls back.
 
 AAC-EVENT-AR-003
 Events that require long-running processing (validation, impact analysis, traceability update, suspect propagation) shall trigger the creation of an ARQ async job. The async job creation is the consumer action, not the processing itself.
@@ -25,10 +29,22 @@ AAC-EVENT-AR-004
 Event consumers shall be registered at application startup. Consumer registration shall be declarative (decorator-based) and not require modification of the event dispatcher core.
 
 AAC-EVENT-AR-005
-Event publication failures shall be logged as errors but shall not cause the originating API request to fail. Events are advisory triggers; the canonical state is always the database.
+Dispatch failures shall be recorded with retry metadata and remain observable
+until delivery succeeds or the event is dead-lettered by controlled policy. A
+post-commit dispatch failure shall not reverse the originating command.
 
 AAC-EVENT-AR-006
 The event bus is internal-only in the MVP. No external subscriber, webhook, or message broker integration is provided in MVP.
+
+AAC-EVENT-AR-007
+Delivery is at least once. Every consumer shall be idempotent by `event_id` or a
+documented business idempotency key.
+
+AAC-EVENT-AR-008
+The command handler shall append its required AuditEvent in the same transaction
+as the state change and domain-event outbox record. References to the Audit
+service in the event catalog mean audit projection or consistency verification;
+they shall not be the mechanism that creates the authoritative AuditEvent.
 
 ### 2.2 Event Schema
 
@@ -127,7 +143,7 @@ Payload:
 Consumers:
 - Validation service: re-evaluate rules that apply to status transitions
 - Suspect propagation service: if new_status == "released", trigger downstream suspect check
-- Audit service: create AuditEvent record
+- Audit service: verify/project the AuditEvent already committed by the command
 
 #### `artefact.deleted`
 
@@ -232,7 +248,7 @@ Payload:
 Consumers:
 - Validation service: enqueue project-scope `import` rule execution
 - Traceability service: refresh traceability index for affected artefacts
-- Audit service: create AuditEvent record
+- Audit service: verify/project the AuditEvent already committed by the command
 
 #### `import.decision_required`
 
@@ -249,7 +265,7 @@ Payload:
       "artefact_id": "string",
       "artefact_type": "string",
       "conflict_summary": "string",
-      "options": ["accept_new_version", "reject_keep_current"]
+      "options": ["accept_new_revision", "reject_keep_current"]
     }
   ]
 }

@@ -49,15 +49,10 @@ async def user_roles(session: AsyncSession, user_id: str, project_id: str | None
     user = await session.get(User, user_id)
     global_roles = set(user.global_roles_json if user else [])
     if project_id is None:
-        result = await session.execute(
-            select(Role.role_name)
-            .join(ProjectMembership, ProjectMembership.role_id == Role.role_id)
-            .where(ProjectMembership.user_id == user_id)
-        )
-    else:
-        result = await session.execute(
-            select(Role.role_name)
-            .join(ProjectMembership, ProjectMembership.role_id == Role.role_id)
-            .where(ProjectMembership.user_id == user_id, ProjectMembership.project_id == project_id)
-        )
+        return sorted(global_roles)
+    result = await session.execute(
+        select(Role.role_name)
+        .join(ProjectMembership, ProjectMembership.role_id == Role.role_id)
+        .where(ProjectMembership.user_id == user_id, ProjectMembership.project_id == project_id)
+    )
     return sorted(global_roles.union(result.scalars().all()))

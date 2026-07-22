@@ -582,6 +582,8 @@ async def publish_release_approval_for_baseline(
     actor_user_id: str,
     details_url: str | None = None,
 ) -> list[RepositoryCheckRun]:
+    if baseline.state != "released":
+        raise ValueError("repository approval requires a released baseline")
     result = await session.scalar(
         select(ReleaseGateResult)
         .where(
@@ -1031,7 +1033,12 @@ async def _upsert_artefact(
     return await update_artefact(
         session,
         existing,
-        ArtefactUpdate(title=title, payload=payload, change_reason="repository scan update"),
+        ArtefactUpdate(
+            title=title,
+            payload=payload,
+            base_revision_id=existing.current_revision_id,
+            change_reason="repository scan update",
+        ),
         actor_user_id,
     )
 

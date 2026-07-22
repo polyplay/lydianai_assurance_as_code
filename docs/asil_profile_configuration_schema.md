@@ -241,10 +241,16 @@ Lower ASIL profile defaults shall document every relaxed obligation relative to 
 ## 8.1 Combined ASIL And ASPICE Capability Profiles
 
 AAC-PROFILE-FR-040
-The system shall support project creation with both a highest ISO 26262 classification and an Automotive SPICE PAM 4.0 target capability level.
+The system shall support project creation with both a highest ISO 26262 classification and an Automotive SPICE PAM 4.0 target capability level. The Automotive SPICE target capability shall be exposed in the UI as a project-level planning/default value, not as a consolidated project assessment rating.
 
 AAC-PROFILE-FR-041
-The system shall support one project-level default ASPICE capability target and per-process overrides.
+The system shall support one project-level default ASPICE capability target and per-process overrides. The system shall derive expected capability targets for each configured in-scope Automotive SPICE process using the project default unless a per-process override exists.
+
+AAC-PROFILE-FR-041A
+The system shall allow an administrator to tailor the configured in-scope Automotive SPICE processes and their expected capability levels for a project.
+
+AAC-PROFILE-FR-041B
+Every project-specific change to Automotive SPICE process scope or expected process capability shall be documented with rationale, evidence reference, approver, approval timestamp, and audit history.
 
 AAC-PROFILE-FR-042
 For a project configured as `ASIL_B` and ASPICE CL2, the system shall not require ASIL D-only confirmation or CL3 process deployment artefacts unless another configured scope makes them mandatory.

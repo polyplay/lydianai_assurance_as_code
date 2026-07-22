@@ -70,13 +70,18 @@ class ArtefactUpdate(BaseModel):
     status: ArtefactStatus | None = None
     standards_refs: list[str] | None = None
     payload: dict[str, Any] | None = None
-    base_revision_id: str | None = None
+    base_revision_id: str
     change_reason: str = "api update"
 
 
 class ArtefactStatusTransition(BaseModel):
     status: ArtefactStatus
+    base_revision_id: str
     reason: str | None = None
+
+
+class RevisionToken(BaseModel):
+    base_revision_id: str
 
 
 class ArtefactRead(OrmModel):
@@ -102,6 +107,12 @@ class RelationshipCreate(BaseModel):
     payload: dict[str, Any] = Field(default_factory=dict)
 
 
+class RelationshipUpdate(BaseModel):
+    relationship_type: str | None = None
+    payload: dict[str, Any] | None = None
+    base_revision_id: str
+
+
 class RelationshipRead(OrmModel):
     relationship_id: str
     project_id: str
@@ -117,6 +128,15 @@ class ImportStart(BaseModel):
     source_root: str
     version_update_mode: Literal["automatic_new_version", "ask_user"] | None = None
     sphinx_needs: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class ImportDecisionItem(BaseModel):
+    decision_id: str
+    decision: Literal["accept_new_revision", "reject_keep_current"]
+
+
+class ImportDecisionSubmit(BaseModel):
+    decisions: list[ImportDecisionItem] = Field(default_factory=list)
 
 
 class BaselineCreate(BaseModel):

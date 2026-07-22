@@ -1,11 +1,12 @@
 from datetime import UTC, datetime
 from typing import Any, Literal
-from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from aac_backend.services.request_context import current_correlation_id, current_request_id
 
-ApiStatus = Literal["success", "accepted", "requires_user_decision", "failed"]
+
+ApiStatus = Literal["success", "accepted", "requires_user_decision", "failed", "error"]
 
 
 class ApiMessage(BaseModel):
@@ -16,10 +17,23 @@ class ApiMessage(BaseModel):
 
 class ApiEnvelope(BaseModel):
     status: ApiStatus = "success"
-    request_id: str = Field(default_factory=lambda: f"REQ_{uuid4().hex}")
-    correlation_id: str = Field(default_factory=lambda: f"CORR_{uuid4().hex}")
+    request_id: str = Field(default_factory=current_request_id)
+    correlation_id: str = Field(default_factory=current_correlation_id)
     messages: list[ApiMessage] = Field(default_factory=list)
     data: Any = None
+
+
+class ApiErrorDetail(BaseModel):
+    code: str
+    message: str
+    details: Any = None
+
+
+class ApiErrorEnvelope(BaseModel):
+    status: Literal["error"] = "error"
+    request_id: str = Field(default_factory=current_request_id)
+    correlation_id: str = Field(default_factory=current_correlation_id)
+    error: ApiErrorDetail
 
 
 class OrmModel(BaseModel):

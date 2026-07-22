@@ -1,0 +1,15 @@
+{
+  "name": "lydianai-assurance-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:web:unit": "node --test tests/web-unit/*.test.js",
+    "test:web:e2e": "playwright test --config tests/web/playwright.config.js",
+    "test:web:integration": "bash scripts/run_web_integration_tests.sh",
+    "test:web": "npm run test:web:unit && npm run test:web:e2e"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.52.0"
+  }
+}

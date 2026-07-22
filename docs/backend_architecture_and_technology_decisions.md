@@ -88,13 +88,16 @@ Rationale: ARQ is Python-native, async-first, and integrates with the asyncio ev
 ### 2.6 Domain Event Bus
 
 DEC-TECH-050
-The MVP domain event bus shall be internal-only, implemented as an in-process event dispatcher.
+The MVP domain event bus shall be internal-only, implemented with a PostgreSQL
+transactional outbox and an in-process dispatcher.
 
 DEC-TECH-051
-The event dispatcher shall use a synchronous publish-subscribe pattern within the back-end application process.
+The dispatcher shall claim committed outbox records, invoke registered consumers
+within the back-end process, and persist delivery or retry state.
 
 DEC-TECH-052
-Events that trigger async job creation shall enqueue the job to ARQ immediately after the triggering database transaction commits.
+Events that trigger async job creation shall enqueue the job to ARQ through an
+idempotent consumer after the triggering database transaction commits.
 
 DEC-TECH-053
 The event bus shall not use an external message broker (e.g., Kafka, RabbitMQ) in the MVP.
@@ -102,7 +105,8 @@ The event bus shall not use an external message broker (e.g., Kafka, RabbitMQ) i
 DEC-TECH-054
 The event model specification (`domain_event_model.md`) defines the canonical event types, schemas, and consumption contracts.
 
-Rationale: An in-process event bus is sufficient for MVP scale. External message brokers introduce operational complexity not warranted at MVP scale. The design shall not preclude adding an external broker post-MVP.
+Rationale: A PostgreSQL outbox prevents lost post-commit triggers while retaining
+an internal dispatcher and avoiding an external message broker for version 1.
 
 ### 2.7 Authentication
 
@@ -180,6 +184,10 @@ A `.env` file may be used in development environments. `.env` files shall not be
 ---
 
 ## 3. Project Structure
+
+Function ownership, interfaces, dependency direction, and transaction boundaries
+are controlled by `software_architecture.md`. The package tree below is a
+technology-oriented deployment layout and shall conform to that architecture.
 
 DEC-TECH-100
 The back-end shall be organized as a Python package with the following top-level structure:
@@ -327,13 +335,17 @@ DEC-SEC-002
 SQL injection shall be prevented by exclusive use of parameterized queries through SQLAlchemy.
 
 DEC-SEC-003
-The application shall implement CORS protection. Allowed origins shall be configured via `AAC_CORS_ORIGINS`.
+The application shall deny cross-origin requests by default. Allowed origins
+shall be configured via `AAC_CORS_ORIGINS`; wildcard origins shall not be used
+with credentials.
 
 DEC-SEC-004
 The API shall not expose internal stack traces, SQL errors, or database structure in error responses. Errors shall be logged server-side and a sanitized message returned to the client.
 
 DEC-SEC-005
-File upload endpoints (e.g., Sphinx JSON import) shall validate content type and impose a maximum upload size of 50 MB.
+File upload endpoints (e.g., Sphinx JSON import) shall validate content type and
+reject input above 50 MB before buffering the complete body in application
+memory.
 
 DEC-SEC-006
 The audit trail shall be append-only. No API endpoint shall permit deletion or modification of audit events.

@@ -14,6 +14,7 @@ from aac_backend.models.impact import SuspectState
 from aac_backend.repositories.domain import BaselineRepository
 from aac_backend.schemas.common import ApiEnvelope
 from aac_backend.schemas.domain import BaselineCreate, ReleaseGateRun
+from aac_backend.services.auth_service import user_roles
 from aac_backend.services.baseline_service import (
     approve_baseline,
     create_baseline,
@@ -22,10 +23,8 @@ from aac_backend.services.baseline_service import (
     run_release_gate,
 )
 from aac_backend.services.job_service import job_data, run_tracked_job
-from aac_backend.services.repository_integration_service import (
-    publish_release_approval_for_baseline,
-    repository_check_run_data,
-)
+from aac_backend.services.event_service import record_event
+from aac_backend.services.presentation_policy import baseline_allowed_actions
 
 router = APIRouter(tags=["baselines"])
 PROJECT_ROLES = ("admin", "project_lead", "quality_engineer", "user")
@@ -57,48 +56,56 @@ async def create_baseline_endpoint(
         await session.commit()
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
+    roles = await user_roles(session, current.user.user_id, project_id)
     if baseline is None:
         return ApiEnvelope(status="accepted", data={"job": job_data(job)})
-    return ApiEnvelope(status="accepted", data={"job": job_data(job), "baseline": _baseline_data(baseline)})
+    return ApiEnvelope(
+        status="accepted",
+        data={"job": job_data(job), "baseline": _baseline_data(baseline, roles=roles)},
+    )
 
 
 @router.get("/projects/{project_id}/baselines", response_model=ApiEnvelope)
 async def list_baselines(
     project_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     baselines = await BaselineRepository(session).list_for_project(project_id)
-    return ApiEnvelope(data=[_baseline_data(baseline) for baseline in baselines])
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=[_baseline_data(baseline, roles=roles) for baseline in baselines])
 
 
 @router.get("/projects/{project_id}/baselines/{baseline_id}", response_model=ApiEnvelope)
 async def get_baseline(
     project_id: str,
     baseline_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     baseline = await session.get(Baseline, baseline_id)
     if not baseline or baseline.project_id != project_id:
         raise HTTPException(status_code=404, detail="Baseline not found")
-    return ApiEnvelope(data=_baseline_data(baseline))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_baseline_data(baseline, roles=roles))
 
 
 @router.get("/projects/{project_id}/baselines/{baseline_id}/status", response_model=ApiEnvelope)
 async def get_baseline_status(
     project_id: str,
     baseline_id: str,
-    _: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
+    current: CurrentUser = Depends(project_role_dependency(*PROJECT_ROLES)),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     baseline = await _get_baseline_or_404(session, project_id, baseline_id)
+    roles = await user_roles(session, current.user.user_id, project_id)
     return ApiEnvelope(
         data={
             "baseline_id": baseline.baseline_id,
             "state": baseline.state,
             "release_gate_status": baseline.release_gate_status,
             "summary": baseline.summary_json,
+            "allowed_actions": baseline_allowed_actions(baseline, roles=roles),
         }
     )
 
@@ -222,50 +229,54 @@ async def approve_baseline_endpoint(
     try:
         baseline = await approve_baseline(session, baseline, current.user.user_id)
     except ValueError as exc:
+        if baseline.release_gate_status == "stale":
+            await session.commit()
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
-    return ApiEnvelope(data=_baseline_data(baseline))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_baseline_data(baseline, roles=roles))
 
 
 @router.post("/projects/{project_id}/baselines/{baseline_id}/cancel", response_model=ApiEnvelope)
 async def cancel_baseline_endpoint(
     project_id: str,
     baseline_id: str,
-    _: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
+    current: CurrentUser = Depends(project_role_dependency("admin", "project_lead")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     baseline = await _get_baseline_or_404(session, project_id, baseline_id)
     if baseline.state not in {"requested", "creating_snapshot"}:
         raise HTTPException(status_code=409, detail="Baseline cannot be cancelled")
     baseline.state = "cancelled"
+    await record_event(
+        session,
+        event_type="baseline.cancelled",
+        project_id=project_id,
+        actor_user_id=current.user.user_id,
+        payload={"baseline_id": baseline_id},
+    )
     await session.commit()
-    return ApiEnvelope(data=_baseline_data(baseline))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_baseline_data(baseline, roles=roles))
 
 
 @router.post("/projects/{project_id}/baselines/{baseline_id}/release", response_model=ApiEnvelope)
 async def release_baseline_endpoint(
     project_id: str,
     baseline_id: str,
-    current: CurrentUser = Depends(project_role_dependency("admin", "quality_engineer", "project_lead")),
+    current: CurrentUser = Depends(project_role_dependency("admin", "quality_engineer")),
     session: AsyncSession = Depends(get_session),
 ) -> ApiEnvelope:
     baseline = await _get_baseline_or_404(session, project_id, baseline_id)
     try:
         baseline = await release_baseline(session, baseline, current.user.user_id)
-        repository_checks = await publish_release_approval_for_baseline(
-            session,
-            baseline=baseline,
-            actor_user_id=current.user.user_id,
-        )
     except ValueError as exc:
+        if baseline.release_gate_status == "stale":
+            await session.commit()
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await session.commit()
-    return ApiEnvelope(
-        data={
-            **_baseline_data(baseline),
-            "repository_approvals": [repository_check_run_data(check) for check in repository_checks],
-        }
-    )
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_baseline_data(baseline, roles=roles))
 
 
 @router.post("/projects/{project_id}/baselines/{baseline_id}/obsolete", response_model=ApiEnvelope)
@@ -278,7 +289,8 @@ async def obsolete_baseline_endpoint(
     baseline = await _get_baseline_or_404(session, project_id, baseline_id)
     baseline = await obsolete_baseline(session, baseline, current.user.user_id)
     await session.commit()
-    return ApiEnvelope(data=_baseline_data(baseline))
+    roles = await user_roles(session, current.user.user_id, project_id)
+    return ApiEnvelope(data=_baseline_data(baseline, roles=roles))
 
 
 async def _get_baseline_or_404(
@@ -292,8 +304,8 @@ async def _get_baseline_or_404(
     return baseline
 
 
-def _baseline_data(baseline: Baseline) -> dict:
-    return {
+def _baseline_data(baseline: Baseline, *, roles: list[str] | None = None) -> dict:
+    data = {
         "baseline_id": baseline.baseline_id,
         "project_id": baseline.project_id,
         "name": baseline.name,
@@ -302,6 +314,9 @@ def _baseline_data(baseline: Baseline) -> dict:
         "eligibility_result": baseline.eligibility_result_json,
         "summary": baseline.summary_json,
     }
+    if roles is not None:
+        data["allowed_actions"] = baseline_allowed_actions(baseline, roles=roles)
+    return data
 
 
 def _release_gate_data(result: ReleaseGateResult) -> dict:

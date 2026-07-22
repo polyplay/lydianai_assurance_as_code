@@ -21,17 +21,35 @@ AAC-API-IR-103
 GET responses shall include the content needed by the front-end for viewing and modification.
 
 AAC-API-IR-104
-All responses shall include status metadata:
+Successful responses shall use the following envelope:
 
 ```json
 {
-  "status": "success|accepted|requires_user_decision|failed",
+  "status": "success|accepted|requires_user_decision",
   "request_id": "REQ_...",
   "correlation_id": "CORR_...",
   "messages": [],
   "data": {}
 }
 ```
+
+Error responses shall use:
+
+```json
+{
+  "status": "error",
+  "request_id": "REQ_...",
+  "correlation_id": "CORR_...",
+  "error": {
+    "code": "stable_machine_code",
+    "message": "sanitized human-readable message",
+    "details": {}
+  }
+}
+```
+
+Error responses shall not contain stack traces, SQL text, credentials, internal
+paths, or database structure.
 
 AAC-API-IR-105
 State-changing endpoints shall include revision, audit, validation, and job references where applicable.
@@ -106,9 +124,26 @@ An active artefact schema response shall include:
     "current_revision_id",
     "created_at",
     "updated_at"
+  ],
+  "fields": [
+    {
+      "name": "asil_level",
+      "label": "Asil Level",
+      "data_type": "string",
+      "widget": "select",
+      "required": true,
+      "readonly": false,
+      "allowed_values": ["QM", "ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
+      "item_type": null,
+      "help": "Select the applicable automotive safety integrity level."
+    }
   ]
 }
 ```
+
+The `fields` collection is backward-compatible presentation metadata for the
+same canonical fields. It shall not introduce, remove, or validate payload
+properties independently of the canonical schema registry.
 
 ## 3. Authentication And Users
 
@@ -147,9 +182,16 @@ Password values shall be accepted only on account creation, password reset, or p
 | POST | `/api/v1/projects/{project_id}/archive` | Archive project | Admin |
 | DELETE | `/api/v1/projects/{project_id}` | Soft-delete project | Admin |
 | GET | `/api/v1/projects/{project_id}/status` | Get project assurance status | All project roles |
+| GET | `/api/v1/projects/{project_id}/workspace` | Get effective roles, capabilities, actionable-work summaries, active work, and release readiness | All project roles |
 | GET | `/api/v1/projects/{project_id}/members` | List project members | All project roles |
 | POST | `/api/v1/projects/{project_id}/members` | Add project member | Admin, Project Lead |
 | DELETE | `/api/v1/projects/{project_id}/members/{user_id}` | Remove project member | Admin, Project Lead |
+
+AAC-API-IR-131
+The workspace projection shall be read-only. Named capabilities and resource
+`allowed_actions` are presentation metadata derived from the same role,
+ownership, and lifecycle constraints enforced by command endpoints. Omission or
+presence of an action shall not bypass or replace command authorization.
 
 AAC-API-IR-130
 `POST /api/v1/projects` shall accept an optional `assurance_configuration` object. If supplied, the back-end shall create a project-specific derived assurance profile and make it the active profile.
@@ -201,7 +243,7 @@ AAC-API-IR-150
 `GET /api/v1/projects/{project_id}/config` shall return the current `assurance_configuration` in addition to baseline, validation, and reporting policy.
 
 AAC-API-IR-151
-`PUT /api/v1/projects/{project_id}/config` shall accept `assurance_configuration`. Updating it shall regenerate derived artefact applicability, rule policy, and profile payload, then record an audit event.
+`PUT /api/v1/projects/{project_id}/config` shall accept `assurance_configuration`. Updating it shall regenerate derived artefact applicability, rule policy, and profile payload, then record an audit event. If the update changes `aspice_default_capability_level`, `aspice_scoped_processes`, or the derived expected capability target of any configured in-scope ASPICE process, the request shall include `tailoring_rationale` and at least one `tailoring_evidence_refs` entry. The service shall record approved tailoring decisions for each ASPICE process-scope or process-capability change.
 
 AAC-API-IR-152
 `POST /api/v1/projects/{project_id}/profiles/{profile_id}/evaluate` shall return `visible_artefact_types`, `mandatory_artefact_types`, `conditional_artefact_types`, `optional_artefact_types`, `not_applicable_artefact_types`, `enabled_rules`, `disabled_rules`, and `assurance_configuration`.
@@ -222,6 +264,9 @@ AAC-API-IR-152
 | POST | `/api/v1/projects/{project_id}/artefacts/{artefact_id}/release` | Release artefact | Quality Engineer, Admin |
 | POST | `/api/v1/projects/{project_id}/artefacts/{artefact_id}/status` | Change lifecycle status | Admin, Project Lead, Quality Engineer |
 | GET | `/api/v1/projects/{project_id}/artefacts/{artefact_id}/status` | Get artefact status | All project roles |
+
+For `PUT` on a released artefact, the permitted roles narrow to Quality Engineer
+and Admin. Other roles receive `403`.
 
 ## 7. Artefact Revisions
 
@@ -346,3 +391,6 @@ The detailed connector schemas, mapping file schema, state machines, GitHub chec
 | POST | `/api/v1/jobs/{job_id}/cancel` | Cancel cancellable job | Original requester, Admin |
 | GET | `/api/v1/projects/{project_id}/jobs` | List project jobs | All project roles |
 | GET | `/api/v1/projects/{project_id}/audit-events` | Query audit events | Admin, Project Lead, Quality Engineer |
+
+Project job listings shall redact input, decision, and error detail unless the
+caller is the original requester or Admin.

@@ -8,6 +8,61 @@ from aac_backend.models.projects import ProjectConfiguration
 
 READONLY_FIELDS = ("current_revision_id", "created_at", "updated_at")
 BASE_MANDATORY_FIELDS = ("artefact_type", "title", "source.source_object_id")
+FIELD_ENUMS: dict[str, tuple[str, ...]] = {
+    "asil_level": ("QM", "ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"),
+    "classification": ("QM", "ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"),
+    "compliance_status": ("compliant", "partially_compliant", "non_compliant"),
+    "approval_status": ("draft", "under_review", "approved", "rejected"),
+    "release_status": ("draft", "approved", "released", "obsolete"),
+    "status": ("draft", "active", "under_review", "approved", "released", "obsolete"),
+    "verdict": ("pass", "fail", "blocked", "not_run"),
+    "result": ("pass", "fail", "inconclusive"),
+}
+BOOLEAN_FIELDS = {
+    "has_mixed_criticality_interaction",
+    "qualification_required",
+    "r155_applicable",
+    "r156_applicable",
+    "safety_relevant",
+    "security_relevant",
+    "software_update_relevant",
+    "strict_unknown_fields",
+}
+NUMBER_FIELDS = {
+    "achieved",
+    "coverage_percentage",
+    "coverage_target",
+    "limit",
+    "propagation_depth",
+}
+LONG_TEXT_TERMS = {
+    "argument",
+    "description",
+    "handling",
+    "justification",
+    "limitations",
+    "message",
+    "notes",
+    "rationale",
+    "reason",
+    "scope",
+    "statement",
+    "strategy",
+    "summary",
+}
+ARRAY_SUFFIXES = (
+    "_refs",
+    "_ids",
+    "_items",
+    "_requirements",
+    "_components",
+    "_interfaces",
+    "_mechanisms",
+    "_methods",
+    "_results",
+    "_rules",
+    "_tests",
+)
 
 _SCHEMA_FIELD_ROWS = """
 Project:project_key,name,description,active_profile_id,lifecycle_phase,regulatory_scope
@@ -172,6 +227,14 @@ class ArtefactSchema:
             "disabled_fields": list(self.disabled_fields),
             "mandatory_fields": list(self.mandatory_fields),
             "readonly_fields": list(self.readonly_fields),
+            "fields": [
+                _field_metadata(
+                    field,
+                    required=field in self.mandatory_fields,
+                    readonly=field in self.readonly_fields,
+                )
+                for field in self.enabled_fields
+            ],
         }
 
 
@@ -248,6 +311,76 @@ def validate_artefact_payload(
 
 def required_fields_for_artefact_type(artefact_type: str) -> tuple[str, ...]:
     return DEFAULT_REQUIRED_FIELDS.get(artefact_type, ())
+
+
+def _field_metadata(field: str, *, required: bool, readonly: bool) -> dict[str, Any]:
+    allowed_values = FIELD_ENUMS.get(field, ())
+    if allowed_values:
+        data_type = "string"
+        widget = "select"
+    elif field in BOOLEAN_FIELDS or field.startswith(("has_", "is_")):
+        data_type = "boolean"
+        widget = "checkbox"
+    elif field in NUMBER_FIELDS or field.endswith(("_count", "_percentage")):
+        data_type = "number"
+        widget = "number"
+    elif _looks_like_array(field):
+        data_type = "array"
+        widget = "tag_list"
+    elif any(term in field for term in LONG_TEXT_TERMS):
+        data_type = "string"
+        widget = "textarea"
+    else:
+        data_type = "string"
+        widget = "text"
+    return {
+        "name": field,
+        "label": field.replace("_", " ").replace(".", " ").title(),
+        "data_type": data_type,
+        "widget": widget,
+        "required": required,
+        "readonly": readonly,
+        "allowed_values": list(allowed_values),
+        "item_type": "string" if data_type == "array" else None,
+        "help": _field_help(field, data_type),
+    }
+
+
+def _looks_like_array(field: str) -> bool:
+    return (
+        field.endswith(ARRAY_SUFFIXES)
+        or field
+        in {
+            "algorithms",
+            "assumptions",
+            "components",
+            "dependencies",
+            "exclusions",
+            "findings",
+            "guarantees",
+            "hashes",
+            "inputs",
+            "interfaces",
+            "mitigations",
+            "outputs",
+            "preconditions",
+            "responsibilities",
+            "risks",
+            "rows",
+            "safeguards",
+            "threat_scenarios",
+        }
+    )
+
+
+def _field_help(field: str, data_type: str) -> str:
+    if data_type == "array":
+        return "Enter one value per line."
+    if field.endswith("_refs") or field.endswith("_id"):
+        return "Use a stable canonical identifier."
+    if field == "asil_level":
+        return "Select the applicable automotive safety integrity level."
+    return f"Enter {field.replace('_', ' ')}."
 
 
 def _schema_overrides(config: ProjectConfiguration | None) -> dict[str, Any]:

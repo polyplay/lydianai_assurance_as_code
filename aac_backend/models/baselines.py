@@ -23,6 +23,7 @@ class Baseline(Base):
     released_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     profile_id: Mapped[str | None] = mapped_column(ForeignKey("assurance_profiles.profile_id"), nullable=True)
     release_gate_status: Mapped[str] = mapped_column(String(80), default="not_evaluated")
+    gate_stale_event_sequence: Mapped[int | None] = mapped_column(nullable=True)
     eligibility_result_json: Mapped[dict] = mapped_column(JSON, default=dict)
     summary_json: Mapped[dict] = mapped_column(JSON, default=dict)
 
@@ -67,3 +68,4 @@ class ReleaseGateResult(Base):
     warning_issues_json: Mapped[list] = mapped_column(JSON, default=list)
     mandatory_artefact_gaps_json: Mapped[list] = mapped_column(JSON, default=list)
     open_suspect_states_json: Mapped[list] = mapped_column(JSON, default=list)
+    evaluation_cutoff_sequence: Mapped[int] = mapped_column(default=0)
