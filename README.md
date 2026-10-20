@@ -7,7 +7,7 @@ through the API, versioned automatically, validated against a rule catalog, trac
 relationships, and frozen into project baselines for release-gate evaluation.
 
 The current implementation is a FastAPI service with SQLAlchemy 2, Alembic migrations,
-PostgreSQL, Redis, and ARQ background workers. It includes the backend foundations for:
+PostgreSQL, Valkey, and ARQ background workers. It includes the backend foundations for:
 
 - Username/password authentication with role-based authorization.
 - Project configuration, ASIL/profile configuration, tailoring decisions, and schema management.
@@ -20,6 +20,7 @@ The detailed requirements and architecture documents are kept in `docs/`.
 
 - [Version 1 Requirements Baseline](docs/requirements_baseline.md)
 - [Software Architecture](docs/software_architecture.md)
+- [Dependency And License Audit](docs/dependency_license_audit.md)
 
 All project changes are governed by [Project Change Rules](AGENTS.md). Changes
 must proceed through requirements, software architecture, and implementation
@@ -33,15 +34,28 @@ Operational and role-based documentation is kept in `documentation/`:
 
 Production backend installer assets are kept in `installer/backend/`.
 
+## License
+
+The project's own application code, including the Python backend and web
+frontend, is licensed under the Apache License, Version 2.0 (`Apache-2.0`).
+See [LICENSE](LICENSE) for the complete terms.
+
+Valkey's server uses BSD-3-Clause; its version-specific
+[license and copyright notices](LICENSES/Valkey-8.1.10.txt) are retained separately.
+Third-party dependencies, tools, and service images retain their own terms.
+See [Third-Party License Notices](THIRD_PARTY_NOTICES.md) for current references
+and the [Dependency And License Audit](docs/dependency_license_audit.md) for
+dated findings, completed follow-ups, and remaining release obligations.
+
 ## Prerequisites
 
 - Python 3.11 or newer for local development.
 - Docker and Docker Compose for the containerized setup.
-- PostgreSQL and Redis if running the API locally without Docker Compose.
+- PostgreSQL and Valkey if running the API locally without Docker Compose.
 
 ## Quick Start With Docker Compose
 
-Docker Compose is the simplest way to run the full stack: PostgreSQL, Redis, API, ARQ worker,
+Docker Compose is the simplest way to run the full stack: PostgreSQL, Valkey, API, ARQ worker,
 and nginx.
 
 ```bash
@@ -81,6 +95,12 @@ AAC_POSTGRES_PORT=15432 AAC_REDIS_PORT=16379 AAC_API_PORT=18000 AAC_NGINX_PORT=1
 
 The API container runs Alembic migrations automatically before starting Uvicorn.
 
+Valkey uses the existing Compose service name `redis`, `AAC_REDIS_URL`,
+`redis://` connection strings, and `AAC_REDIS_PORT` override for compatibility.
+Existing Redis installations must follow the
+[Valkey migration procedure](documentation/valkey_migration.md) before upgrading;
+production Valkey uses a separate `valkey_data` volume.
+
 To create the first admin user in the running API container:
 
 ```bash
@@ -113,14 +133,15 @@ python3 -m venv .venv
 pip install -r requirements-dev.txt
 ```
 
-Start PostgreSQL and Redis. You can either run them yourself or start only those services
+Start PostgreSQL and Valkey. You can either run them yourself or start only those services
 from Compose:
 
 ```bash
 docker compose up postgres redis
 ```
 
-Configure the environment. The defaults in `.env.example` target local PostgreSQL and Redis:
+The broker service is still named `redis`. Configure the environment; the
+defaults in `.env.example` target local PostgreSQL and Valkey:
 
 ```bash
 cp .env.example .env
@@ -166,7 +187,7 @@ make worker        # start the ARQ worker
 make test          # run pytest
 make test-web      # run JavaScript unit tests
 make test-web-e2e  # run Playwright workflow, responsive, and accessibility tests
-make test-web-integration # run Playwright against disposable PostgreSQL and Redis services
+make test-web-integration # run Playwright against disposable PostgreSQL and Valkey services
 make test-integration # run PostgreSQL fault/concurrency tests in a disposable container
 make lint          # run ruff
 make compile       # compile Python files
@@ -203,7 +224,7 @@ To use an existing disposable PostgreSQL instance instead, set
 test databases.
 
 For real deployments, replace `AAC_JWT_SECRET` with a strong secret and use environment-specific
-database and Redis credentials. Set `AAC_SECRET_ENCRYPTION_KEY` to a Fernet-compatible key, or to a
+database and Valkey credentials. Set `AAC_SECRET_ENCRYPTION_KEY` to a Fernet-compatible key, or to a
 strong passphrase that the backend derives into an encryption key, before storing repository connector
 secrets such as GitHub App private keys, GitHub access tokens, and webhook secrets.
 

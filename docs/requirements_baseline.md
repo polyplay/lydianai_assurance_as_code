@@ -414,7 +414,8 @@ observable; it shall not be discarded after logging.
 
 AAC-EVENT-AR-012
 The version 1 event bus remains internal to the product. A PostgreSQL outbox,
-in-process dispatcher, Redis, and ARQ may be used without exposing an external
+in-process dispatcher, Valkey through the Redis-compatible protocol, and ARQ
+may be used without exposing an external
 subscriber contract.
 
 AAC-REV-FR-010
@@ -534,7 +535,7 @@ AAC-VER-FR-002
 Release evidence shall include:
 
 - unit and integration test results;
-- deployed API end-to-end results against PostgreSQL and Redis;
+- deployed API end-to-end results against PostgreSQL and Valkey;
 - migration from an empty database;
 - production deployment security checks;
 - deterministic performance dataset seed and benchmark results;
@@ -560,3 +561,56 @@ do not block release.
 | 8. Revision and audit data was incomplete | AAC-REV-FR-010 through 011 and AAC-AUDIT-FR-010 |
 | 9. Canonical schema authority was unclear | AAC-SCHEMA-FR-010 through 013 |
 | 10. Front-end workflows were incomplete | AAC-UI-FR-001 through 003 |
+
+## 14. Application Code Licensing
+
+Stakeholder need `NEED-LIC-001`: application maintainers and recipients need an
+explicit Apache License, Version 2.0 grant for the project's own application code
+and consistent licensing information in distributed application packages.
+
+AAC-LIC-CR-001 (`SRS`, constraint; derives from `NEED-LIC-001`)
+The project's own application code shall be licensed under the Apache License,
+Version 2.0 (`Apache-2.0`). The source repository shall contain the complete,
+unmodified license text in a top-level `LICENSE` file, and its README shall
+identify that license and link to that file.
+
+AAC-LIC-IR-001 (`SRS`, interface; derives from `NEED-LIC-001`)
+The Python and JavaScript project package metadata shall identify the application
+license as Apache License, Version 2.0. The JavaScript root package lock metadata
+shall agree with its package manifest.
+
+AAC-LIC-CR-002 (`SRS`, constraint; derives from `NEED-LIC-001`)
+Application Python source distributions, wheels, and backend container images
+shall include the complete application `LICENSE` text for their recipients.
+
+AAC-LIC-CR-003 (`SRS`, constraint; derives from `NEED-LIC-001`)
+Application licensing declarations shall distinguish the project's own code
+from third-party dependencies, tools, and service images, whose existing
+licenses and required notices shall be preserved. During the initial application
+license adoption, runtime dependency versions and runtime application behavior
+shall remain unchanged. Later, explicitly approved release-licensing changes
+are governed by `release_licensing_requirements.md`; third-party license and
+notice preservation remains mandatory.
+
+Acceptance criteria are `ACC-LIC-001` through `ACC-LIC-004` in
+`mvp_acceptance_criteria.md`. The licensing gate decisions, document impact
+assessment, and verification evidence are controlled in
+`app_licensing_change_record.md`.
+
+## 15. Release Licensing Assurance
+
+`release_licensing_requirements.md` controls the proposed release-distribution
+licensing capability, including default broker licensing, reproducible release
+inputs, component inventories, third-party obligations, source provenance,
+built-image verification, and release acceptance evidence. Its stakeholder
+needs derive from `NEED-LIC-001` and distinguish release recipients, operators,
+and rights holders. The user has approved the Valkey broker replacement in
+`AAC-LIC-CR-004`, the broker scope of `AAC-LIC-CR-011`, and `AAC-LIC-CR-012`.
+The remaining release-licensing scope is proposed pending approval, as recorded
+in `release_licensing_change_record.md`. The broker change is controlled in
+`valkey_replacement_change_record.md`.
+
+The initial application-license adoption record remains historical evidence.
+It does not establish third-party distribution compliance or ownership of
+unreviewed source code. Release licensing acceptance is defined by
+`ACC-LIC-005` through `ACC-LIC-014` in `mvp_acceptance_criteria.md`.

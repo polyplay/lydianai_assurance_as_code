@@ -5,7 +5,7 @@
 This guide explains how to install and operate the backend stack for LydianAI Assurance-as-Code. The backend stack includes:
 
 - PostgreSQL database
-- Redis queue
+- Valkey queue (Redis-compatible protocol)
 - FastAPI backend
 - ARQ worker
 - nginx reverse proxy
@@ -45,11 +45,17 @@ The installer:
 
 - copies the application into the installation directory
 - creates `/opt/lydianai-aac/.env` with generated database, JWT, and secret-encryption values
-- starts PostgreSQL, Redis, API, worker, and nginx with Docker Compose
+- starts PostgreSQL, Valkey, API, worker, and nginx with Docker Compose
 - installs and enables `lydianai-aac.service`
 - optionally creates the first admin user
 
 ## Custom Install Directory
+
+Existing Redis installations must complete the
+[Valkey migration procedure](valkey_migration.md) before running an upgrade.
+The Compose service name `redis` and `AAC_REDIS_URL` remain compatible;
+production Valkey uses a new `valkey_data` volume and does not read old Redis
+persistence.
 
 ```bash
 sudo installer/backend/install.sh \

@@ -23,7 +23,7 @@ Web / CLI / API / Workers  ->  Application use cases  ->  Domain
                                Ports (interfaces)
                                       ^
                                       |
-PostgreSQL / Redis / ARQ / GitHub / file adapters
+PostgreSQL / Valkey / ARQ / GitHub / file adapters
 ```
 
 Arrows show compile-time dependency. Adapters implement ports; ports never
@@ -72,7 +72,7 @@ boundary, audit record, domain events, idempotency behavior, and error mapping.
 | `domain.events` | event envelope and consumer contracts | domain values |
 | `ports` | repository, unit-of-work, job, event, clock, ID, and integration interfaces | domain values |
 | `adapters.persistence` | PostgreSQL/SQLAlchemy implementations | ports, ORM |
-| `adapters.jobs` | Redis/ARQ queue implementations | job ports |
+| `adapters.jobs` | Valkey/ARQ queue implementation through Redis-compatible clients | job ports |
 | `adapters.github` | GitHub connector | repository integration port |
 | `workers` | invoke resumable application use cases | application interfaces |
 
@@ -140,7 +140,7 @@ dependency not listed here is prohibited until this document is updated.
 | `IImportRunRepository` | Persist state, items, decisions, counts, and `last_committed_batch_index` |
 | `IEventOutbox` | Append in active transaction; claim pending; mark delivered; schedule retry; dead-letter |
 | `IEventConsumerRegistry` | Resolve ordered idempotent consumers by event type |
-| `IJobQueue` | Enqueue by job ID and idempotency key; no business payload is authoritative in Redis |
+| `IJobQueue` | Enqueue by job ID and idempotency key through ARQ and the Redis-compatible Valkey transport; no business payload is authoritative in the broker |
 | `IJobRepository` | Persist requester, project, state, progress, cancellation, error, correlation, and committed-effects metadata |
 | `IJobCancellation` | Request cancellation and expose a cooperative cancellation check at transaction boundaries |
 | `IRuleCatalog` | Return versioned rules and active profile severity/blocking policy |
@@ -198,7 +198,7 @@ flowchart LR
     DISP[Outbox Dispatcher] --> OUTBOX
     DISP --> CONS[Idempotent Consumers]
     CONS --> JOBS[Job Port]
-    JOBS --> REDIS[(Redis / ARQ)]
+    JOBS --> REDIS[(Valkey / ARQ)]
 ```
 
 ### 6.2 Import
@@ -277,7 +277,7 @@ flowchart LR
     CLIENT[Browser / CLI] --> TLS[F-DEPLOY-01 nginx TLS]
     TLS --> API[F-API-01]
     API --> PG[(Internal PostgreSQL)]
-    API --> REDIS[(Internal Redis)]
+    API --> REDIS[(Internal Valkey)]
     SPECS[Controlled specifications] --> INVENTORY[F-VER-02]
     TRACE[Trace manifest] --> INVENTORY
     SEED[Fixed seed] --> PERF[F-PERF-01]
@@ -285,10 +285,43 @@ flowchart LR
     INVENTORY --> EVIDENCE
 ```
 
-PostgreSQL, Redis, and the application server are not published by the
+PostgreSQL, Valkey, and the application server are not published by the
 production Compose adapter. TLS termination and security headers are owned by
 nginx. Development Compose remains independently configurable and is not
 treated as production evidence.
+
+### 6.6 Valkey Broker Replacement
+
+`AAC-LIC-CR-004`, the broker scope of `AAC-LIC-CR-011`, and
+`AAC-LIC-CR-012` are allocated to existing `F-JOB-01`, `F-EVT-02`,
+`IJobQueue`, and the Compose side of `F-DEPLOY-01`/`IDeploymentConfiguration`.
+The broker provider changes; application responsibilities and calling direction
+do not. `DEC-BROKER-001` controls the server and persistence choice.
+
+```mermaid
+flowchart LR
+    API[F-IMP-01 / F-JOB-01 / F-EVT-02] --> QUEUE[IJobQueue: ARQ and Redis-compatible client]
+    QUEUE --> SETTINGS[AAC_REDIS_URL: redis://redis:6379/0]
+    SETTINGS --> VALKEY[Valkey: Compose service redis]
+    WORKER[ARQ worker] --> QUEUE
+    VALKEY --> DATA[(New valkey_data volume)]
+    API --> PG[(Authoritative PostgreSQL job state)]
+```
+
+Runtime/interface view: provider `valkey/valkey:8.1.10-alpine` accepts the existing
+RESP/ARQ commands from API and workers. URL fields, queue names, job payloads,
+authentication configuration, retry/cancellation rules, and application events
+are unchanged. Broker failure continues through existing ARQ/application error
+and fallback paths; this replacement adds no new API response or audit event.
+
+Deployment/data view: `valkey-cli ping` is the health command. Development keeps
+its existing port override and disposable broker storage. Production mounts a
+new `valkey_data` volume at `/data`, preserving the old Redis volume separately.
+The upgrade procedure drains work before replacement and prohibits direct use
+of Redis 7.4 persistence. The database, TLS, network exposure, and application
+data ownership do not change. Operator recovery and developer compatibility
+concerns are addressed in `valkey_replacement_change_record.md` and
+`documentation/valkey_migration.md`.
 
 ## 7. Transaction And Consistency Boundaries
 

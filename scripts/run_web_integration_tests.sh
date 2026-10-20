@@ -2,7 +2,7 @@
 set -euo pipefail
 
 postgres_container="aac-web-postgres-$$"
-redis_container="aac-web-redis-$$"
+valkey_container="aac-web-valkey-$$"
 api_pid=""
 worker_pid=""
 api_log="$(mktemp)"
@@ -18,7 +18,7 @@ cleanup() {
         kill "${api_pid}" >/dev/null 2>&1 || true
         wait "${api_pid}" >/dev/null 2>&1 || true
     fi
-    docker stop "${redis_container}" "${postgres_container}" >/dev/null 2>&1 || true
+    docker stop "${valkey_container}" "${postgres_container}" >/dev/null 2>&1 || true
     if [[ "${status}" -ne 0 ]]; then
         printf '\nFastAPI log:\n' >&2
         cat "${api_log}" >&2
@@ -43,13 +43,13 @@ docker run \
 docker run \
     --detach \
     --rm \
-    --name "${redis_container}" \
+    --name "${valkey_container}" \
     --publish 127.0.0.1::6379 \
-    redis:7-alpine >/dev/null
+    valkey/valkey:8.1.10-alpine >/dev/null
 
 for _ in $(seq 1 60); do
     if docker exec "${postgres_container}" pg_isready -U aac -d postgres >/dev/null 2>&1 &&
-        docker exec "${redis_container}" redis-cli ping 2>/dev/null | grep -q PONG; then
+        docker exec "${valkey_container}" valkey-cli ping 2>/dev/null | grep -q PONG; then
         break
     fi
     sleep 0.25
@@ -59,8 +59,8 @@ if ! docker exec "${postgres_container}" pg_isready -U aac -d postgres >/dev/nul
     docker logs "${postgres_container}"
     exit 1
 fi
-if ! docker exec "${redis_container}" redis-cli ping | grep -q PONG; then
-    docker logs "${redis_container}"
+if ! docker exec "${valkey_container}" valkey-cli ping | grep -q PONG; then
+    docker logs "${valkey_container}"
     exit 1
 fi
 
@@ -69,10 +69,10 @@ postgres_port="$(
         --format '{{(index (index .NetworkSettings.Ports "5432/tcp") 0).HostPort}}' \
         "${postgres_container}"
 )"
-redis_port="$(
+valkey_port="$(
     docker inspect \
         --format '{{(index (index .NetworkSettings.Ports "6379/tcp") 0).HostPort}}' \
-        "${redis_container}"
+        "${valkey_container}"
 )"
 web_port="$(
     python3 -c \
@@ -80,10 +80,13 @@ web_port="$(
 )"
 
 export AAC_DATABASE_URL="postgresql+asyncpg://aac:aac@127.0.0.1:${postgres_port}/postgres"
-export AAC_REDIS_URL="redis://127.0.0.1:${redis_port}/0"
+export AAC_REDIS_URL="redis://127.0.0.1:${valkey_port}/0"
+export AAC_TEST_VALKEY_URL="${AAC_REDIS_URL}"
 export AAC_JWT_SECRET="web-integration-secret-web-integration-secret"
 export AAC_ENVIRONMENT="test"
 export AAC_WEB_BASE_URL="http://127.0.0.1:${web_port}/app/"
+
+.venv/bin/pytest -q tests/integration/test_valkey_queue.py
 
 .venv/bin/alembic upgrade head
 .venv/bin/python -m aac_backend.cli create-admin \

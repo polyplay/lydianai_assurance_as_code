@@ -12,7 +12,8 @@ RUN apt-get update \
 COPY pyproject.toml requirements.txt requirements-dev.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY alembic.ini ./
+COPY alembic.ini LICENSE THIRD_PARTY_NOTICES.md ./
+COPY LICENSES ./LICENSES
 COPY aac_backend ./aac_backend
 COPY web ./web
 

@@ -72,7 +72,9 @@ DEC-TECH-040
 The back-end shall use ARQ (Async Redis Queue) as the async job queue.
 
 DEC-TECH-041
-ARQ shall use Redis 7 or later as its broker and result store.
+ARQ shall use Valkey 8.1 through its Redis-compatible protocol as its default
+broker and result store. The selected container is
+`valkey/valkey:8.1.10-alpine`; ARQ and the Redis Python client remain unchanged.
 
 DEC-TECH-042
 All long-running operations defined in `async_job_schema.md` shall be implemented as ARQ worker tasks.
@@ -81,9 +83,32 @@ DEC-TECH-043
 The ARQ worker process shall run as a separate process from the FastAPI application server.
 
 DEC-TECH-044
-Job state transitions defined in `async_job_schema.md` shall be persisted to the PostgreSQL `jobs` table, not stored only in Redis. Redis shall be used for queue and in-flight task coordination only.
+Job state transitions defined in `async_job_schema.md` shall be persisted to the
+PostgreSQL `jobs` table, not stored only in Valkey. Valkey shall be used for
+queue and in-flight task coordination only.
 
-Rationale: ARQ is Python-native, async-first, and integrates with the asyncio event loop used by FastAPI. Redis is a well-understood, low-operational-overhead broker. Job durability is maintained in PostgreSQL, ensuring job state survives Redis restarts.
+Rationale: ARQ is Python-native and async-first. Valkey preserves its existing
+Redis-compatible client interface while providing a BSD-3-Clause server.
+Durable application job state remains in PostgreSQL.
+
+DEC-BROKER-001
+The user's explicit Valkey replacement instruction selects the named server
+technology for `AAC-LIC-CR-004`, `AAC-LIC-CR-011`, and `AAC-LIC-CR-012`.
+It replaces the former Redis 7 requirement in `DEC-TECH-041`. Keep the Compose
+service key/DNS alias `redis`, `AAC_REDIS_URL`, `redis://` URLs, port 6379, and
+`AAC_REDIS_PORT` so clients and existing configuration remain compatible.
+Use `valkey-cli ping` for server health. Allocate production persistence to
+`valkey_data`; do not mount the former `redis_data` volume into Valkey.
+
+The rejected alternative of reusing the old volume risks opening incompatible
+Redis 7.4 persistence. Retaining Redis 7 would not implement the requested
+server substitution; switching queues or rewriting the client adds unnecessary
+interface changes. The remaining risks are live ARQ compatibility and operator
+upgrade ordering. Mitigate through disposable-broker integration checks, a
+drain/backup/rollback procedure, and preservation of original Redis data and
+configuration. No automatic migration or volume deletion is introduced.
+The detailed allocation, views, and approval are in
+`valkey_replacement_change_record.md`.
 
 ### 2.6 Domain Event Bus
 
@@ -166,7 +191,7 @@ The following environment variables are required for back-end operation:
 
 ```
 AAC_DATABASE_URL          PostgreSQL DSN (e.g., postgresql+asyncpg://user:pass@host/db)
-AAC_REDIS_URL             Redis connection URL (e.g., redis://localhost:6379/0)
+AAC_REDIS_URL             Valkey connection URL using redis:// (e.g., redis://localhost:6379/0)
 AAC_JWT_SECRET            Secret key for JWT signing (min 32 characters)
 AAC_JWT_EXPIRY_HOURS      Token expiry in hours (default: 8)
 AAC_ENVIRONMENT           Deployment environment: development | staging | production
@@ -251,7 +276,7 @@ services:
   api:           # FastAPI application server (uvicorn)
   worker:        # ARQ worker process
   postgres:      # PostgreSQL 15 database
-  redis:         # Redis 7 broker
+  redis:         # Valkey broker; legacy service name preserves connection URLs
   nginx:         # Reverse proxy with TLS termination (production only)
 ```
 
@@ -292,7 +317,10 @@ Backup frequency and retention policy are deployment-operator responsibilities a
 ### 4.4 Local Development Environment
 
 DEC-DEPLOY-030
-Local development shall use `docker compose up` with the development profile to start PostgreSQL and Redis only. The FastAPI application and ARQ worker shall run outside Docker in a Python virtual environment.
+Local development shall use `docker compose up postgres redis` to start
+PostgreSQL and Valkey; `redis` remains the broker service name for compatibility.
+The FastAPI application and ARQ worker shall run outside Docker in a Python
+virtual environment.
 
 DEC-DEPLOY-031
 A `Makefile` shall provide standard targets: `make dev`, `make migrate`, `make test`, `make lint`.

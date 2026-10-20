@@ -1,6 +1,87 @@
 version: 1
 change_record: docs/blocker_remediation_change_record.md
 requirements:
+  AAC-LIC-CR-004:
+    need: NEED-LIC-003
+    level: SRS
+    type: constraint
+    architecture: [F-JOB-01, F-EVT-02, F-DEPLOY-01]
+    interfaces: [IJobQueue, IDeploymentConfiguration]
+    acceptance: [ACC-LIC-005, ACC-LIC-013]
+    code:
+      - LICENSES/Valkey-8.1.10.txt
+      - THIRD_PARTY_NOTICES.md
+      - docker-compose.yml
+      - installer/backend/docker-compose.backend.yml
+      - scripts/run_web_integration_tests.sh
+    tests:
+      - docs/licensing_reference_update_change_record.md
+      - tests/test_broker_deployment.py
+      - tests/integration/test_valkey_queue.py
+      - tests/web-real/workspace.spec.js
+  AAC-LIC-CR-012:
+    need: NEED-LIC-003
+    level: SRS
+    type: constraint
+    architecture: [F-JOB-01, F-DEPLOY-01]
+    interfaces: [IJobQueue, IDeploymentConfiguration]
+    acceptance: [ACC-LIC-013, ACC-LIC-014]
+    code:
+      - docker-compose.yml
+      - installer/backend/docker-compose.backend.yml
+      - scripts/run_web_integration_tests.sh
+      - documentation/valkey_migration.md
+    tests:
+      - tests/test_broker_deployment.py
+      - tests/integration/test_valkey_queue.py
+      - docs/valkey_replacement_change_record.md
+  AAC-LIC-CR-001:
+    need: NEED-LIC-001
+    level: SRS
+    type: constraint
+    architecture: [F-VER-01]
+    interfaces: []
+    acceptance: [ACC-LIC-001]
+    code: [LICENSE, README.md]
+    tests: [docs/app_licensing_change_record.md]
+  AAC-LIC-IR-001:
+    need: NEED-LIC-001
+    level: SRS
+    type: interface
+    architecture: [F-VER-01]
+    interfaces: []
+    acceptance: [ACC-LIC-002]
+    code: [pyproject.toml, package.json, package-lock.json]
+    tests:
+      - docs/app_licensing_change_record.md
+      - docs/licensing_reference_update_change_record.md
+  AAC-LIC-CR-002:
+    need: NEED-LIC-001
+    level: SRS
+    type: constraint
+    architecture: [F-VER-01]
+    interfaces: []
+    acceptance: [ACC-LIC-003]
+    code: [LICENSE, THIRD_PARTY_NOTICES.md, LICENSES/Valkey-8.1.10.txt, pyproject.toml, Dockerfile]
+    tests:
+      - docs/app_licensing_change_record.md
+      - docs/licensing_reference_update_change_record.md
+  AAC-LIC-CR-003:
+    need: NEED-LIC-001
+    level: SRS
+    type: constraint
+    architecture: [F-VER-01]
+    interfaces: []
+    acceptance: [ACC-LIC-004]
+    code:
+      - README.md
+      - THIRD_PARTY_NOTICES.md
+      - LICENSES/Valkey-8.1.10.txt
+      - docs/dependency_license_audit.md
+      - package-lock.json
+    tests:
+      - docs/app_licensing_change_record.md
+      - docs/licensing_reference_update_change_record.md
   AAC-AUTH-FR-011:
     need: NEED-QE-001
     level: SRS

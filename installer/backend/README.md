@@ -15,7 +15,21 @@ sudo installer/backend/install.sh \
   --tls-key /etc/letsencrypt/live/aac.example.com/privkey.pem
 ```
 
-The default installation directory is `/opt/lydianai-aac`. The installer requires a TLS certificate and key when starting services, creates generated application secrets, and exposes only nginx on ports 80 and 443. PostgreSQL, Redis, and the API remain internal to the Compose network.
+The default installation directory is `/opt/lydianai-aac`. The installer requires a TLS certificate and key when starting services, creates generated application secrets, and exposes only nginx on ports 80 and 443. PostgreSQL, Valkey, and the API remain internal to the Compose network.
+
+Valkey keeps the `redis` service hostname and `AAC_REDIS_URL` setting. Existing
+Redis installations must follow the
+[migration procedure](../../documentation/valkey_migration.md) before upgrading.
+Production Valkey uses fresh `valkey_data` storage; the old Redis volume is
+retained separately.
+
+## Licenses
+
+Application code: [Apache-2.0](../../LICENSE). Valkey server:
+[BSD-3-Clause](../../LICENSES/Valkey-8.1.10.txt). See
+[Third-Party License Notices](../../THIRD_PARTY_NOTICES.md) for upstream
+attributions and dependency references. Other image components retain their
+own licenses.
 
 ## Manage
 

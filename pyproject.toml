@@ -1,11 +1,13 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "lydianai-assurance-as-code"
 version = "0.1.0"
 description = "Assurance-as-Code backend for safety and process evidence management"
+license = "Apache-2.0"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "LICENSES/*.txt"]
 requires-python = ">=3.11"
 dependencies = [
     "alembic>=1.13",

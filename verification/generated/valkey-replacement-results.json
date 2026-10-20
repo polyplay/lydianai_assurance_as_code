@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "recorded_on": "2026-10-19",
+  "change_class": "A",
+  "impact": "Verification and documentation only; no product behavioral impact",
+  "change_record": "docs/valkey_replacement_change_record.md",
+  "evidence_source": "User-supplied terminal transcript",
+  "independently_rerun_by_agent": false,
+  "command": "bash scripts/run_web_integration_tests.sh",
+  "result": "passed",
+  "broker_image": {
+    "reference": "valkey/valkey:8.1.10-alpine",
+    "reported_pull_digest": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+    "pull_and_start": "passed",
+    "deployment_references_digest_pinned": false
+  },
+  "checks": [
+    {
+      "id": "valkey-arq-integration",
+      "test": "tests/integration/test_valkey_queue.py::test_acc_lic_013_arq_executes_a_job_against_real_valkey",
+      "result": "passed",
+      "passed": 1,
+      "duration_seconds": 0.07,
+      "coverage": [
+        "Valkey server identity",
+        "Isolated ARQ enqueue",
+        "Worker execution",
+        "Returned result and completion counts"
+      ],
+      "warnings": [
+        {
+          "category": "DeprecationWarning",
+          "origin": "arq/worker.py:873",
+          "message": "ARQ calls the Redis client's deprecated close() method; aclose() is recommended upstream",
+          "test_failed": false
+        }
+      ]
+    },
+    {
+      "id": "fresh-postgresql-migrations",
+      "result": "passed",
+      "from_revision": null,
+      "to_revision": "0006_revision_integrity",
+      "migration_count": 6,
+      "initial_admin_creation": "passed"
+    },
+    {
+      "id": "real-stack-browser",
+      "test": "tests/web-real/workspace.spec.js:3",
+      "result": "passed",
+      "passed": 1,
+      "duration_seconds": 3.0,
+      "coverage": [
+        "Login",
+        "Project creation",
+        "Evidence creation",
+        "Validation submission",
+        "Validation job visibility"
+      ]
+    }
+  ],
+  "acceptance_coverage": {
+    "ACC-LIC-005": "partial: live enqueue, execution and result verified; cancellation not tested",
+    "ACC-LIC-013": "configuration and disposable integration verified; full production deployment not tested"
+  },
+  "remaining_unverified": [
+    "Cancellation against Valkey",
+    "Completion of the application validation job submitted by the browser test",
+    "Full production Compose deployment",
+    "Application-image license and recipient-material content inspection",
+    "Existing-installation migration and rollback"
+  ],
+  "agent_docker_access": "Still denied; successful execution occurred in the user's terminal"
+}
